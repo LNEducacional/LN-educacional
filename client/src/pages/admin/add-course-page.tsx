@@ -36,7 +36,7 @@ const AddCoursePage = () => {
     instructorBio: '',
     price: 0,
     duration: 0,
-    status: 'ativo',
+    status: 'ACTIVE',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -59,7 +59,7 @@ const AddCoursePage = () => {
         instructorBio: formData.instructorBio || '',
         price: formData.price, // já está em centavos
         duration: formData.duration || 480, // duração padrão de 8 horas
-        status: formData.status === 'ativo' ? 'ACTIVE' : 'INACTIVE',
+        status: formData.status, // já está em ACTIVE ou INACTIVE
         level: 'BEGINNER', // padrão
         thumbnailUrl: '', // será atualizado depois se houver upload
         videoUrl: '' // será atualizado depois se houver upload
@@ -325,11 +325,11 @@ const AddCoursePage = () => {
                     <div className="flex items-center space-x-2">
                       <Switch
                         id="status"
-                        checked={formData.status === 'ativo'}
+                        checked={formData.status === 'ACTIVE'}
                         onCheckedChange={(checked) =>
                           setFormData((prev) => ({
                             ...prev,
-                            status: checked ? 'ativo' : 'inativo',
+                            status: checked ? 'ACTIVE' : 'INACTIVE',
                           }))
                         }
                       />

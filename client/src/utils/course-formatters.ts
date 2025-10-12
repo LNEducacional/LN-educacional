@@ -30,7 +30,7 @@ export function formatAcademicArea(area: AcademicArea | string): string {
 }
 
 export function formatCourseStatus(status: CourseStatus): string {
-  return status === 'ativo' ? 'Ativo' : 'Inativo';
+  return status === 'ACTIVE' ? 'Ativo' : 'Inativo';
 }
 
 export function formatPrice(priceInCents: number): string {

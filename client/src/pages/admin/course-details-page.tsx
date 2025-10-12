@@ -80,13 +80,24 @@ const CourseDetailsPage = () => {
                     </p>
                   </div>
                 </div>
-                <Button
-                  onClick={() => navigate(`/admin/cursos/editar/${course.id}`)}
-                  className="flex items-center gap-2"
-                >
-                  <Edit className="h-4 w-4" />
-                  Editar Curso
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    onClick={() => navigate('/admin/cursos')}
+                    variant="ghost"
+                    size="sm"
+                    className="flex items-center gap-2"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                    Voltar
+                  </Button>
+                  <Button
+                    onClick={() => navigate(`/admin/cursos/editar/${course.id}`)}
+                    className="flex items-center gap-2"
+                  >
+                    <Edit className="h-4 w-4" />
+                    Editar Curso
+                  </Button>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -98,7 +109,7 @@ const CourseDetailsPage = () => {
                         <div className="space-y-2">
                           <CardTitle className="text-2xl">{course.title}</CardTitle>
                           <div className="flex items-center gap-2">
-                            <Badge variant={course.status === 'ativo' ? 'default' : 'secondary'}>
+                            <Badge variant={course.status === 'ACTIVE' ? 'default' : 'secondary'}>
                               {formatCourseStatus(course.status)}
                             </Badge>
                             <Badge variant="outline">
@@ -190,7 +201,7 @@ const CourseDetailsPage = () => {
                         </div>
                         <div className="flex justify-between items-center">
                           <span className="text-sm text-muted-foreground">Status</span>
-                          <Badge variant={course.status === 'ativo' ? 'default' : 'secondary'}>
+                          <Badge variant={course.status === 'ACTIVE' ? 'default' : 'secondary'}>
                             {formatCourseStatus(course.status)}
                           </Badge>
                         </div>

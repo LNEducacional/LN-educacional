@@ -17,7 +17,7 @@ import api from '@/services/api';
 import type { AcademicArea, Course, CourseFormData } from '@/types/course';
 import { BRLToCents, centsToBRL } from '@/utils/course-formatters';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { BookOpen, Clock, DollarSign, FileText, GraduationCap, Loader2, Upload, User, Users } from 'lucide-react';
+import { ArrowLeft, BookOpen, Clock, DollarSign, FileText, GraduationCap, Loader2, Upload, User, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -36,7 +36,7 @@ const EditCoursePage = () => {
     instructorBio: '',
     price: 0,
     duration: 0,
-    status: 'ativo',
+    status: 'ACTIVE',
   });
 
   // Buscar curso da API
@@ -189,11 +189,20 @@ const EditCoursePage = () => {
         <div className="flex-1 flex flex-col">
           <main className="flex-1 p-6 overflow-y-auto">
             <div className="animate-fade-in space-y-8">
-              <div className="flex items-center gap-4">
+              <div className="flex items-center justify-between">
                 <div>
                   <h1 className="text-3xl font-bold tracking-tight">Editar Curso</h1>
                   <p className="text-muted-foreground">Atualize as informações do curso</p>
                 </div>
+                <Button
+                  onClick={() => navigate('/admin/cursos')}
+                  variant="ghost"
+                  size="sm"
+                  className="flex items-center gap-2"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Voltar
+                </Button>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-8">
@@ -361,11 +370,11 @@ const EditCoursePage = () => {
                     <div className="flex items-center space-x-2">
                       <Switch
                         id="status"
-                        checked={formData.status === 'ativo'}
+                        checked={formData.status === 'ACTIVE'}
                         onCheckedChange={(checked) =>
                           setFormData((prev) => ({
                             ...prev,
-                            status: checked ? 'ativo' : 'inativo',
+                            status: checked ? 'ACTIVE' : 'INACTIVE',
                           }))
                         }
                       />
