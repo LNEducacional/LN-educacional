@@ -1,0 +1,308 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Base colors - branco e cinza */
+    --background: 0 0% 99%;
+    --foreground: 220 15% 15%;
+    
+    /* Card and surfaces */
+    --card: 0 0% 100%;
+    --card-foreground: 220 15% 15%;
+    
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 15% 15%;
+    
+    /* Primary - azul escuro para destaques */
+    --primary: 220 50% 20%;
+    --primary-foreground: 0 0% 98%;
+    --primary-hover: 220 50% 25%;
+    
+    /* Secondary - cinza suave */
+    --secondary: 220 10% 96%;
+    --secondary-foreground: 220 15% 15%;
+    
+    /* Muted - cinza médio */
+    --muted: 220 10% 94%;
+    --muted-foreground: 220 8% 46%;
+    
+    /* Accent - dourado para realces */
+    --accent: 45 90% 60%;
+    --accent-foreground: 220 15% 15%;
+    --accent-subtle: 45 40% 95%;
+    
+    /* Destructive */
+    --destructive: 0 70% 55%;
+    --destructive-foreground: 0 0% 98%;
+    
+    /* Borders and inputs */
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 220 50% 20%;
+    
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(220 50% 20%), hsl(220 50% 30%));
+    --gradient-accent: linear-gradient(135deg, hsl(45 90% 60%), hsl(45 90% 70%));
+    --gradient-hero: linear-gradient(135deg, hsl(220 50% 20%) 0%, hsl(220 50% 25%) 50%, hsl(45 90% 60%) 100%);
+    --gradient-subtle: linear-gradient(180deg, hsl(0 0% 99%) 0%, hsl(220 10% 98%) 100%);
+    
+    /* Shadows */
+    --shadow-soft: 0 2px 10px -2px hsl(220 50% 20% / 0.1);
+    --shadow-medium: 0 8px 25px -5px hsl(220 50% 20% / 0.15);
+    --shadow-strong: 0 20px 40px -12px hsl(220 50% 20% / 0.25);
+    --shadow-accent: 0 8px 32px -8px hsl(45 90% 60% / 0.3);
+    
+    /* Typography */
+    --font-heading: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+    
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-spring: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    /* Base colors - dark mode */
+    --background: 220 20% 8%;
+    --foreground: 220 5% 95%;
+    
+    /* Card and surfaces */
+    --card: 220 15% 12%;
+    --card-foreground: 220 5% 95%;
+    
+    --popover: 220 15% 12%;
+    --popover-foreground: 220 5% 95%;
+    
+    /* Primary - azul mais claro no dark */
+    --primary: 220 70% 65%;
+    --primary-foreground: 220 20% 8%;
+    --primary-hover: 220 70% 70%;
+    
+    /* Secondary - cinza escuro */
+    --secondary: 220 15% 18%;
+    --secondary-foreground: 220 5% 85%;
+    
+    /* Muted - cinza médio escuro */
+    --muted: 220 15% 15%;
+    --muted-foreground: 220 5% 65%;
+    
+    /* Accent - dourado mantido */
+    --accent: 45 90% 60%;
+    --accent-foreground: 220 20% 8%;
+    --accent-subtle: 45 30% 15%;
+    
+    /* Destructive */
+    --destructive: 0 70% 55%;
+    --destructive-foreground: 220 5% 95%;
+    
+    /* Borders and inputs */
+    --border: 220 15% 20%;
+    --input: 220 15% 20%;
+    --ring: 220 70% 65%;
+    
+    /* Gradients - dark mode */
+    --gradient-primary: linear-gradient(135deg, hsl(220 70% 65%), hsl(220 70% 70%));
+    --gradient-accent: linear-gradient(135deg, hsl(45 90% 60%), hsl(45 90% 70%));
+    --gradient-hero: linear-gradient(135deg, hsl(220 20% 8%) 0%, hsl(220 70% 65%) 50%, hsl(45 90% 60%) 100%);
+    --gradient-subtle: linear-gradient(180deg, hsl(220 20% 8%) 0%, hsl(220 15% 12%) 100%);
+    
+    /* Shadows - dark mode */
+    --shadow-soft: 0 2px 10px -2px hsl(0 0% 0% / 0.3);
+    --shadow-medium: 0 8px 25px -5px hsl(0 0% 0% / 0.4);
+    --shadow-strong: 0 20px 40px -12px hsl(0 0% 0% / 0.5);
+    --shadow-accent: 0 8px 32px -8px hsl(45 90% 60% / 0.2);
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-[var(--font-body)];
+    font-feature-settings: "cv11", "ss01";
+    font-variation-settings: "opsz" 32;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-[var(--font-heading)];
+    font-feature-settings: "cv11", "ss01";
+  }
+}
+
+@layer components {
+  /* Hero Button - azul escuro com gradiente */
+  .btn-hero {
+    @apply bg-gradient-to-r from-primary to-primary-hover text-primary-foreground font-semibold px-8 py-4 rounded-lg;
+    @apply hover:shadow-[var(--shadow-medium)] transform hover:scale-[1.02] transition-[var(--transition-smooth)];
+    @apply focus:ring-2 focus:ring-ring focus:ring-offset-2;
+  }
+  
+  /* Accent Button - dourado */
+  .btn-accent {
+    @apply bg-gradient-to-r from-accent to-accent text-accent-foreground font-semibold px-6 py-3 rounded-lg;
+    @apply hover:shadow-[var(--shadow-accent)] transform hover:scale-[1.02] transition-[var(--transition-smooth)];
+    @apply focus:ring-2 focus:ring-accent focus:ring-offset-2;
+  }
+  
+  /* Ghost Button */
+  .btn-ghost {
+    @apply text-foreground font-medium px-6 py-3 rounded-lg border border-border;
+    @apply hover:bg-secondary hover:border-muted-foreground/20 transition-[var(--transition-smooth)];
+    @apply focus:ring-2 focus:ring-ring focus:ring-offset-2;
+  }
+  
+  /* Card with hover effect */
+  .card-hover {
+    @apply bg-card border border-border rounded-xl p-6;
+    @apply hover:shadow-[var(--shadow-medium)] hover:border-muted-foreground/20;
+    @apply transform hover:scale-[1.02] transition-[var(--transition-smooth)];
+  }
+  
+  /* Gradient background */
+  .bg-gradient-hero {
+    background: var(--gradient-hero);
+  }
+  
+  .bg-gradient-subtle {
+    background: var(--gradient-subtle);
+  }
+  
+  /* Animation classes */
+  .animate-fade-in {
+    @apply opacity-0 animate-[fadeIn_0.6s_ease-out_forwards];
+  }
+  
+  .animate-slide-up {
+    @apply opacity-0 translate-y-8 animate-[slideUp_0.6s_ease-out_forwards];
+  }
+  
+  .animate-scale-in {
+    @apply opacity-0 scale-95 animate-[scaleIn_0.4s_ease-out_forwards];
+  }
+
+  /* Article Content Styles */
+  .article-content {
+    @apply text-foreground leading-relaxed;
+  }
+  
+  .article-content h2 {
+    @apply text-2xl font-semibold mt-8 mb-4 text-foreground;
+  }
+  
+  .article-content h3 {
+    @apply text-xl font-semibold mt-6 mb-3 text-foreground;
+  }
+  
+  .article-content p {
+    @apply mb-4 text-foreground/90;
+  }
+  
+  .article-content ul, .article-content ol {
+    @apply mb-4 pl-6;
+  }
+  
+  .article-content li {
+    @apply mb-2 text-foreground/90;
+  }
+  
+  .article-content blockquote {
+    @apply border-l-4 border-primary pl-4 my-6 italic text-foreground/80 bg-muted/30 py-4 rounded-r-lg;
+  }
+  
+  .article-content strong {
+    @apply font-semibold text-foreground;
+  }
+  
+  .article-content code {
+    @apply bg-muted px-2 py-1 rounded text-sm font-mono;
+  }
+}
+
+@layer utilities {
+  .text-gradient-accent {
+    @apply bg-gradient-to-r from-accent to-accent bg-clip-text text-transparent;
+  }
+  
+  .text-gradient-primary {
+    @apply bg-gradient-to-r from-primary to-primary-hover bg-clip-text text-transparent;
+  }
+  
+  .shadow-soft {
+    box-shadow: var(--shadow-soft);
+  }
+  
+  .shadow-medium {
+    box-shadow: var(--shadow-medium);
+  }
+  
+  .shadow-strong {
+    box-shadow: var(--shadow-strong);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

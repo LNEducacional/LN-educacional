@@ -1,0 +1,11 @@
+HTTP/1.1 200 OK
+vary: Origin
+access-control-allow-credentials: true
+content-type: application/json; charset=utf-8
+set-cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImNtZm53MTQ3NTAwMDBmYzZqMmd2bG83NmciLCJlbWFpbCI6ImFkbWluQGxuZWR1Y2FjaW9uYWwuY29tIiwibmFtZSI6IkFkbWluaXN0cmFkb3IiLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NTgxMjk5MjYsImV4cCI6MTc1ODczNDcyNn0.88RrEQ9GIhmWIvnJCvbSOUWFoPCvpJ5XcFUpUz1buec; Max-Age=604800000; HttpOnly; Secure; SameSite=Lax
+set-cookie: refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImNtZm53MTQ3NTAwMDBmYzZqMmd2bG83NmciLCJpYXQiOjE3NTgxMjk5MjYsImV4cCI6MTc2MDcyMTkyNn0.kfIUeiiMbvRFSRkltcpTgvua_ja06osyv5jakr8jgq0; Max-Age=2592000000; HttpOnly; Secure; SameSite=Lax
+content-length: 115
+Date: Wed, 17 Sep 2025 17:25:26 GMT
+Connection: keep-alive
+Keep-Alive: timeout=72
+

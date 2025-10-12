@@ -1,0 +1,33 @@
+export const PAPER_TYPES = {
+  article: 'Artigo',
+  review: 'Resenha',
+  thesis: 'Tese',
+  dissertation: 'Dissertação',
+  project: 'Projeto/TCC',
+  essay: 'Ensaio',
+  summary: 'Resumo',
+  monography: 'Monografia',
+  case_study: 'Estudo de Caso',
+};
+
+export const ACADEMIC_AREAS = {
+  administration: 'Administração',
+  law: 'Direito',
+  education: 'Educação',
+  engineering: 'Engenharia',
+  psychology: 'Psicologia',
+  health: 'Saúde',
+  accounting: 'Contabilidade',
+  arts: 'Artes',
+  economics: 'Economia',
+  social_sciences: 'Ciências Sociais',
+  exact_sciences: 'Ciências Exatas',
+  biological_sciences: 'Ciências Biológicas',
+  health_sciences: 'Ciências da Saúde',
+  applied_social_sciences: 'Ciências Sociais Aplicadas',
+  humanities: 'Ciências Humanas',
+  languages: 'Linguística, Letras e Artes',
+  agricultural_sciences: 'Ciências Agrárias',
+  multidisciplinary: 'Multidisciplinar',
+  other: 'Outros',
+};

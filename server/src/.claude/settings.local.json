@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(tree:*)",
+      "Read(//var/www/ln-educacional/server/**)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
