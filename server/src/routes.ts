@@ -2800,19 +2800,83 @@ export async function registerAdminRoutes(app: FastifyInstance) {
     { preHandler: [app.authenticate, app.requireAdmin] },
     async (request, reply) => {
       try {
-        const data = createPaperSchema.parse(request.body);
-        const paper = await createPaper({
-          ...data,
-          paperType: data.paperType.toUpperCase().replace(/-/g, '_'),
-          academicArea: data.academicArea.toUpperCase().replace(/-/g, '_'),
-        });
+        // Check if it's multipart/form-data (file upload)
+        const contentType = request.headers['content-type'] || '';
 
-        // Invalidate cache if it's a free paper
-        if (data.isFree) {
-          await deleteCachePattern('papers:free:*');
+        if (contentType.includes('multipart/form-data')) {
+          // Handle file upload
+          const parts = request.parts();
+          const fields: Record<string, any> = {};
+          let fileUrl = '';
+          let thumbnailUrl: string | undefined;
+          let previewUrl: string | undefined;
+
+          for await (const part of parts) {
+            if (part.type === 'file') {
+              // Handle file uploads
+              if (part.fieldname === 'file') {
+                const uploaded = await uploadFile(part, 'materials');
+                fileUrl = uploaded.url;
+              } else if (part.fieldname === 'thumbnail') {
+                const uploaded = await uploadFile(part, 'thumbnails');
+                thumbnailUrl = uploaded.url;
+              } else if (part.fieldname === 'preview') {
+                const uploaded = await uploadFile(part, 'materials');
+                previewUrl = uploaded.url;
+              }
+            } else {
+              // Handle form fields
+              fields[part.fieldname] = part.value;
+            }
+          }
+
+          // Parse keywords if it's a string
+          if (typeof fields.keywords === 'string') {
+            fields.keywords = fields.keywords;
+          }
+
+          // Convert isFree string to boolean
+          const isFree = fields.isFree === 'true';
+
+          // Create paper with uploaded file URLs
+          const paper = await createPaper({
+            title: fields.title,
+            description: fields.description,
+            paperType: fields.paperType.toUpperCase().replace(/-/g, '_'),
+            academicArea: fields.academicArea.toUpperCase().replace(/-/g, '_'),
+            price: parseInt(fields.price, 10),
+            pageCount: parseInt(fields.pageCount, 10),
+            authorName: fields.authorName,
+            language: fields.language || 'pt-BR',
+            keywords: fields.keywords,
+            fileUrl,
+            thumbnailUrl,
+            previewUrl,
+            isFree,
+          });
+
+          // Invalidate cache if it's a free paper
+          if (isFree) {
+            await deleteCachePattern('papers:free:*');
+          }
+
+          reply.status(201).send(paper);
+        } else {
+          // Handle JSON request (original behavior)
+          const data = createPaperSchema.parse(request.body);
+          const paper = await createPaper({
+            ...data,
+            paperType: data.paperType.toUpperCase().replace(/-/g, '_'),
+            academicArea: data.academicArea.toUpperCase().replace(/-/g, '_'),
+          });
+
+          // Invalidate cache if it's a free paper
+          if (data.isFree) {
+            await deleteCachePattern('papers:free:*');
+          }
+
+          reply.status(201).send(paper);
         }
-
-        reply.status(201).send(paper);
       } catch (error: unknown) {
         reply.status(400).send({ error: (error as Error).message });
       }

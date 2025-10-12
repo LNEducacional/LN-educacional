@@ -36,11 +36,11 @@ export default function ReadyPapersPage() {
     navigate('/admin/ready-papers/add');
   };
 
-  const handleEditPaper = (id: number) => {
+  const handleEditPaper = (id: string) => {
     navigate(`/admin/ready-papers/edit/${id}`);
   };
 
-  const handleViewPaper = (id: number) => {
+  const handleViewPaper = (id: string) => {
     navigate(`/admin/ready-papers/details/${id}`);
   };
 

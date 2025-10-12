@@ -29,41 +29,64 @@ async function main() {
             verified: true,
         },
     });
-    // Create sample papers
-    await prisma_1.prisma.paper.create({
-        data: {
-            title: 'Metodologias Ágeis no Desenvolvimento de Software',
-            description: 'Estudo completo sobre implementação de metodologias ágeis em equipes de desenvolvimento.',
-            paperType: 'ARTICLE',
-            academicArea: 'ENGINEERING',
-            price: 9900,
-            pageCount: 45,
-            authorName: 'Dr. João Silva',
-            language: 'pt-BR',
-            keywords: 'agile, scrum, desenvolvimento, software',
-            fileUrl: 'https://example.com/papers/metodologias-ageis.pdf',
-            thumbnailUrl: 'https://example.com/thumbnails/metodologias-ageis.jpg',
-            isFree: false,
-        },
+    // Create sample papers (COMMENTED OUT - use seed-data.ts for actual data)
+    /*
+    await prisma.paper.upsert({
+      where: {
+        // Use a composite unique constraint or find first and conditionally create
+        id: (await prisma.paper.findFirst({
+          where: { title: 'Metodologias Ágeis no Desenvolvimento de Software' }
+        }))?.id || 'dummy-id-will-create-new'
+      },
+      update: {},
+      create: {
+        title: 'Metodologias Ágeis no Desenvolvimento de Software',
+        description:
+          'Estudo completo sobre implementação de metodologias ágeis em equipes de desenvolvimento.',
+        paperType: 'ARTICLE',
+        academicArea: 'ENGINEERING',
+        price: 9900,
+        pageCount: 45,
+        authorName: 'Dr. João Silva',
+        language: 'pt-BR',
+        keywords: 'agile, scrum, desenvolvimento, software',
+        fileUrl: 'https://example.com/papers/metodologias-ageis.pdf',
+        thumbnailUrl: 'https://example.com/thumbnails/metodologias-ageis.jpg',
+        isFree: false,
+      },
     });
-    await prisma_1.prisma.paper.create({
-        data: {
-            title: 'Introdução à Psicologia Organizacional',
-            description: 'Material gratuito sobre conceitos básicos de psicologia organizacional.',
-            paperType: 'ESSAY',
-            academicArea: 'PSYCHOLOGY',
-            price: 0,
-            pageCount: 20,
-            authorName: 'Dra. Maria Santos',
-            language: 'pt-BR',
-            keywords: 'psicologia, organizacional, recursos humanos',
-            fileUrl: 'https://example.com/papers/psicologia-org.pdf',
-            isFree: true,
-        },
+  
+    await prisma.paper.upsert({
+      where: {
+        id: (await prisma.paper.findFirst({
+          where: { title: 'Introdução à Psicologia Organizacional' }
+        }))?.id || 'dummy-id-will-create-new-2'
+      },
+      update: {},
+      create: {
+        title: 'Introdução à Psicologia Organizacional',
+        description: 'Material gratuito sobre conceitos básicos de psicologia organizacional.',
+        paperType: 'ESSAY',
+        academicArea: 'PSYCHOLOGY',
+        price: 0,
+        pageCount: 20,
+        authorName: 'Dra. Maria Santos',
+        language: 'pt-BR',
+        keywords: 'psicologia, organizacional, recursos humanos',
+        fileUrl: 'https://example.com/papers/psicologia-org.pdf',
+        isFree: true,
+      },
     });
-    // Create sample course
-    await prisma_1.prisma.course.create({
-        data: {
+    */
+    // Create sample course (using upsert to prevent duplicates)
+    await prisma_1.prisma.course.upsert({
+        where: {
+            id: (await prisma_1.prisma.course.findFirst({
+                where: { title: 'JavaScript Moderno: Do Básico ao Avançado' }
+            }))?.id || 'dummy-id-course'
+        },
+        update: {},
+        create: {
             title: 'JavaScript Moderno: Do Básico ao Avançado',
             description: 'Aprenda JavaScript do zero com projetos práticos e conceitos avançados.',
             academicArea: 'ENGINEERING',
@@ -76,9 +99,15 @@ async function main() {
             status: 'ACTIVE',
         },
     });
-    // Create sample ebook
-    await prisma_1.prisma.ebook.create({
-        data: {
+    // Create sample ebook (using upsert to prevent duplicates)
+    await prisma_1.prisma.ebook.upsert({
+        where: {
+            id: (await prisma_1.prisma.ebook.findFirst({
+                where: { title: 'Guia Completo de Marketing Digital' }
+            }))?.id || 'dummy-id-ebook'
+        },
+        update: {},
+        create: {
             title: 'Guia Completo de Marketing Digital',
             description: 'Estratégias práticas para dominar o marketing digital em 2024.',
             academicArea: 'ADMINISTRATION',

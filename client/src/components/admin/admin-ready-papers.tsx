@@ -28,7 +28,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { mockReadyPapers } from '@/data/mock-ready-papers';
+import { useReadyPapers } from '@/hooks/use-ready-papers';
 import { toast } from '@/hooks/use-toast';
 import type { AcademicArea, PaperType, ReadyPaper } from '@/types/paper';
 import {
@@ -37,13 +37,13 @@ import {
   formatPaperType,
   formatPrice,
 } from '@/utils/paper-formatters';
-import { ArrowUpDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Edit, Eye, FileText, Filter, Plus, Search, Trash2 } from 'lucide-react';
+import { ArrowUpDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Edit, Eye, FileText, Filter, Loader2, Plus, Search, Trash2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 interface AdminReadyPapersProps {
   onAddPaper: () => void;
-  onEditPaper: (id: number) => void;
-  onViewPaper: (id: number) => void;
+  onEditPaper: (id: string) => void;
+  onViewPaper: (id: string) => void;
 }
 
 interface FilterCriteria {
@@ -57,7 +57,7 @@ type SortOrder = 'asc' | 'desc';
 
 
 export function AdminReadyPapers({ onAddPaper, onEditPaper, onViewPaper }: AdminReadyPapersProps) {
-  const [papers, setPapers] = useState<ReadyPaper[]>(mockReadyPapers);
+  const { papers, isLoading, refetch, deletePaper: deletePaperApi } = useReadyPapers();
   const [search, setSearch] = useState('');
   const [paperTypeFilter, setPaperTypeFilter] = useState<PaperType | 'all'>('all');
   const [areaFilter, setAreaFilter] = useState<AcademicArea | 'all'>('all');
@@ -144,9 +144,9 @@ export function AdminReadyPapers({ onAddPaper, onEditPaper, onViewPaper }: Admin
     setCurrentPage(1);
   }, [search, paperTypeFilter, areaFilter]);
 
-  const handleDeletePaper = async (id: number) => {
+  const handleDeletePaper = async (id: string) => {
     try {
-      setPapers((prev) => prev.filter((p) => p.id !== id));
+      await deletePaperApi(id);
       toast({
         title: 'Trabalho excluído',
         description: 'O trabalho foi removido com sucesso.',
@@ -240,7 +240,11 @@ export function AdminReadyPapers({ onAddPaper, onEditPaper, onViewPaper }: Admin
           <CardTitle>Lista de Trabalhos ({filteredAndSortedPapers.length})</CardTitle>
         </CardHeader>
         <CardContent>
-          {filteredAndSortedPapers.length === 0 ? (
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : filteredAndSortedPapers.length === 0 ? (
             <div className="text-center py-12">
               <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-medium text-foreground mb-2">

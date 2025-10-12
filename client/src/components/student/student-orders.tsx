@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
-import { mockStudentOrders } from '@/data/mock-student-orders';
+import { useStudentOrders } from '@/hooks/use-student-orders';
 import type { StudentOrder } from '@/types/student-order';
 import {
   Calendar,
@@ -21,26 +21,25 @@ import {
   TrendingUp,
   DollarSign,
 } from 'lucide-react';
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const statusMap = {
-  pending: {
+  PENDING: {
     label: 'Pendente',
     icon: Clock,
     badgeClass: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-500/20 dark:text-yellow-400',
   },
-  processing: {
+  PROCESSING: {
     label: 'Processando',
     icon: Loader2,
     badgeClass: 'bg-blue-100 text-blue-800 dark:bg-blue-500/20 dark:text-blue-400',
   },
-  completed: {
+  COMPLETED: {
     label: 'Concluído',
     icon: CheckCircle,
     badgeClass: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-400',
   },
-  canceled: {
+  CANCELED: {
     label: 'Cancelado',
     icon: XCircle,
     badgeClass: 'bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-400',
@@ -55,20 +54,19 @@ const paymentMethodMap = {
 };
 
 const paymentStatusMap = {
-  pending: 'Pendente',
-  processing: 'Processando',
-  paid: 'Pago',
-  confirmed: 'Confirmado',
-  overdue: 'Vencido',
-  refunded: 'Reembolsado',
-  failed: 'Falhou',
-  canceled: 'Cancelado',
+  PENDING: 'Pendente',
+  PROCESSING: 'Processando',
+  PAID: 'Pago',
+  CONFIRMED: 'Confirmado',
+  OVERDUE: 'Vencido',
+  REFUNDED: 'Reembolsado',
+  FAILED: 'Falhou',
+  CANCELED: 'Cancelado',
 };
 
 export function StudentOrders() {
   const navigate = useNavigate();
-  const [orders] = useState<StudentOrder[]>(mockStudentOrders);
-  const [isLoading] = useState(false);
+  const { orders, isLoading } = useStudentOrders();
 
   const formatPrice = (priceInCents: number): string => {
     return (priceInCents / 100).toLocaleString('pt-BR', {
@@ -78,14 +76,14 @@ export function StudentOrders() {
   };
 
   // Agrupar por status
-  const pendingOrders = orders.filter(o => o.status === 'pending');
-  const processingOrders = orders.filter(o => o.status === 'processing');
-  const completedOrders = orders.filter(o => o.status === 'completed');
-  const canceledOrders = orders.filter(o => o.status === 'canceled');
+  const pendingOrders = orders.filter(o => o.status === 'PENDING');
+  const processingOrders = orders.filter(o => o.status === 'PROCESSING');
+  const completedOrders = orders.filter(o => o.status === 'COMPLETED');
+  const canceledOrders = orders.filter(o => o.status === 'CANCELED');
 
   // Calcular estatísticas
   const totalSpent = orders
-    .filter(o => o.status === 'completed')
+    .filter(o => o.status === 'COMPLETED')
     .reduce((sum, o) => sum + o.totalAmount, 0);
 
   const stats = [
@@ -112,8 +110,9 @@ export function StudentOrders() {
     },
   ];
 
-  const formatDate = (date: Date): string => {
-    return date.toLocaleDateString('pt-BR', {
+  const formatDate = (date: Date | string): string => {
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    return dateObj.toLocaleDateString('pt-BR', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
@@ -122,19 +121,19 @@ export function StudentOrders() {
     });
   };
 
-  const handleViewDetails = (_orderId: number) => {
+  const handleViewDetails = (_orderId: string) => {
     // In a real app, this would navigate to order details page
   };
 
-  const handleDownloadProducts = (_orderId: number) => {
+  const handleDownloadProducts = (_orderId: string) => {
     // In a real app, this would download the products
   };
 
-  const handleViewItem = (_orderId: number, _itemTitle: string) => {
+  const handleViewItem = (_orderId: string, _itemTitle: string) => {
     // In a real app, this would view the specific item
   };
 
-  const handleDownloadItem = (_orderId: number, _itemTitle: string) => {
+  const handleDownloadItem = (_orderId: string, _itemTitle: string) => {
     // In a real app, this would download the specific item
   };
 
@@ -203,7 +202,7 @@ export function StudentOrders() {
                               </div>
                             )}
                           </div>
-                          {order.status === 'completed' && (
+                          {order.status === 'COMPLETED' && (
                             <div className="flex items-center gap-2 ml-4">
                               <Button
                                 size="sm"
@@ -271,7 +270,7 @@ export function StudentOrders() {
                     <Eye className="h-4 w-4" />
                     Ver Detalhes
                   </Button>
-                  {order.status === 'completed' && (
+                  {order.status === 'COMPLETED' && (
                     <Button
                       onClick={() => handleDownloadProducts(order.id)}
                       className="gap-2"

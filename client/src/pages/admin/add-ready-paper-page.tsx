@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/select';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { Textarea } from '@/components/ui/textarea';
+import { useApiMutation } from '@/hooks/use-api';
 import { toast } from '@/hooks/use-toast';
 import type { AcademicArea, PaperType } from '@/types/paper';
 import {
@@ -40,6 +41,8 @@ export default function AddReadyPaperPage() {
   const [activeSection, setActiveSection] = useState<
     'dashboard' | 'courses' | 'users' | 'categories' | 'notifications' | 'settings'
   >('dashboard');
+
+  const createPaper = useApiMutation<void, FormData>('post');
 
   const [formData, setFormData] = useState({
     title: '',
@@ -75,20 +78,12 @@ export default function AddReadyPaperPage() {
   };
 
   const handlePriceChange = (value: string) => {
-    // Remove tudo exceto números e vírgula/ponto
+    // Remove tudo exceto números e vírgula
     const numbersOnly = value.replace(/[^\d,]/g, '');
-    setFormData((prev) => ({ ...prev, price: numbersOnly }));
-  };
-
-  const formatPrice = (value: string): string => {
-    if (!value) return '';
-    // Converte para número e formata
-    const numericValue = parseFloat(value.replace(',', '.'));
-    if (isNaN(numericValue)) return '';
-    return numericValue.toLocaleString('pt-BR', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
+    // Garante apenas uma vírgula
+    const parts = numbersOnly.split(',');
+    const cleanValue = parts.length > 1 ? `${parts[0]},${parts[1]}` : parts[0];
+    setFormData((prev) => ({ ...prev, price: cleanValue }));
   };
 
   const handleFileChange = (field: 'file' | 'thumbnail' | 'preview', file: File | null) => {
@@ -131,8 +126,44 @@ export default function AddReadyPaperPage() {
     setLoading(true);
 
     try {
-      // Simular envio
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const formDataToSend = new FormData();
+
+      // Adicionar dados do formulário
+      formDataToSend.append('title', formData.title);
+      formDataToSend.append('authorName', formData.authorName);
+      formDataToSend.append('description', formData.description);
+      formDataToSend.append('paperType', formData.paperType);
+      formDataToSend.append('academicArea', formData.academicArea);
+      formDataToSend.append('pageCount', formData.pageCount.toString());
+      formDataToSend.append('language', formData.language);
+      formDataToSend.append('isFree', 'false'); // Trabalho pronto é PAGO
+
+      // Converter preço para centavos (R$ 10,50 -> 1050)
+      const priceInCents = Math.round(parseFloat(formData.price.replace(',', '.')) * 100);
+      formDataToSend.append('price', priceInCents.toString());
+
+      if (keywords.length > 0) {
+        formDataToSend.append('keywords', keywords.join(', '));
+      }
+
+      // Adicionar arquivos
+      formDataToSend.append('file', formData.file);
+      if (formData.thumbnail) {
+        formDataToSend.append('thumbnail', formData.thumbnail);
+      }
+      if (formData.preview) {
+        formDataToSend.append('preview', formData.preview);
+      }
+
+      console.log('📤 Enviando trabalho pronto...', {
+        title: formData.title,
+        price: priceInCents,
+        hasFile: !!formData.file,
+      });
+
+      await createPaper.mutate('/admin/papers', formDataToSend);
+
+      console.log('✅ Trabalho criado com sucesso!');
 
       toast({
         title: 'Trabalho adicionado',
@@ -140,10 +171,12 @@ export default function AddReadyPaperPage() {
       });
 
       navigate('/admin/ready-papers');
-    } catch (_error) {
+    } catch (error) {
+      console.error('❌ Erro ao adicionar trabalho:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       toast({
         title: 'Erro ao adicionar',
-        description: 'Não foi possível adicionar o trabalho. Tente novamente.',
+        description: errorMessage || 'Não foi possível adicionar o trabalho. Tente novamente.',
         variant: 'destructive',
       });
     } finally {
@@ -376,13 +409,14 @@ export default function AddReadyPaperPage() {
                         <Input
                           id="price"
                           type="text"
-                          value={formatPrice(formData.price)}
+                          value={formData.price}
                           onChange={(e) => handlePriceChange(e.target.value)}
-                          placeholder="0,00"
+                          placeholder="Ex: 99,90"
                           className="pl-10"
                           required
                         />
                       </div>
+                      <p className="text-xs text-muted-foreground">Use vírgula para centavos (ex: 99,90)</p>
                     </div>
                   </div>
                 </CardContent>
@@ -489,8 +523,8 @@ export default function AddReadyPaperPage() {
                 <Button type="button" variant="outline" onClick={handleBack} className='w-full'>
                   Cancelar
                 </Button>
-                <Button type="submit" disabled={loading} className='w-full'>
-                  {loading ? 'Enviando...' : 'Adicionar Trabalho'}
+                <Button type="submit" disabled={loading || createPaper.loading} className='w-full'>
+                  {loading || createPaper.loading ? 'Adicionando...' : 'Adicionar Trabalho'}
                 </Button>
               </div>
             </form>

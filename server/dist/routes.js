@@ -2213,17 +2213,78 @@ async function registerAdminRoutes(app) {
     });
     app.post('/admin/papers', { preHandler: [app.authenticate, app.requireAdmin] }, async (request, reply) => {
         try {
-            const data = createPaperSchema.parse(request.body);
-            const paper = await (0, prisma_1.createPaper)({
-                ...data,
-                paperType: data.paperType.toUpperCase().replace(/-/g, '_'),
-                academicArea: data.academicArea.toUpperCase().replace(/-/g, '_'),
-            });
-            // Invalidate cache if it's a free paper
-            if (data.isFree) {
-                await (0, redis_1.deleteCachePattern)('papers:free:*');
+            // Check if it's multipart/form-data (file upload)
+            const contentType = request.headers['content-type'] || '';
+            if (contentType.includes('multipart/form-data')) {
+                // Handle file upload
+                const parts = request.parts();
+                const fields = {};
+                let fileUrl = '';
+                let thumbnailUrl;
+                let previewUrl;
+                for await (const part of parts) {
+                    if (part.type === 'file') {
+                        // Handle file uploads
+                        if (part.fieldname === 'file') {
+                            const uploaded = await (0, upload_service_1.uploadFile)(part, 'materials');
+                            fileUrl = uploaded.url;
+                        }
+                        else if (part.fieldname === 'thumbnail') {
+                            const uploaded = await (0, upload_service_1.uploadFile)(part, 'thumbnails');
+                            thumbnailUrl = uploaded.url;
+                        }
+                        else if (part.fieldname === 'preview') {
+                            const uploaded = await (0, upload_service_1.uploadFile)(part, 'materials');
+                            previewUrl = uploaded.url;
+                        }
+                    }
+                    else {
+                        // Handle form fields
+                        fields[part.fieldname] = part.value;
+                    }
+                }
+                // Parse keywords if it's a string
+                if (typeof fields.keywords === 'string') {
+                    fields.keywords = fields.keywords;
+                }
+                // Convert isFree string to boolean
+                const isFree = fields.isFree === 'true';
+                // Create paper with uploaded file URLs
+                const paper = await (0, prisma_1.createPaper)({
+                    title: fields.title,
+                    description: fields.description,
+                    paperType: fields.paperType.toUpperCase().replace(/-/g, '_'),
+                    academicArea: fields.academicArea.toUpperCase().replace(/-/g, '_'),
+                    price: parseInt(fields.price, 10),
+                    pageCount: parseInt(fields.pageCount, 10),
+                    authorName: fields.authorName,
+                    language: fields.language || 'pt-BR',
+                    keywords: fields.keywords,
+                    fileUrl,
+                    thumbnailUrl,
+                    previewUrl,
+                    isFree,
+                });
+                // Invalidate cache if it's a free paper
+                if (isFree) {
+                    await (0, redis_1.deleteCachePattern)('papers:free:*');
+                }
+                reply.status(201).send(paper);
             }
-            reply.status(201).send(paper);
+            else {
+                // Handle JSON request (original behavior)
+                const data = createPaperSchema.parse(request.body);
+                const paper = await (0, prisma_1.createPaper)({
+                    ...data,
+                    paperType: data.paperType.toUpperCase().replace(/-/g, '_'),
+                    academicArea: data.academicArea.toUpperCase().replace(/-/g, '_'),
+                });
+                // Invalidate cache if it's a free paper
+                if (data.isFree) {
+                    await (0, redis_1.deleteCachePattern)('papers:free:*');
+                }
+                reply.status(201).send(paper);
+            }
         }
         catch (error) {
             reply.status(400).send({ error: error.message });

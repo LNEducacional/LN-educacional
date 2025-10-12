@@ -5,20 +5,25 @@ export interface OrderItem {
 }
 
 export interface StudentOrder {
-  id: number;
-  userId: number | null;
+  id: string;
+  userId: string | null;
   items: OrderItem[];
   totalAmount: number; // in cents
-  status: 'pending' | 'processing' | 'completed' | 'canceled';
+  status: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'CANCELED';
   paymentMethod: 'PIX' | 'BOLETO' | 'CREDIT_CARD' | 'DEBIT_CARD' | null;
   paymentStatus:
-    | 'pending'
-    | 'processing'
-    | 'paid'
-    | 'confirmed'
-    | 'overdue'
-    | 'refunded'
-    | 'failed'
-    | 'canceled';
-  createdAt: Date;
+    | 'PENDING'
+    | 'PROCESSING'
+    | 'PAID'
+    | 'CONFIRMED'
+    | 'OVERDUE'
+    | 'REFUNDED'
+    | 'FAILED'
+    | 'CANCELED';
+  createdAt: string | Date;
+}
+
+export interface StudentOrdersResponse {
+  orders: StudentOrder[];
+  total: number;
 }

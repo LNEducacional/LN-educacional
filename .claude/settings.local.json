@@ -38,7 +38,10 @@
       "Bash(node -e 'const data = require(\"\"\"\"fs\"\"\"\").readFileSync(0, \"\"\"\"utf-8\"\"\"\"); try { const obj = JSON.parse(data); console.log(\"\"\"\"Total:\"\"\"\", obj.total); console.log(\"\"\"\"Users count:\"\"\"\", obj.users ? obj.users.length : 0); } catch(e) { console.log(\"\"\"\"Response:\"\"\"\", data.substring(0, 200)); }')",
       "Bash(npm install:*)",
       "Bash(npm uninstall:*)",
-      "Bash(pkill:*)"
+      "Bash(pkill:*)",
+      "Bash(PGPASSWORD=c01a29b03f35a043b9246845 psql:*)",
+      "Bash(crontab:*)",
+      "Bash(node -e 'const data = require(\"\"\"\"fs\"\"\"\").readFileSync(0, \"\"\"\"utf-8\"\"\"\"); const obj = JSON.parse(data); console.log(\"\"\"\"Total:\"\"\"\", obj.total); console.log(\"\"\"\"Papers returned:\"\"\"\", obj.papers.length);')"
     ],
     "deny": [],
     "ask": []

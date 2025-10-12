@@ -30,9 +30,17 @@ async function main() {
     },
   });
 
-  // Create sample papers
-  await prisma.paper.create({
-    data: {
+  // Create sample papers (COMMENTED OUT - use seed-data.ts for actual data)
+  /*
+  await prisma.paper.upsert({
+    where: {
+      // Use a composite unique constraint or find first and conditionally create
+      id: (await prisma.paper.findFirst({
+        where: { title: 'Metodologias Ágeis no Desenvolvimento de Software' }
+      }))?.id || 'dummy-id-will-create-new'
+    },
+    update: {},
+    create: {
       title: 'Metodologias Ágeis no Desenvolvimento de Software',
       description:
         'Estudo completo sobre implementação de metodologias ágeis em equipes de desenvolvimento.',
@@ -49,8 +57,14 @@ async function main() {
     },
   });
 
-  await prisma.paper.create({
-    data: {
+  await prisma.paper.upsert({
+    where: {
+      id: (await prisma.paper.findFirst({
+        where: { title: 'Introdução à Psicologia Organizacional' }
+      }))?.id || 'dummy-id-will-create-new-2'
+    },
+    update: {},
+    create: {
       title: 'Introdução à Psicologia Organizacional',
       description: 'Material gratuito sobre conceitos básicos de psicologia organizacional.',
       paperType: 'ESSAY',
@@ -64,10 +78,17 @@ async function main() {
       isFree: true,
     },
   });
+  */
 
-  // Create sample course
-  await prisma.course.create({
-    data: {
+  // Create sample course (using upsert to prevent duplicates)
+  await prisma.course.upsert({
+    where: {
+      id: (await prisma.course.findFirst({
+        where: { title: 'JavaScript Moderno: Do Básico ao Avançado' }
+      }))?.id || 'dummy-id-course'
+    },
+    update: {},
+    create: {
       title: 'JavaScript Moderno: Do Básico ao Avançado',
       description: 'Aprenda JavaScript do zero com projetos práticos e conceitos avançados.',
       academicArea: 'ENGINEERING',
@@ -81,9 +102,15 @@ async function main() {
     },
   });
 
-  // Create sample ebook
-  await prisma.ebook.create({
-    data: {
+  // Create sample ebook (using upsert to prevent duplicates)
+  await prisma.ebook.upsert({
+    where: {
+      id: (await prisma.ebook.findFirst({
+        where: { title: 'Guia Completo de Marketing Digital' }
+      }))?.id || 'dummy-id-ebook'
+    },
+    update: {},
+    create: {
       title: 'Guia Completo de Marketing Digital',
       description: 'Estratégias práticas para dominar o marketing digital em 2024.',
       academicArea: 'ADMINISTRATION',

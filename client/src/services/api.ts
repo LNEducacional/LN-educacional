@@ -3,13 +3,17 @@ import axios from 'axios';
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3333',
   withCredentials: true,
-  headers: {
-    'Content-Type': 'application/json',
-  },
 });
 
 api.interceptors.request.use(
-  (config) => config,
+  (config) => {
+    // Se não é FormData, define Content-Type como JSON
+    if (!(config.data instanceof FormData)) {
+      config.headers['Content-Type'] = 'application/json';
+    }
+    // Se é FormData, deixa o axios definir automaticamente como multipart/form-data
+    return config;
+  },
   (error) => Promise.reject(error)
 );
 

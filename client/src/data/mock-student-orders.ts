@@ -2,8 +2,8 @@ import type { StudentOrder } from '@/types/student-order';
 
 export const mockStudentOrders: StudentOrder[] = [
   {
-    id: 1001,
-    userId: 1,
+    id: 'mock-1001',
+    userId: 'mock-user-1',
     items: [
       {
         title: 'Curso de React Avançado',
@@ -17,14 +17,14 @@ export const mockStudentOrders: StudentOrder[] = [
       },
     ],
     totalAmount: 24800, // R$ 248.00
-    status: 'completed',
+    status: 'COMPLETED',
     paymentMethod: 'PIX',
-    paymentStatus: 'confirmed',
+    paymentStatus: 'CONFIRMED',
     createdAt: new Date(2024, 2, 15, 14, 30),
   },
   {
-    id: 1002,
-    userId: 1,
+    id: 'mock-1002',
+    userId: 'mock-user-1',
     items: [
       {
         title: 'Curso de Python para Data Science',
@@ -33,14 +33,14 @@ export const mockStudentOrders: StudentOrder[] = [
       },
     ],
     totalAmount: 25000,
-    status: 'processing',
+    status: 'PROCESSING',
     paymentMethod: 'CREDIT_CARD',
-    paymentStatus: 'processing',
+    paymentStatus: 'PROCESSING',
     createdAt: new Date(2024, 2, 14, 10, 20),
   },
   {
-    id: 1003,
-    userId: 1,
+    id: 'mock-1003',
+    userId: 'mock-user-1',
     items: [
       {
         title: 'E-book Metodologia Científica',
@@ -49,14 +49,14 @@ export const mockStudentOrders: StudentOrder[] = [
       },
     ],
     totalAmount: 2990,
-    status: 'pending',
+    status: 'PENDING',
     paymentMethod: 'BOLETO',
-    paymentStatus: 'pending',
+    paymentStatus: 'PENDING',
     createdAt: new Date(2024, 2, 13, 16, 45),
   },
   {
-    id: 1004,
-    userId: 1,
+    id: 'mock-1004',
+    userId: 'mock-user-1',
     items: [
       {
         title: 'Template de TCC - Engenharia',
@@ -70,14 +70,14 @@ export const mockStudentOrders: StudentOrder[] = [
       },
     ],
     totalAmount: 2980,
-    status: 'canceled',
+    status: 'CANCELED',
     paymentMethod: 'PIX',
-    paymentStatus: 'canceled',
+    paymentStatus: 'CANCELED',
     createdAt: new Date(2024, 2, 12, 9, 15),
   },
   {
-    id: 1005,
-    userId: 1,
+    id: 'mock-1005',
+    userId: 'mock-user-1',
     items: [
       {
         title: 'Curso de UX/UI Design',
@@ -86,9 +86,9 @@ export const mockStudentOrders: StudentOrder[] = [
       },
     ],
     totalAmount: 29900,
-    status: 'completed',
+    status: 'COMPLETED',
     paymentMethod: 'DEBIT_CARD',
-    paymentStatus: 'confirmed',
+    paymentStatus: 'CONFIRMED',
     createdAt: new Date(2024, 2, 10, 11, 30),
   },
 ];
