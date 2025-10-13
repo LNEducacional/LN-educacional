@@ -790,7 +790,7 @@ async function registerOrderRoutes(app) {
     });
 }
 async function registerStudentRoutes(app) {
-    const { getStudentDashboard, getStudentCourses, getStudentLibrary, getStudentCertificates, generateCertificateQRCode, completeCourse, getStudentProfile, updateStudentProfile, verifyCertificate, } = await Promise.resolve().then(() => __importStar(require('./student')));
+    const { getStudentDashboard, getStudentCourses, getStudentLibrary, getStudentDownloads, getStudentCertificates, generateCertificateQRCode, completeCourse, getStudentProfile, updateStudentProfile, verifyCertificate, } = await Promise.resolve().then(() => __importStar(require('./student')));
     app.get('/student/dashboard', { preHandler: [app.authenticate] }, async (request, reply) => {
         try {
             const dashboard = await getStudentDashboard(request.currentUser.id);
@@ -813,6 +813,15 @@ async function registerStudentRoutes(app) {
         try {
             const library = await getStudentLibrary(request.currentUser.id);
             reply.send({ items: library });
+        }
+        catch (error) {
+            reply.status(400).send({ error: error.message });
+        }
+    });
+    app.get('/student/downloads', { preHandler: [app.authenticate] }, async (request, reply) => {
+        try {
+            const downloads = await getStudentDownloads(request.currentUser.id);
+            reply.send(downloads);
         }
         catch (error) {
             reply.status(400).send({ error: error.message });

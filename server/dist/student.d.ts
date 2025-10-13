@@ -76,6 +76,15 @@ export declare function getStudentLibrary(userId: string): Promise<{
     createdAt: Date;
     details: Record<string, unknown> | null;
 }[]>;
+export declare function getStudentDownloads(userId: string): Promise<{
+    id: string;
+    title: string;
+    type: "EBOOK" | "PDF" | "MATERIAL";
+    size: string;
+    downloadUrl: string;
+    downloadedAt: string;
+    expiresAt: string | undefined;
+}[]>;
 export declare function getStudentCertificates(userId: string): Promise<({
     course: {
         title: string;

@@ -39,6 +39,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getStudentDashboard = getStudentDashboard;
 exports.getStudentCourses = getStudentCourses;
 exports.getStudentLibrary = getStudentLibrary;
+exports.getStudentDownloads = getStudentDownloads;
 exports.getStudentCertificates = getStudentCertificates;
 exports.generateCertificateQRCode = generateCertificateQRCode;
 exports.completeCourse = completeCourse;
@@ -203,6 +204,68 @@ async function getStudentLibrary(userId) {
         };
     }));
     return itemsWithDetails;
+}
+async function getStudentDownloads(userId) {
+    const library = await prisma_1.prisma.library.findMany({
+        where: { userId },
+        orderBy: { createdAt: 'desc' },
+    });
+    const downloads = await Promise.all(library.map(async (item) => {
+        let title = 'Documento';
+        let type = 'MATERIAL';
+        let size = 'N/A';
+        if (item.itemType === 'PAPER') {
+            const paper = await prisma_1.prisma.paper.findUnique({
+                where: { id: item.itemId },
+                select: {
+                    title: true,
+                    pageCount: true,
+                },
+            });
+            if (paper) {
+                title = paper.title;
+                type = 'PDF';
+                size = paper.pageCount ? `${paper.pageCount} páginas` : 'N/A';
+            }
+        }
+        else if (item.itemType === 'EBOOK') {
+            const ebook = await prisma_1.prisma.ebook.findUnique({
+                where: { id: item.itemId },
+                select: {
+                    title: true,
+                    pageCount: true,
+                },
+            });
+            if (ebook) {
+                title = ebook.title;
+                type = 'EBOOK';
+                size = ebook.pageCount ? `${ebook.pageCount} páginas` : 'N/A';
+            }
+        }
+        else if (item.itemType === 'COURSE_MATERIAL') {
+            const course = await prisma_1.prisma.course.findUnique({
+                where: { id: item.itemId },
+                select: {
+                    title: true,
+                },
+            });
+            if (course) {
+                title = course.title;
+                type = 'MATERIAL';
+                size = 'Material do Curso';
+            }
+        }
+        return {
+            id: item.id,
+            title,
+            type,
+            size,
+            downloadUrl: item.downloadUrl,
+            downloadedAt: item.createdAt.toISOString(),
+            expiresAt: item.expiresAt?.toISOString(),
+        };
+    }));
+    return downloads;
 }
 async function getStudentCertificates(userId) {
     const certificates = await prisma_1.prisma.certificate.findMany({

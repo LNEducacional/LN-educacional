@@ -931,6 +931,7 @@ export async function registerStudentRoutes(app: FastifyInstance) {
     getStudentDashboard,
     getStudentCourses,
     getStudentLibrary,
+    getStudentDownloads,
     getStudentCertificates,
     generateCertificateQRCode,
     completeCourse,
@@ -961,6 +962,15 @@ export async function registerStudentRoutes(app: FastifyInstance) {
     try {
       const library = await getStudentLibrary(request.currentUser!.id);
       reply.send({ items: library });
+    } catch (error: unknown) {
+      reply.status(400).send({ error: (error as Error).message });
+    }
+  });
+
+  app.get('/student/downloads', { preHandler: [app.authenticate] }, async (request, reply) => {
+    try {
+      const downloads = await getStudentDownloads(request.currentUser!.id);
+      reply.send(downloads);
     } catch (error: unknown) {
       reply.status(400).send({ error: (error as Error).message });
     }

@@ -1,7 +1,7 @@
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { DateInput } from '@/components/ui/date-input';
 import {
   Form,
   FormControl,
@@ -12,7 +12,6 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
   Select,
   SelectContent,
@@ -24,12 +23,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/context/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { ACADEMIC_AREAS, PAPER_TYPES } from '@/lib/constants';
-import { cn } from '@/lib/utils';
 import { customPapersService } from '@/services/custom-papers.service';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
-import { addDays, format } from 'date-fns';
-import { CalendarIcon, CheckCircle2, Info, Upload, X } from 'lucide-react';
+import { addDays } from 'date-fns';
+import { CheckCircle2, Info, Upload, X } from 'lucide-react';
 import type React from 'react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -100,22 +98,39 @@ export default function CustomPapersPage() {
     mutationFn: (data: RequestFormData) => {
       const payload = {
         ...data,
+        // Converte para UPPERCASE para match com o backend
+        paperType: data.paperType.toUpperCase(),
+        academicArea: data.academicArea.toUpperCase(),
         deadline: data.deadline.toISOString(),
         requirementFiles: uploadedFiles,
       };
+
+      console.log('📤 Enviando solicitação:', payload);
       return customPapersService.createRequest(payload);
     },
-    onSuccess: () => {
+    onSuccess: (response) => {
+      console.log('✅ Solicitação criada com sucesso:', response);
+
       toast({
         title: 'Solicitação enviada!',
         description: 'Sua solicitação foi recebida. Você receberá um orçamento em breve.',
       });
+
       navigate('/student?tab=custom-papers');
     },
-    onError: () => {
+    onError: (error: any) => {
+      console.error('❌ Erro ao enviar solicitação:', error);
+
+      // Extrai mensagem de erro específica
+      const errorMessage =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message ||
+        'Ocorreu um erro ao enviar sua solicitação. Tente novamente mais tarde.';
+
       toast({
         title: 'Erro ao enviar solicitação',
-        description: 'Tente novamente mais tarde.',
+        description: errorMessage,
         variant: 'destructive',
       });
     },
@@ -309,36 +324,17 @@ export default function CustomPapersPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Prazo de Entrega</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant="outline"
-                              className={cn(
-                                'w-full pl-3 text-left font-normal',
-                                !field.value && 'text-muted-foreground'
-                              )}
-                            >
-                              {field.value ? (
-                                format(field.value, 'dd/MM/yyyy')
-                              ) : (
-                                <span>Selecione a data</span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0 border-2 shadow-lg rounded-lg" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            disabled={(date) => date < addDays(new Date(), 1)}
-                            initialFocus
-                            className="rounded-lg"
-                          />
-                        </PopoverContent>
-                      </Popover>
+                      <FormControl>
+                        <DateInput
+                          value={field.value}
+                          onChange={field.onChange}
+                          disabled={(date) => date < addDays(new Date(), 1)}
+                          placeholder="DD/MM/AAAA"
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Digite a data desejada no formato DD/MM/AAAA (mínimo 1 dia no futuro)
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}

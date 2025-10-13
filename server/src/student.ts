@@ -180,6 +180,73 @@ export async function getStudentLibrary(userId: string) {
   return itemsWithDetails;
 }
 
+export async function getStudentDownloads(userId: string) {
+  const library = await prisma.library.findMany({
+    where: { userId },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  const downloads = await Promise.all(
+    library.map(async (item) => {
+      let title = 'Documento';
+      let type: 'PDF' | 'DOC' | 'EBOOK' | 'MATERIAL' = 'MATERIAL';
+      let size = 'N/A';
+
+      if (item.itemType === 'PAPER') {
+        const paper = await prisma.paper.findUnique({
+          where: { id: item.itemId },
+          select: {
+            title: true,
+            pageCount: true,
+          },
+        });
+        if (paper) {
+          title = paper.title;
+          type = 'PDF';
+          size = paper.pageCount ? `${paper.pageCount} páginas` : 'N/A';
+        }
+      } else if (item.itemType === 'EBOOK') {
+        const ebook = await prisma.ebook.findUnique({
+          where: { id: item.itemId },
+          select: {
+            title: true,
+            pageCount: true,
+          },
+        });
+        if (ebook) {
+          title = ebook.title;
+          type = 'EBOOK';
+          size = ebook.pageCount ? `${ebook.pageCount} páginas` : 'N/A';
+        }
+      } else if (item.itemType === 'COURSE_MATERIAL') {
+        const course = await prisma.course.findUnique({
+          where: { id: item.itemId },
+          select: {
+            title: true,
+          },
+        });
+        if (course) {
+          title = course.title;
+          type = 'MATERIAL';
+          size = 'Material do Curso';
+        }
+      }
+
+      return {
+        id: item.id,
+        title,
+        type,
+        size,
+        downloadUrl: item.downloadUrl,
+        downloadedAt: item.createdAt.toISOString(),
+        expiresAt: item.expiresAt?.toISOString(),
+      };
+    })
+  );
+
+  return downloads;
+}
+
 export async function getStudentCertificates(userId: string) {
   const certificates = await prisma.certificate.findMany({
     where: { userId },
