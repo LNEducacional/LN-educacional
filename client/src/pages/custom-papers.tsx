@@ -29,7 +29,7 @@ import { customPapersService } from '@/services/custom-papers.service';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation } from '@tanstack/react-query';
 import { addDays, format } from 'date-fns';
-import { CalendarIcon, CheckCircle2, Info, Upload } from 'lucide-react';
+import { CalendarIcon, CheckCircle2, Info, Upload, X } from 'lucide-react';
 import type React from 'react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -142,6 +142,10 @@ export default function CustomPapersPage() {
     // Simulated upload - replace with actual upload logic
     const fileUrls = files.map((f) => `https://storage.example.com/${f.name}`);
     setUploadedFiles((prev) => [...prev, ...fileUrls]);
+  };
+
+  const removeFile = (indexToRemove: number) => {
+    setUploadedFiles((prev) => prev.filter((_, index) => index !== indexToRemove));
   };
 
   const urgencyPricing = {
@@ -324,13 +328,14 @@ export default function CustomPapersPage() {
                             </Button>
                           </FormControl>
                         </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
+                        <PopoverContent className="w-auto p-0 border-2 shadow-lg rounded-lg" align="start">
                           <Calendar
                             mode="single"
                             selected={field.value}
                             onSelect={field.onChange}
                             disabled={(date) => date < addDays(new Date(), 1)}
                             initialFocus
+                            className="rounded-lg"
                           />
                         </PopoverContent>
                       </Popover>
@@ -444,10 +449,26 @@ export default function CustomPapersPage() {
                   </label>
                   {uploadedFiles.length > 0 && (
                     <div className="mt-4 space-y-2">
+                      <p className="text-sm font-medium text-foreground">Arquivos enviados:</p>
                       {uploadedFiles.map((file, index) => (
-                        <div key={index} className="flex items-center text-sm">
-                          <CheckCircle2 className="h-4 w-4 text-green-500 mr-2" />
-                          <span>{file.split('/').pop()}</span>
+                        <div
+                          key={index}
+                          className="flex items-center justify-between p-2 bg-muted/50 rounded-md group hover:bg-muted transition-colors"
+                        >
+                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                            <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />
+                            <span className="text-sm truncate">{file.split('/').pop()}</span>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeFile(index)}
+                            className="h-7 w-7 p-0 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-destructive/10 hover:text-destructive"
+                          >
+                            <X className="h-4 w-4" />
+                            <span className="sr-only">Remover arquivo</span>
+                          </Button>
                         </div>
                       ))}
                     </div>
