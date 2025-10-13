@@ -59,6 +59,8 @@ const MenuBar = ({ editor }: { editor: Editor | null }) => {
   const [imageUrl, setImageUrl] = useState('');
   const [isLinkOpen, setIsLinkOpen] = useState(false);
   const [isImageOpen, setIsImageOpen] = useState(false);
+  const [isColorOpen, setIsColorOpen] = useState(false);
+  const [customColor, setCustomColor] = useState('#000000');
   const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
 
@@ -364,13 +366,77 @@ const MenuBar = ({ editor }: { editor: Editor | null }) => {
 
       {/* Text Color and Highlight */}
       <div className="flex items-center gap-1">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => editor.chain().focus().setColor('#ff0000').run()}
-        >
-          <Palette className="h-4 w-4" />
-        </Button>
+        <Popover open={isColorOpen} onOpenChange={setIsColorOpen}>
+          <PopoverTrigger asChild>
+            <Button variant="ghost" size="sm">
+              <Palette className="h-4 w-4" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-64">
+            <div className="space-y-3">
+              <Label>Cor do Texto</Label>
+
+              {/* Predefined colors */}
+              <div className="grid grid-cols-8 gap-2">
+                {[
+                  '#000000', '#ffffff', '#ff0000', '#00ff00',
+                  '#0000ff', '#ffff00', '#ff00ff', '#00ffff',
+                  '#800000', '#808080', '#ff8000', '#008000',
+                  '#000080', '#800080', '#008080', '#ffc0cb'
+                ].map((color) => (
+                  <button
+                    key={color}
+                    type="button"
+                    className="w-6 h-6 rounded border-2 border-border hover:scale-110 transition-transform"
+                    style={{ backgroundColor: color }}
+                    onClick={() => {
+                      editor.chain().focus().setColor(color).run();
+                      setIsColorOpen(false);
+                    }}
+                    title={color}
+                  />
+                ))}
+              </div>
+
+              {/* Custom color picker */}
+              <div className="space-y-2">
+                <Label htmlFor="custom-color">Cor Personalizada</Label>
+                <div className="flex gap-2">
+                  <Input
+                    id="custom-color"
+                    type="color"
+                    value={customColor}
+                    onChange={(e) => setCustomColor(e.target.value)}
+                    className="h-10 w-full cursor-pointer"
+                  />
+                  <Button
+                    onClick={() => {
+                      editor.chain().focus().setColor(customColor).run();
+                      setIsColorOpen(false);
+                    }}
+                    size="sm"
+                  >
+                    Aplicar
+                  </Button>
+                </div>
+              </div>
+
+              {/* Remove color */}
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full"
+                onClick={() => {
+                  editor.chain().focus().unsetColor().run();
+                  setIsColorOpen(false);
+                }}
+              >
+                Remover Cor
+              </Button>
+            </div>
+          </PopoverContent>
+        </Popover>
+
         <Toggle
           size="sm"
           pressed={editor.isActive('highlight')}

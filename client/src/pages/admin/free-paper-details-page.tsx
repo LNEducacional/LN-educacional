@@ -113,6 +113,22 @@ export default function FreePaperDetailsPage() {
   };
 
   const handleDownload = (type: 'main' | 'preview') => {
+    if (!paper) return;
+
+    const url = type === 'main' ? paper.fileUrl : paper.previewUrl;
+
+    if (!url) {
+      toast({
+        title: 'Arquivo não disponível',
+        description: `O ${type === 'main' ? 'arquivo principal' : 'preview'} não está disponível para download.`,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Abrir arquivo em nova aba para download
+    window.open(url, '_blank');
+
     toast({
       title: 'Download iniciado',
       description: `O download do ${type === 'main' ? 'arquivo principal' : 'preview'} foi iniciado.`,
@@ -176,7 +192,16 @@ export default function FreePaperDetailsPage() {
                   <p className="text-muted-foreground">Detalhes do trabalho gratuito</p>
                 </div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={handleBack}
+                  variant="ghost"
+                  size="sm"
+                  className="flex items-center gap-2"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Voltar
+                </Button>
                 <Button onClick={handleEdit} className="gap-2">
                   <Edit className="h-4 w-4" />
                   Editar
@@ -310,24 +335,35 @@ export default function FreePaperDetailsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="p-4 border rounded-lg bg-muted/50">
                     <div className="flex items-center justify-between">
-                      <div>
+                      <div className="flex-1">
                         <h4 className="font-medium text-foreground">Arquivo Principal</h4>
-                        <p className="text-sm text-muted-foreground">Documento completo</p>
+                        <p className="text-sm text-muted-foreground">
+                          {paper.fileUrl ? 'Documento completo' : 'Arquivo não disponível'}
+                        </p>
                       </div>
-                      <Button onClick={() => handleDownload('main')} size="sm" className="gap-2">
-                        <Download className="h-4 w-4" />
-                        Baixar Arquivo Principal
-                      </Button>
+                      {paper.fileUrl ? (
+                        <Button onClick={() => handleDownload('main')} size="sm" className="gap-2">
+                          <Download className="h-4 w-4" />
+                          Baixar
+                        </Button>
+                      ) : (
+                        <Button size="sm" disabled variant="outline" className="gap-2">
+                          <Download className="h-4 w-4" />
+                          Indisponível
+                        </Button>
+                      )}
                     </div>
                   </div>
 
-                  {paper.previewUrl && (
-                    <div className="p-4 border rounded-lg bg-muted/50">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h4 className="font-medium text-foreground">Preview</h4>
-                          <p className="text-sm text-muted-foreground">Visualização prévia</p>
-                        </div>
+                  <div className="p-4 border rounded-lg bg-muted/50">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <h4 className="font-medium text-foreground">Preview</h4>
+                        <p className="text-sm text-muted-foreground">
+                          {paper.previewUrl ? 'Visualização prévia' : 'Preview não disponível'}
+                        </p>
+                      </div>
+                      {paper.previewUrl ? (
                         <Button
                           onClick={() => handleDownload('preview')}
                           variant="outline"
@@ -335,12 +371,22 @@ export default function FreePaperDetailsPage() {
                           className="gap-2"
                         >
                           <Eye className="h-4 w-4" />
-                          Visualizar Preview
+                          Ver Preview
                         </Button>
-                      </div>
+                      ) : (
+                        <Button size="sm" disabled variant="outline" className="gap-2">
+                          <Eye className="h-4 w-4" />
+                          Indisponível
+                        </Button>
+                      )}
                     </div>
-                  )}
+                  </div>
                 </div>
+                {!paper.fileUrl && (
+                  <p className="text-sm text-muted-foreground italic">
+                    Os arquivos deste trabalho ainda não foram enviados. Use a opção "Editar" para fazer upload dos arquivos.
+                  </p>
+                )}
               </CardContent>
             </Card>
 

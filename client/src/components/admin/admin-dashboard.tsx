@@ -1,5 +1,4 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
 import {
   Select,
   SelectContent,
@@ -56,23 +55,6 @@ interface AnalyticsData {
   }[];
 }
 
-const _monthlyData = [
-  { month: 'Jan', matriculas: 120, conclusoes: 89 },
-  { month: 'Fev', matriculas: 198, conclusoes: 142 },
-  { month: 'Mar', matriculas: 180, conclusoes: 131 },
-  { month: 'Abr', matriculas: 267, conclusoes: 195 },
-  { month: 'Mai', matriculas: 189, conclusoes: 138 },
-  { month: 'Jun', matriculas: 239, conclusoes: 174 },
-];
-
-const categoryData = [
-  { name: 'Programação', value: 45, count: 68, color: '#1e40af' },
-  { name: 'Design', value: 30, count: 47, color: '#FFD700' },
-  { name: 'Marketing', value: 15, count: 23, color: '#6b7280' },
-  { name: 'Negócios', value: 10, count: 18, color: '#374151' },
-];
-
-const totalCourses = categoryData.reduce((sum, item) => sum + item.count, 0);
 
 const CustomLegend = () => (
   <div className="flex flex-wrap gap-4 justify-center mt-4">
@@ -222,6 +204,7 @@ export function AdminDashboard() {
     : [];
 
   const categoryData = analytics?.categories || [];
+  const totalCourses = categoryData.reduce((sum, item) => sum + (item.count || 0), 0);
 
   if (loading) {
     return (
@@ -389,33 +372,6 @@ export function AdminDashboard() {
           </CardContent>
         </Card>
       </div>
-
-      {/* Progresso dos Cursos */}
-      <Card className="card-hover">
-        <CardHeader>
-          <CardTitle>Top Cursos por Engajamento</CardTitle>
-          <CardDescription>Cursos com maior número de acessos e progresso</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {[
-            { name: 'React do Zero ao Avançado', progress: 89, students: 342 },
-            { name: 'Design UI/UX Completo', progress: 76, students: 298 },
-            { name: 'Marketing Digital', progress: 65, students: 256 },
-            { name: 'Python para Iniciantes', progress: 82, students: 189 },
-          ].map((course, _index) => (
-            <div key={course.name} className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="font-medium">{course.name}</span>
-                <span className="text-muted-foreground">{course.students} alunos</span>
-              </div>
-              <Progress value={course.progress} className="h-2" />
-              <div className="text-xs text-muted-foreground text-right">
-                {course.progress}% de progresso médio
-              </div>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
     </div>
   );
 }

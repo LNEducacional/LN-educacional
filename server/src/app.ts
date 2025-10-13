@@ -4,6 +4,8 @@ import jwt from '@fastify/jwt';
 import multipart from '@fastify/multipart';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import fastify from 'fastify';
+import { promises as fs } from 'fs';
+import path from 'path';
 import { z } from 'zod';
 import { generateTokens, loginUser, registerUser, validateRefreshToken, verifyToken } from './auth';
 import { prisma } from './prisma';
@@ -230,6 +232,39 @@ export function build(opts: { logger?: boolean } = {}) {
       reply.send({ message: 'Password reset successfully' });
     } catch (error: unknown) {
       reply.status(400).send({ error: (error as Error).message });
+    }
+  });
+
+  // Rota para servir arquivos estáticos da pasta uploads
+  app.get('/uploads/*', async (request, reply) => {
+    try {
+      const filePath = request.url.replace('/uploads/', '');
+      const fullPath = path.join(process.cwd(), 'uploads', filePath);
+
+      // Verificar se o arquivo existe
+      await fs.access(fullPath);
+
+      // Determinar o tipo de conteúdo baseado na extensão
+      const ext = path.extname(fullPath).toLowerCase();
+      const contentTypes: Record<string, string> = {
+        '.pdf': 'application/pdf',
+        '.doc': 'application/msword',
+        '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.png': 'image/png',
+        '.gif': 'image/gif',
+        '.webp': 'image/webp',
+        '.mp4': 'video/mp4',
+      };
+
+      const contentType = contentTypes[ext] || 'application/octet-stream';
+
+      // Ler e enviar o arquivo
+      const fileBuffer = await fs.readFile(fullPath);
+      reply.type(contentType).send(fileBuffer);
+    } catch (error) {
+      reply.status(404).send({ error: 'File not found' });
     }
   });
 

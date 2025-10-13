@@ -75,11 +75,11 @@ export declare class EbookValidationError extends Error {
     constructor(message: string, field?: string | undefined);
 }
 /**
- * Validates file extension from URL
+ * Validates file extension from URL or path
  */
 export declare function validateFileExtension(fileUrl: string): void;
 /**
- * Validates cover image extension from URL
+ * Validates cover image extension from URL or path
  */
 export declare function validateCoverImageExtension(coverUrl: string): void;
 /**

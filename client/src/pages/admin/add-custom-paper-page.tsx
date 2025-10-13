@@ -25,16 +25,24 @@ import {
   User,
   AlertCircle,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useQueryClient } from '@tanstack/react-query';
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+}
 
 const AddCustomPaperPage = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState<CustomPaperRequest>({
+  const [users, setUsers] = useState<User[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(true);
+  const [formData, setFormData] = useState<CustomPaperRequest & { userId: string }>({
     title: '',
     description: '',
     paperType: 'article' as PaperType,
@@ -45,12 +53,30 @@ const AddCustomPaperPage = () => {
     requirements: '',
     keywords: '',
     references: '',
+    userId: '',
   });
+
+  // Buscar lista de usuários
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await api.get('/admin/users');
+        setUsers(response.data.users || []);
+      } catch (error) {
+        console.error('Erro ao buscar usuários:', error);
+        toast.error('Erro ao carregar lista de usuários');
+      } finally {
+        setLoadingUsers(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.title || !formData.description || !formData.deadline || !formData.requirements) {
+    if (!formData.title || !formData.description || !formData.deadline || !formData.requirements || !formData.userId) {
       toast.error('Preencha todos os campos obrigatórios');
       return;
     }
@@ -63,7 +89,6 @@ const AddCustomPaperPage = () => {
         ...formData,
         academicArea: formData.academicArea.toUpperCase(),
         paperType: formData.paperType.toUpperCase(),
-        userId: 'admin', // Admin está criando manualmente
       });
 
       // Invalidar cache
@@ -102,6 +127,32 @@ const AddCustomPaperPage = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
+                  {/* Usuário */}
+                  <div className="space-y-2">
+                    <Label htmlFor="userId">
+                      Usuário <span className="text-destructive">*</span>
+                    </Label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
+                      <Select
+                        value={formData.userId}
+                        onValueChange={(value) => setFormData({ ...formData, userId: value })}
+                        disabled={loadingUsers}
+                      >
+                        <SelectTrigger id="userId" className="pl-10">
+                          <SelectValue placeholder={loadingUsers ? "Carregando usuários..." : "Selecione um usuário"} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {users.map((user) => (
+                            <SelectItem key={user.id} value={user.id}>
+                              {user.name} ({user.email})
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
                   {/* Título */}
                   <div className="space-y-2">
                     <Label htmlFor="title">

@@ -130,6 +130,7 @@ export default function AddFreePaperPage() {
       formData.append('pageCount', data.pageCount.toString());
       formData.append('language', data.language);
       formData.append('isFree', 'true');
+      formData.append('price', '0');
 
       if (data.keywords && data.keywords.length > 0) {
         formData.append('keywords', JSON.stringify(data.keywords));

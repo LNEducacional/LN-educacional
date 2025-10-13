@@ -92,7 +92,7 @@ export function AdminFreePapers({ onAddPaper, onEditPaper, onViewPaper }: AdminF
     loading,
     error,
     refetch,
-  } = useApi<{ papers: ReadyPaper[]; total: number }>('/papers?free=true&take=1000', { dependencies: [] });
+  } = useApi<{ papers: ReadyPaper[]; total: number }>('/admin/papers?free=true&take=1000', { dependencies: [] });
   const deletePaper = useApiMutation<void, void>('delete');
 
   const papers = papersResponse?.papers || [];

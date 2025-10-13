@@ -445,13 +445,13 @@ export async function registerProductRoutes(app: FastifyInstance) {
   );
 
   const createEbookSchema = z.object({
-    title: z.string(),
-    description: z.string(),
+    title: z.string().min(3),
+    description: z.string().min(10),
     academicArea: z.string(),
-    authorName: z.string(),
-    price: z.number(),
-    pageCount: z.number(),
-    fileUrl: z.string(),
+    authorName: z.string().min(2),
+    price: z.number().int(),
+    pageCount: z.number().int().min(1),
+    fileUrl: z.string().min(1),
     coverUrl: z.string().optional(),
   });
 
@@ -506,7 +506,10 @@ export async function registerProductRoutes(app: FastifyInstance) {
     { preHandler: [app.authenticate, app.requireAdmin] },
     async (request, reply) => {
       try {
+        console.log('📥 [CREATE EBOOK] Received data:', JSON.stringify(request.body, null, 2));
         const data = createEbookSchema.parse(request.body);
+        console.log('✅ [CREATE EBOOK] Schema validated:', JSON.stringify(data, null, 2));
+
         const ebook = await createEbook({
           ...data,
           academicArea: data.academicArea.toUpperCase().replace(/-/g, '_'),
@@ -518,8 +521,11 @@ export async function registerProductRoutes(app: FastifyInstance) {
 
         reply.status(201).send(ebook);
       } catch (error: unknown) {
+        console.error('❌ [CREATE EBOOK] Error:', error);
+
         // Handle validation errors specifically
         if (error instanceof Error && error.name === 'EbookValidationError') {
+          console.error('❌ [CREATE EBOOK] Validation error:', error.message, 'field:', (error as any).field);
           reply.status(422).send({
             error: error.message,
             field: (error as any).field,
@@ -530,6 +536,7 @@ export async function registerProductRoutes(app: FastifyInstance) {
 
         // Handle Zod validation errors
         if (error instanceof Error && error.name === 'ZodError') {
+          console.error('❌ [CREATE EBOOK] Zod error:', error.message);
           reply.status(400).send({
             error: 'Invalid input data',
             details: error.message,
@@ -601,6 +608,90 @@ export async function registerProductRoutes(app: FastifyInstance) {
         reply.send({ success: true });
       } catch (error: unknown) {
         reply.status(400).send({ error: (error as Error).message });
+      }
+    }
+  );
+
+  // Upload ebook file
+  app.post(
+    '/admin/ebooks/upload-file',
+    { preHandler: [app.authenticate, app.requireAdmin] },
+    async (request, reply) => {
+      try {
+        const data = await request.file();
+
+        if (!data) {
+          return reply.status(400).send({ error: 'No file uploaded' });
+        }
+
+        // Validate file type (PDF, DOC, DOCX)
+        const allowedTypes = [
+          'application/pdf',
+          'application/msword',
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        ];
+        if (!allowedTypes.includes(data.mimetype)) {
+          return reply.status(400).send({
+            error: 'Invalid file type. Only PDF, DOC, and DOCX files are allowed.',
+          });
+        }
+
+        // Validate file size (50MB max)
+        const buffer = await data.toBuffer();
+        if (buffer.length > 50 * 1024 * 1024) {
+          return reply.status(400).send({
+            error: 'File too large. Maximum size is 50MB.',
+          });
+        }
+
+        const uploaded = await uploadFile(data, 'materials');
+        reply.send({
+          url: uploaded.url,
+          size: uploaded.size,
+          mimetype: uploaded.mimetype,
+        });
+      } catch (error: unknown) {
+        reply.status(500).send({ error: (error as Error).message });
+      }
+    }
+  );
+
+  // Upload ebook cover
+  app.post(
+    '/admin/ebooks/upload-cover',
+    { preHandler: [app.authenticate, app.requireAdmin] },
+    async (request, reply) => {
+      try {
+        const data = await request.file();
+
+        if (!data) {
+          return reply.status(400).send({ error: 'No file uploaded' });
+        }
+
+        // Validate file type (images only)
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+        if (!allowedTypes.includes(data.mimetype)) {
+          return reply.status(400).send({
+            error: 'Invalid file type. Only JPG, PNG, and WEBP images are allowed.',
+          });
+        }
+
+        // Validate file size (10MB max for images)
+        const buffer = await data.toBuffer();
+        if (buffer.length > 10 * 1024 * 1024) {
+          return reply.status(400).send({
+            error: 'File too large. Maximum size is 10MB.',
+          });
+        }
+
+        const uploaded = await uploadFile(data, 'materials');
+        reply.send({
+          url: uploaded.url,
+          size: uploaded.size,
+          mimetype: uploaded.mimetype,
+        });
+      } catch (error: unknown) {
+        reply.status(500).send({ error: (error as Error).message });
       }
     }
   );
@@ -2888,23 +2979,84 @@ export async function registerAdminRoutes(app: FastifyInstance) {
     { preHandler: [app.authenticate, app.requireAdmin] },
     async (request, reply) => {
       try {
-        const data = createPaperSchema.partial().parse(request.body);
-
         // Get current paper to check if it was free before update
         const currentPaper = await getPaperById(request.params.id);
 
-        const paper = await updatePaper(request.params.id, {
-          ...data,
-          paperType: data.paperType?.toUpperCase().replace(/-/g, '_'),
-          academicArea: data.academicArea?.toUpperCase().replace(/-/g, '_'),
-        });
+        // Check if it's multipart/form-data (file upload)
+        const contentType = request.headers['content-type'] || '';
 
-        // Invalidate cache if current paper is free or being updated to free
-        if (currentPaper?.isFree || data.isFree) {
-          await deleteCachePattern('papers:free:*');
+        if (contentType.includes('multipart/form-data')) {
+          // Handle file upload
+          const parts = request.parts();
+          const fields: Record<string, any> = {};
+          let fileUrl = currentPaper?.fileUrl;
+          let thumbnailUrl = currentPaper?.thumbnailUrl;
+          let previewUrl = currentPaper?.previewUrl;
+
+          for await (const part of parts) {
+            if (part.type === 'file') {
+              // Handle file uploads - only update if new file provided
+              if (part.fieldname === 'file') {
+                const uploaded = await uploadFile(part, 'materials');
+                fileUrl = uploaded.url;
+              } else if (part.fieldname === 'thumbnail') {
+                const uploaded = await uploadFile(part, 'thumbnails');
+                thumbnailUrl = uploaded.url;
+              } else if (part.fieldname === 'preview') {
+                const uploaded = await uploadFile(part, 'materials');
+                previewUrl = uploaded.url;
+              }
+            } else {
+              // Handle form fields
+              fields[part.fieldname] = part.value;
+            }
+          }
+
+          // Convert isFree string to boolean
+          const isFree = fields.isFree === 'true';
+
+          // Prepare update data - only include fields that were provided
+          const updateData: any = {};
+          if (fields.title) updateData.title = fields.title;
+          if (fields.description) updateData.description = fields.description;
+          if (fields.paperType) updateData.paperType = fields.paperType.toUpperCase().replace(/-/g, '_');
+          if (fields.academicArea) updateData.academicArea = fields.academicArea.toUpperCase().replace(/-/g, '_');
+          if (fields.price) updateData.price = parseInt(fields.price, 10);
+          if (fields.pageCount) updateData.pageCount = parseInt(fields.pageCount, 10);
+          if (fields.authorName) updateData.authorName = fields.authorName;
+          if (fields.language) updateData.language = fields.language;
+          if (fields.keywords !== undefined) updateData.keywords = fields.keywords;
+          if (fields.isFree !== undefined) updateData.isFree = isFree;
+          if (fileUrl) updateData.fileUrl = fileUrl;
+          if (thumbnailUrl) updateData.thumbnailUrl = thumbnailUrl;
+          if (previewUrl) updateData.previewUrl = previewUrl;
+
+          // Update paper
+          const paper = await updatePaper(request.params.id, updateData);
+
+          // Invalidate cache if current paper is free or being updated to free
+          if (currentPaper?.isFree || isFree) {
+            await deleteCachePattern('papers:free:*');
+          }
+
+          reply.send(paper);
+        } else {
+          // Handle JSON request (original behavior)
+          const data = createPaperSchema.partial().parse(request.body);
+
+          const paper = await updatePaper(request.params.id, {
+            ...data,
+            paperType: data.paperType?.toUpperCase().replace(/-/g, '_'),
+            academicArea: data.academicArea?.toUpperCase().replace(/-/g, '_'),
+          });
+
+          // Invalidate cache if current paper is free or being updated to free
+          if (currentPaper?.isFree || data.isFree) {
+            await deleteCachePattern('papers:free:*');
+          }
+
+          reply.send(paper);
         }
-
-        reply.send(paper);
       } catch (error: unknown) {
         reply.status(400).send({ error: (error as Error).message });
       }

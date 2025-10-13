@@ -203,6 +203,32 @@ export function AdminCustomPapersPage() {
     setCurrentPage(1);
   }, [searchTerm, currentTab, selectedUrgency]);
 
+  // Calcular estatísticas dinâmicas
+  const stats = useMemo(() => {
+    if (!data?.items) {
+      return {
+        newRequests: 0,
+        inProgress: 0,
+        urgent: 0,
+        potentialRevenue: 0,
+      };
+    }
+
+    const newRequests = data.items.filter((p) => p.status === 'REQUESTED').length;
+    const inProgress = data.items.filter((p) => p.status === 'IN_PROGRESS').length;
+    const urgent = data.items.filter((p) => p.urgency === 'URGENT' || p.urgency === 'VERY_URGENT').length;
+    const potentialRevenue = data.items
+      .filter((p) => p.status === 'QUOTED' || p.status === 'APPROVED')
+      .reduce((sum, p) => sum + (p.quotedPrice || 0), 0);
+
+    return {
+      newRequests,
+      inProgress,
+      urgent,
+      potentialRevenue,
+    };
+  }, [data?.items]);
+
   const getUrgencyBadgeColor = (urgency: string) => {
     switch (urgency) {
       case 'VERY_URGENT':
@@ -265,7 +291,7 @@ export function AdminCustomPapersPage() {
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">12</div>
+            <div className="text-2xl font-bold">{stats.newRequests}</div>
             <p className="text-xs text-muted-foreground">Aguardando orçamento</p>
           </CardContent>
         </Card>
@@ -276,7 +302,7 @@ export function AdminCustomPapersPage() {
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">8</div>
+            <div className="text-2xl font-bold">{stats.inProgress}</div>
             <p className="text-xs text-muted-foreground">Trabalhos ativos</p>
           </CardContent>
         </Card>
@@ -287,7 +313,7 @@ export function AdminCustomPapersPage() {
             <AlertCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">3</div>
+            <div className="text-2xl font-bold">{stats.urgent}</div>
             <p className="text-xs text-muted-foreground">Prazo &lt; 3 dias</p>
           </CardContent>
         </Card>
@@ -298,7 +324,9 @@ export function AdminCustomPapersPage() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">R$ 4.850</div>
+            <div className="text-2xl font-bold">
+              R$ {(stats.potentialRevenue / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </div>
             <p className="text-xs text-muted-foreground">Orçamentos pendentes</p>
           </CardContent>
         </Card>

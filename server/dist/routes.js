@@ -405,13 +405,13 @@ async function registerProductRoutes(app) {
         }
     });
     const createEbookSchema = zod_1.z.object({
-        title: zod_1.z.string(),
-        description: zod_1.z.string(),
+        title: zod_1.z.string().min(3),
+        description: zod_1.z.string().min(10),
         academicArea: zod_1.z.string(),
-        authorName: zod_1.z.string(),
-        price: zod_1.z.number(),
-        pageCount: zod_1.z.number(),
-        fileUrl: zod_1.z.string(),
+        authorName: zod_1.z.string().min(2),
+        price: zod_1.z.number().int(),
+        pageCount: zod_1.z.number().int().min(1),
+        fileUrl: zod_1.z.string().min(1),
         coverUrl: zod_1.z.string().optional(),
     });
     // Get all ebooks (Admin)
@@ -445,7 +445,9 @@ async function registerProductRoutes(app) {
     });
     app.post('/admin/ebooks', { preHandler: [app.authenticate, app.requireAdmin] }, async (request, reply) => {
         try {
+            console.log('📥 [CREATE EBOOK] Received data:', JSON.stringify(request.body, null, 2));
             const data = createEbookSchema.parse(request.body);
+            console.log('✅ [CREATE EBOOK] Schema validated:', JSON.stringify(data, null, 2));
             const ebook = await (0, prisma_1.createEbook)({
                 ...data,
                 academicArea: data.academicArea.toUpperCase().replace(/-/g, '_'),
@@ -456,8 +458,10 @@ async function registerProductRoutes(app) {
             reply.status(201).send(ebook);
         }
         catch (error) {
+            console.error('❌ [CREATE EBOOK] Error:', error);
             // Handle validation errors specifically
             if (error instanceof Error && error.name === 'EbookValidationError') {
+                console.error('❌ [CREATE EBOOK] Validation error:', error.message, 'field:', error.field);
                 reply.status(422).send({
                     error: error.message,
                     field: error.field,
@@ -467,6 +471,7 @@ async function registerProductRoutes(app) {
             }
             // Handle Zod validation errors
             if (error instanceof Error && error.name === 'ZodError') {
+                console.error('❌ [CREATE EBOOK] Zod error:', error.message);
                 reply.status(400).send({
                     error: 'Invalid input data',
                     details: error.message,
@@ -523,6 +528,74 @@ async function registerProductRoutes(app) {
         }
         catch (error) {
             reply.status(400).send({ error: error.message });
+        }
+    });
+    // Upload ebook file
+    app.post('/admin/ebooks/upload-file', { preHandler: [app.authenticate, app.requireAdmin] }, async (request, reply) => {
+        try {
+            const data = await request.file();
+            if (!data) {
+                return reply.status(400).send({ error: 'No file uploaded' });
+            }
+            // Validate file type (PDF, DOC, DOCX)
+            const allowedTypes = [
+                'application/pdf',
+                'application/msword',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            ];
+            if (!allowedTypes.includes(data.mimetype)) {
+                return reply.status(400).send({
+                    error: 'Invalid file type. Only PDF, DOC, and DOCX files are allowed.',
+                });
+            }
+            // Validate file size (50MB max)
+            const buffer = await data.toBuffer();
+            if (buffer.length > 50 * 1024 * 1024) {
+                return reply.status(400).send({
+                    error: 'File too large. Maximum size is 50MB.',
+                });
+            }
+            const uploaded = await (0, upload_service_1.uploadFile)(data, 'materials');
+            reply.send({
+                url: uploaded.url,
+                size: uploaded.size,
+                mimetype: uploaded.mimetype,
+            });
+        }
+        catch (error) {
+            reply.status(500).send({ error: error.message });
+        }
+    });
+    // Upload ebook cover
+    app.post('/admin/ebooks/upload-cover', { preHandler: [app.authenticate, app.requireAdmin] }, async (request, reply) => {
+        try {
+            const data = await request.file();
+            if (!data) {
+                return reply.status(400).send({ error: 'No file uploaded' });
+            }
+            // Validate file type (images only)
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+            if (!allowedTypes.includes(data.mimetype)) {
+                return reply.status(400).send({
+                    error: 'Invalid file type. Only JPG, PNG, and WEBP images are allowed.',
+                });
+            }
+            // Validate file size (10MB max for images)
+            const buffer = await data.toBuffer();
+            if (buffer.length > 10 * 1024 * 1024) {
+                return reply.status(400).send({
+                    error: 'File too large. Maximum size is 10MB.',
+                });
+            }
+            const uploaded = await (0, upload_service_1.uploadFile)(data, 'materials');
+            reply.send({
+                url: uploaded.url,
+                size: uploaded.size,
+                mimetype: uploaded.mimetype,
+            });
+        }
+        catch (error) {
+            reply.status(500).send({ error: error.message });
         }
     });
     const searchSchema = zod_1.z.object({
@@ -2292,19 +2365,90 @@ async function registerAdminRoutes(app) {
     });
     app.put('/admin/papers/:id', { preHandler: [app.authenticate, app.requireAdmin] }, async (request, reply) => {
         try {
-            const data = createPaperSchema.partial().parse(request.body);
             // Get current paper to check if it was free before update
             const currentPaper = await (0, prisma_1.getPaperById)(request.params.id);
-            const paper = await (0, prisma_1.updatePaper)(request.params.id, {
-                ...data,
-                paperType: data.paperType?.toUpperCase().replace(/-/g, '_'),
-                academicArea: data.academicArea?.toUpperCase().replace(/-/g, '_'),
-            });
-            // Invalidate cache if current paper is free or being updated to free
-            if (currentPaper?.isFree || data.isFree) {
-                await (0, redis_1.deleteCachePattern)('papers:free:*');
+            // Check if it's multipart/form-data (file upload)
+            const contentType = request.headers['content-type'] || '';
+            if (contentType.includes('multipart/form-data')) {
+                // Handle file upload
+                const parts = request.parts();
+                const fields = {};
+                let fileUrl = currentPaper?.fileUrl;
+                let thumbnailUrl = currentPaper?.thumbnailUrl;
+                let previewUrl = currentPaper?.previewUrl;
+                for await (const part of parts) {
+                    if (part.type === 'file') {
+                        // Handle file uploads - only update if new file provided
+                        if (part.fieldname === 'file') {
+                            const uploaded = await (0, upload_service_1.uploadFile)(part, 'materials');
+                            fileUrl = uploaded.url;
+                        }
+                        else if (part.fieldname === 'thumbnail') {
+                            const uploaded = await (0, upload_service_1.uploadFile)(part, 'thumbnails');
+                            thumbnailUrl = uploaded.url;
+                        }
+                        else if (part.fieldname === 'preview') {
+                            const uploaded = await (0, upload_service_1.uploadFile)(part, 'materials');
+                            previewUrl = uploaded.url;
+                        }
+                    }
+                    else {
+                        // Handle form fields
+                        fields[part.fieldname] = part.value;
+                    }
+                }
+                // Convert isFree string to boolean
+                const isFree = fields.isFree === 'true';
+                // Prepare update data - only include fields that were provided
+                const updateData = {};
+                if (fields.title)
+                    updateData.title = fields.title;
+                if (fields.description)
+                    updateData.description = fields.description;
+                if (fields.paperType)
+                    updateData.paperType = fields.paperType.toUpperCase().replace(/-/g, '_');
+                if (fields.academicArea)
+                    updateData.academicArea = fields.academicArea.toUpperCase().replace(/-/g, '_');
+                if (fields.price)
+                    updateData.price = parseInt(fields.price, 10);
+                if (fields.pageCount)
+                    updateData.pageCount = parseInt(fields.pageCount, 10);
+                if (fields.authorName)
+                    updateData.authorName = fields.authorName;
+                if (fields.language)
+                    updateData.language = fields.language;
+                if (fields.keywords !== undefined)
+                    updateData.keywords = fields.keywords;
+                if (fields.isFree !== undefined)
+                    updateData.isFree = isFree;
+                if (fileUrl)
+                    updateData.fileUrl = fileUrl;
+                if (thumbnailUrl)
+                    updateData.thumbnailUrl = thumbnailUrl;
+                if (previewUrl)
+                    updateData.previewUrl = previewUrl;
+                // Update paper
+                const paper = await (0, prisma_1.updatePaper)(request.params.id, updateData);
+                // Invalidate cache if current paper is free or being updated to free
+                if (currentPaper?.isFree || isFree) {
+                    await (0, redis_1.deleteCachePattern)('papers:free:*');
+                }
+                reply.send(paper);
             }
-            reply.send(paper);
+            else {
+                // Handle JSON request (original behavior)
+                const data = createPaperSchema.partial().parse(request.body);
+                const paper = await (0, prisma_1.updatePaper)(request.params.id, {
+                    ...data,
+                    paperType: data.paperType?.toUpperCase().replace(/-/g, '_'),
+                    academicArea: data.academicArea?.toUpperCase().replace(/-/g, '_'),
+                });
+                // Invalidate cache if current paper is free or being updated to free
+                if (currentPaper?.isFree || data.isFree) {
+                    await (0, redis_1.deleteCachePattern)('papers:free:*');
+                }
+                reply.send(paper);
+            }
         }
         catch (error) {
             reply.status(400).send({ error: error.message });

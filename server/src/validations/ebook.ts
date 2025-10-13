@@ -76,8 +76,8 @@ export const createEbookValidationSchema = z.object({
       `Page count must be at most ${EBOOK_VALIDATION_CONSTANTS.MAX_PAGE_COUNT}`
     )
     .int('Page count must be an integer'),
-  fileUrl: z.string().url('File URL must be a valid URL'),
-  coverUrl: z.string().url('Cover URL must be a valid URL').optional().or(z.literal('')),
+  fileUrl: z.string().min(1, 'File URL is required'),
+  coverUrl: z.string().optional().or(z.literal('')),
 });
 
 // Validation schema for ebook update (all fields optional except id)
@@ -95,11 +95,10 @@ export class EbookValidationError extends Error {
 }
 
 /**
- * Validates file extension from URL
+ * Validates file extension from URL or path
  */
 export function validateFileExtension(fileUrl: string): void {
-  const url = new URL(fileUrl);
-  const pathname = url.pathname.toLowerCase();
+  const pathname = fileUrl.toLowerCase();
   const hasValidExtension = EBOOK_VALIDATION_CONSTANTS.ALLOWED_FILE_EXTENSIONS.some((ext) =>
     pathname.endsWith(ext)
   );
@@ -113,13 +112,12 @@ export function validateFileExtension(fileUrl: string): void {
 }
 
 /**
- * Validates cover image extension from URL
+ * Validates cover image extension from URL or path
  */
 export function validateCoverImageExtension(coverUrl: string): void {
   if (!coverUrl) return; // Cover is optional
 
-  const url = new URL(coverUrl);
-  const pathname = url.pathname.toLowerCase();
+  const pathname = coverUrl.toLowerCase();
   const hasValidExtension = EBOOK_VALIDATION_CONSTANTS.ALLOWED_IMAGE_EXTENSIONS.some((ext) =>
     pathname.endsWith(ext)
   );

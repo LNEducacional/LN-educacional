@@ -9,6 +9,8 @@ const cors_1 = __importDefault(require("@fastify/cors"));
 const jwt_1 = __importDefault(require("@fastify/jwt"));
 const multipart_1 = __importDefault(require("@fastify/multipart"));
 const fastify_1 = __importDefault(require("fastify"));
+const fs_1 = require("fs");
+const path_1 = __importDefault(require("path"));
 const zod_1 = require("zod");
 const auth_1 = require("./auth");
 const prisma_1 = require("./prisma");
@@ -203,6 +205,35 @@ function build(opts = {}) {
         }
         catch (error) {
             reply.status(400).send({ error: error.message });
+        }
+    });
+    // Rota para servir arquivos estáticos da pasta uploads
+    app.get('/uploads/*', async (request, reply) => {
+        try {
+            const filePath = request.url.replace('/uploads/', '');
+            const fullPath = path_1.default.join(process.cwd(), 'uploads', filePath);
+            // Verificar se o arquivo existe
+            await fs_1.promises.access(fullPath);
+            // Determinar o tipo de conteúdo baseado na extensão
+            const ext = path_1.default.extname(fullPath).toLowerCase();
+            const contentTypes = {
+                '.pdf': 'application/pdf',
+                '.doc': 'application/msword',
+                '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                '.jpg': 'image/jpeg',
+                '.jpeg': 'image/jpeg',
+                '.png': 'image/png',
+                '.gif': 'image/gif',
+                '.webp': 'image/webp',
+                '.mp4': 'video/mp4',
+            };
+            const contentType = contentTypes[ext] || 'application/octet-stream';
+            // Ler e enviar o arquivo
+            const fileBuffer = await fs_1.promises.readFile(fullPath);
+            reply.type(contentType).send(fileBuffer);
+        }
+        catch (error) {
+            reply.status(404).send({ error: 'File not found' });
         }
     });
     app.register(routes_1.registerAllRoutes);

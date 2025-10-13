@@ -298,6 +298,12 @@ export default function AppRoutes() {
             }
           />
           <Route
+            path="/admin/downloads"
+            element={
+              <LazyWrapper component={AdminAnalyticsDownloads} fallback={<LoadingSpinner />} />
+            }
+          />
+          <Route
             path="/admin/custom-papers"
             element={<LazyWrapper component={AdminCustomPapers} fallback={<LoadingSpinner />} />}
           />

@@ -36,6 +36,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import {
   AlertCircle,
+  ArrowLeft,
   Calendar,
   CheckCircle2,
   Clock,
@@ -198,6 +199,10 @@ export function AdminCustomPaperDetailsPage() {
     navigate(`/admin/custom-papers/edit/${id}`);
   };
 
+  const handleBack = () => {
+    navigate('/admin/custom-papers');
+  };
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
@@ -212,7 +217,16 @@ export function AdminCustomPaperDetailsPage() {
                   <p className="text-muted-foreground">Detalhes do trabalho personalizado</p>
                 </div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={handleBack}
+                  variant="ghost"
+                  size="sm"
+                  className="flex items-center gap-2"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Voltar
+                </Button>
                 <Button onClick={handleEdit} className="gap-2">
                   <Edit className="h-4 w-4" />
                   Editar

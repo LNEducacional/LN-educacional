@@ -4,6 +4,35 @@ import { customPaperQuoteSchema, customPaperService } from '../../services/custo
 import '../../types/fastify';
 
 const adminCustomPapersRoutes: FastifyPluginAsync = async (app) => {
+  // Create custom paper (admin only)
+  app.post(
+    '/admin/custom-papers',
+    { preHandler: [app.authenticate, app.requireAdmin] },
+    async (request, reply) => {
+      const data = request.body as any;
+
+      // Validate required fields
+      if (!data.userId) {
+        return reply.status(400).send({ error: 'userId is required' });
+      }
+
+      const paper = await customPaperService.createRequest(data.userId, {
+        title: data.title,
+        description: data.description,
+        paperType: data.paperType,
+        academicArea: data.academicArea,
+        pageCount: data.pageCount,
+        deadline: data.deadline,
+        urgency: data.urgency || 'NORMAL',
+        requirements: data.requirements,
+        keywords: data.keywords,
+        references: data.references,
+      });
+
+      reply.status(201).send(paper);
+    }
+  );
+
   // Get all requests with filters
   app.get(
     '/admin/custom-papers',

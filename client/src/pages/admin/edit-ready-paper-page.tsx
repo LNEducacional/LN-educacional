@@ -13,11 +13,12 @@ import {
 } from '@/components/ui/select';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { Textarea } from '@/components/ui/textarea';
-import { mockReadyPapers } from '@/data/mock-ready-papers';
+import api from '@/services/api';
 import { toast } from '@/hooks/use-toast';
 import type { AcademicArea, PaperType, ReadyPaper } from '@/types/paper';
 import { formatKeywords } from '@/utils/paper-formatters';
 import {
+  ArrowLeft,
   BookOpen,
   DollarSign,
   FileText,
@@ -34,12 +35,12 @@ import {
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 export default function EditReadyPaperPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const [loading, setLoading] = useState(false);
-  const [paper, setPaper] = useState<ReadyPaper | null>(null);
+  const queryClient = useQueryClient();
   const [keywords, setKeywords] = useState<string[]>([]);
   const [keywordInput, setKeywordInput] = useState('');
   const [activeSection, setActiveSection] = useState<
@@ -60,36 +61,58 @@ export default function EditReadyPaperPage() {
     preview: null as File | null,
   });
 
+  // Buscar paper da API
+  const { data: paper, isLoading, error } = useQuery({
+    queryKey: ['paper', id],
+    queryFn: async () => {
+      const response = await api.get<ReadyPaper>(`/admin/papers/${id}`);
+      return response.data;
+    },
+    enabled: !!id,
+  });
+
+  // Mutation para atualizar paper
+  const updateMutation = useMutation({
+    mutationFn: async (data: FormData) => {
+      await api.put(`/admin/papers/${id}`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['paper', id] });
+      queryClient.invalidateQueries({ queryKey: ['papers'] });
+      toast({
+        title: 'Trabalho atualizado',
+        description: 'As alterações foram salvas com sucesso.',
+      });
+      navigate('/admin/ready-papers');
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Erro ao atualizar',
+        description: error.response?.data?.error || 'Não foi possível salvar as alterações. Tente novamente.',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  // Preencher formulário quando paper carregar
   useEffect(() => {
-    if (id) {
-      // Simular busca do trabalho
-      const foundPaper = mockReadyPapers.find((p) => p.id === Number.parseInt(id, 10));
-      if (foundPaper) {
-        setPaper(foundPaper);
-        setFormData({
-          title: foundPaper.title,
-          authorName: foundPaper.authorName,
-          paperType: foundPaper.paperType,
-          academicArea: foundPaper.academicArea,
-          pageCount: foundPaper.pageCount.toString(),
-          price: (foundPaper.price / 100).toString(),
-          description: foundPaper.description,
-          language: foundPaper.language,
-          file: null,
-          thumbnail: null,
-          preview: null,
-        });
-        setKeywords(formatKeywords(foundPaper.keywords));
-      } else {
-        toast({
-          title: 'Trabalho não encontrado',
-          description: 'O trabalho solicitado não foi encontrado.',
-          variant: 'destructive',
-        });
-        navigate('/admin/ready-papers');
-      }
+    if (paper) {
+      setFormData({
+        title: paper.title,
+        authorName: paper.authorName,
+        paperType: paper.paperType,
+        academicArea: paper.academicArea,
+        pageCount: paper.pageCount.toString(),
+        price: (paper.price / 100).toString(),
+        description: paper.description,
+        language: paper.language,
+        file: null,
+        thumbnail: null,
+        preview: null,
+      });
+      setKeywords(formatKeywords(paper.keywords));
     }
-  }, [id, navigate]);
+  }, [paper]);
 
   const handleSectionChange = (
     section: 'dashboard' | 'courses' | 'users' | 'categories' | 'notifications' | 'settings'
@@ -117,20 +140,12 @@ export default function EditReadyPaperPage() {
   };
 
   const handlePriceChange = (value: string) => {
-    // Remove tudo exceto números e vírgula/ponto
+    // Remove tudo exceto números e vírgula
     const numbersOnly = value.replace(/[^\d,]/g, '');
-    setFormData((prev) => ({ ...prev, price: numbersOnly }));
-  };
-
-  const formatPrice = (value: string): string => {
-    if (!value) return '';
-    // Converte para número e formata
-    const numericValue = parseFloat(value.replace(',', '.'));
-    if (isNaN(numericValue)) return '';
-    return numericValue.toLocaleString('pt-BR', {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    });
+    // Permitir apenas uma vírgula
+    const parts = numbersOnly.split(',');
+    const formattedValue = parts.length > 2 ? `${parts[0]},${parts.slice(1).join('')}` : numbersOnly;
+    setFormData((prev) => ({ ...prev, price: formattedValue }));
   };
 
   const handleFileChange = (field: 'file' | 'thumbnail' | 'preview', file: File | null) => {
@@ -168,29 +183,39 @@ export default function EditReadyPaperPage() {
       return;
     }
 
-    setLoading(true);
+    // Criar FormData
+    const formDataToSend = new FormData();
+    formDataToSend.append('title', formData.title);
+    formDataToSend.append('authorName', formData.authorName);
+    formDataToSend.append('paperType', formData.paperType);
+    formDataToSend.append('academicArea', formData.academicArea);
+    formDataToSend.append('pageCount', formData.pageCount);
 
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+    // Converter preço de reais para centavos
+    const priceInReais = parseFloat(formData.price.replace(',', '.'));
+    const priceInCents = Math.round(priceInReais * 100);
+    formDataToSend.append('price', priceInCents.toString());
 
-      toast({
-        title: 'Trabalho atualizado',
-        description: 'As alterações foram salvas com sucesso.',
-      });
+    formDataToSend.append('description', formData.description);
+    formDataToSend.append('language', formData.language);
+    formDataToSend.append('keywords', keywords.join(','));
+    formDataToSend.append('isFree', 'false');
 
-      navigate('/admin/ready-papers');
-    } catch (_error) {
-      toast({
-        title: 'Erro ao atualizar',
-        description: 'Não foi possível salvar as alterações. Tente novamente.',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
+    // Adicionar arquivos se houver
+    if (formData.file) {
+      formDataToSend.append('file', formData.file);
     }
+    if (formData.thumbnail) {
+      formDataToSend.append('thumbnail', formData.thumbnail);
+    }
+    if (formData.preview) {
+      formDataToSend.append('preview', formData.preview);
+    }
+
+    updateMutation.mutate(formDataToSend);
   };
 
-  if (!paper) {
+  if (isLoading) {
     return (
       <SidebarProvider>
         <div className="min-h-screen flex w-full bg-background">
@@ -198,8 +223,32 @@ export default function EditReadyPaperPage() {
           <main className="flex-1 p-6 overflow-auto">
             <div className="flex items-center justify-center h-full">
               <div className="text-center">
-                <h2 className="text-xl font-semibold text-foreground mb-2">Carregando...</h2>
+                <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
                 <p className="text-muted-foreground">Buscando informações do trabalho</p>
+              </div>
+            </div>
+          </main>
+        </div>
+      </SidebarProvider>
+    );
+  }
+
+  if (error || !paper) {
+    return (
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full bg-background">
+          <AdminSidebar activeSection={activeSection} onSectionChange={handleSectionChange} />
+          <main className="flex-1 p-6 overflow-auto">
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center space-y-4">
+                <FileText className="h-16 w-16 text-muted-foreground mx-auto" />
+                <h2 className="text-xl font-semibold text-foreground">
+                  Trabalho não encontrado
+                </h2>
+                <p className="text-muted-foreground">
+                  O trabalho solicitado não foi encontrado.
+                </p>
+                <Button onClick={handleBack}>Voltar para Lista</Button>
               </div>
             </div>
           </main>
@@ -215,11 +264,20 @@ export default function EditReadyPaperPage() {
         <main className="flex-1 p-6 overflow-auto">
           <div className="animate-fade-in space-y-8">
             {/* Header */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-3xl font-bold tracking-tight">Editar Trabalho Pronto</h1>
                 <p className="text-muted-foreground">Atualize as informações do trabalho</p>
               </div>
+              <Button
+                onClick={handleBack}
+                variant="ghost"
+                size="sm"
+                className="flex items-center gap-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Voltar
+              </Button>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-8">
@@ -432,13 +490,14 @@ export default function EditReadyPaperPage() {
                         <Input
                           id="price"
                           type="text"
-                          value={formatPrice(formData.price)}
+                          value={formData.price}
                           onChange={(e) => handlePriceChange(e.target.value)}
                           placeholder="0,00"
                           className="pl-10"
                           required
                         />
                       </div>
+                      <p className="text-xs text-muted-foreground">Digite o valor em reais (ex: 99,90)</p>
                     </div>
                   </div>
                 </CardContent>
@@ -541,8 +600,8 @@ export default function EditReadyPaperPage() {
 
               {/* Actions */}
               <div className="flex gap-4 pt-6">
-                <Button type="submit" disabled={loading} className='w-full'>
-                  {loading ? (
+                <Button type="submit" disabled={updateMutation.isPending} className='w-full'>
+                  {updateMutation.isPending ? (
                     <>
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                       Salvando...

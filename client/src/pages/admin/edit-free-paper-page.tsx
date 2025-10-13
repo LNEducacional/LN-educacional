@@ -18,6 +18,7 @@ import { toast } from '@/hooks/use-toast';
 import type { AcademicArea, PaperType, ReadyPaper } from '@/types/paper';
 import { formatKeywords } from '@/utils/paper-formatters';
 import {
+  ArrowLeft,
   FileText,
   User,
   BookOpen,
@@ -241,13 +242,22 @@ export default function EditFreePaperPage() {
           <main className="flex-1 p-6 overflow-y-auto">
             <div className="animate-fade-in space-y-8">
               {/* Header */}
-              <div className="flex items-center gap-4">
+              <div className="flex items-center justify-between">
                 <div>
                   <h1 className="text-3xl font-bold tracking-tight">Editar Trabalho Gratuito</h1>
                   <p className="text-muted-foreground">
                     Atualize as informações do trabalho gratuito
                   </p>
                 </div>
+                <Button
+                  onClick={handleBack}
+                  variant="ghost"
+                  size="sm"
+                  className="flex items-center gap-2"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Voltar
+                </Button>
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-8">

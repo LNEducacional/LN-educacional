@@ -53,8 +53,8 @@ exports.createEbookValidationSchema = zod_1.z.object({
         .min(exports.EBOOK_VALIDATION_CONSTANTS.MIN_PAGE_COUNT, `Page count must be at least ${exports.EBOOK_VALIDATION_CONSTANTS.MIN_PAGE_COUNT}`)
         .max(exports.EBOOK_VALIDATION_CONSTANTS.MAX_PAGE_COUNT, `Page count must be at most ${exports.EBOOK_VALIDATION_CONSTANTS.MAX_PAGE_COUNT}`)
         .int('Page count must be an integer'),
-    fileUrl: zod_1.z.string().url('File URL must be a valid URL'),
-    coverUrl: zod_1.z.string().url('Cover URL must be a valid URL').optional().or(zod_1.z.literal('')),
+    fileUrl: zod_1.z.string().min(1, 'File URL is required'),
+    coverUrl: zod_1.z.string().optional().or(zod_1.z.literal('')),
 });
 // Validation schema for ebook update (all fields optional except id)
 exports.updateEbookValidationSchema = exports.createEbookValidationSchema.partial();
@@ -69,24 +69,22 @@ class EbookValidationError extends Error {
 }
 exports.EbookValidationError = EbookValidationError;
 /**
- * Validates file extension from URL
+ * Validates file extension from URL or path
  */
 function validateFileExtension(fileUrl) {
-    const url = new URL(fileUrl);
-    const pathname = url.pathname.toLowerCase();
+    const pathname = fileUrl.toLowerCase();
     const hasValidExtension = exports.EBOOK_VALIDATION_CONSTANTS.ALLOWED_FILE_EXTENSIONS.some((ext) => pathname.endsWith(ext));
     if (!hasValidExtension) {
         throw new EbookValidationError(`File extension not allowed. Allowed extensions: ${exports.EBOOK_VALIDATION_CONSTANTS.ALLOWED_FILE_EXTENSIONS.join(', ')}`, 'fileUrl');
     }
 }
 /**
- * Validates cover image extension from URL
+ * Validates cover image extension from URL or path
  */
 function validateCoverImageExtension(coverUrl) {
     if (!coverUrl)
         return; // Cover is optional
-    const url = new URL(coverUrl);
-    const pathname = url.pathname.toLowerCase();
+    const pathname = coverUrl.toLowerCase();
     const hasValidExtension = exports.EBOOK_VALIDATION_CONSTANTS.ALLOWED_IMAGE_EXTENSIONS.some((ext) => pathname.endsWith(ext));
     if (!hasValidExtension) {
         throw new EbookValidationError(`Cover image extension not allowed. Allowed extensions: ${exports.EBOOK_VALIDATION_CONSTANTS.ALLOWED_IMAGE_EXTENSIONS.join(', ')}`, 'coverUrl');

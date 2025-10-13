@@ -17,6 +17,8 @@ import { useQuery } from '@tanstack/react-query';
 import { format, subDays } from 'date-fns';
 import { CalendarDays, Download, FileText, Loader2, TrendingUp, Users } from 'lucide-react';
 import { useState } from 'react';
+import { AdminSidebar } from '@/components/admin/admin-sidebar';
+import { SidebarProvider } from '@/components/ui/sidebar';
 import {
   Area,
   AreaChart,
@@ -208,22 +210,46 @@ export default function AnalyticsDownloads() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[600px]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full bg-background">
+          <AdminSidebar />
+          <div className="flex-1 flex flex-col min-w-0">
+            <main className="flex-1 p-6 overflow-y-auto overflow-x-hidden">
+              <div className="flex items-center justify-center min-h-[600px]">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            </main>
+          </div>
+        </div>
+      </SidebarProvider>
     );
   }
 
   if (error || !analytics) {
     return (
-      <div className="text-center py-12">
-        <p className="text-destructive">Erro ao carregar analytics de downloads</p>
-      </div>
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full bg-background">
+          <AdminSidebar />
+          <div className="flex-1 flex flex-col min-w-0">
+            <main className="flex-1 p-6 overflow-y-auto overflow-x-hidden">
+              <div className="text-center py-12">
+                <p className="text-destructive">Erro ao carregar analytics de downloads</p>
+              </div>
+            </main>
+          </div>
+        </div>
+      </SidebarProvider>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-background">
+        <AdminSidebar />
+
+        <div className="flex-1 flex flex-col min-w-0">
+          <main className="flex-1 p-6 overflow-y-auto overflow-x-hidden">
+            <div className="animate-fade-in space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -553,6 +579,10 @@ export default function AnalyticsDownloads() {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+            </div>
+          </main>
+        </div>
+      </div>
+    </SidebarProvider>
   );
 }

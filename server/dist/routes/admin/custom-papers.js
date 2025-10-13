@@ -4,6 +4,27 @@ const prisma_1 = require("../../prisma");
 const custom_paper_service_1 = require("../../services/custom-paper.service");
 require("../../types/fastify");
 const adminCustomPapersRoutes = async (app) => {
+    // Create custom paper (admin only)
+    app.post('/admin/custom-papers', { preHandler: [app.authenticate, app.requireAdmin] }, async (request, reply) => {
+        const data = request.body;
+        // Validate required fields
+        if (!data.userId) {
+            return reply.status(400).send({ error: 'userId is required' });
+        }
+        const paper = await custom_paper_service_1.customPaperService.createRequest(data.userId, {
+            title: data.title,
+            description: data.description,
+            paperType: data.paperType,
+            academicArea: data.academicArea,
+            pageCount: data.pageCount,
+            deadline: data.deadline,
+            urgency: data.urgency || 'NORMAL',
+            requirements: data.requirements,
+            keywords: data.keywords,
+            references: data.references,
+        });
+        reply.status(201).send(paper);
+    });
     // Get all requests with filters
     app.get('/admin/custom-papers', { preHandler: [app.authenticate, app.requireAdmin] }, async (request, reply) => {
         const query = request.query;

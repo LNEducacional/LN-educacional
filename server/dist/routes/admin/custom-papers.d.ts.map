@@ -1,1 +1,1 @@
-{"version":3,"file":"custom-papers.d.ts","sourceRoot":"","sources":["../../../src/routes/admin/custom-papers.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,kBAAkB,EAAE,MAAM,SAAS,CAAC;AAGlD,OAAO,qBAAqB,CAAC;AAE7B,QAAA,MAAM,uBAAuB,EAAE,kBAyK9B,CAAC;AAEF,eAAe,uBAAuB,CAAC"}
+{"version":3,"file":"custom-papers.d.ts","sourceRoot":"","sources":["../../../src/routes/admin/custom-papers.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,kBAAkB,EAAE,MAAM,SAAS,CAAC;AAGlD,OAAO,qBAAqB,CAAC;AAE7B,QAAA,MAAM,uBAAuB,EAAE,kBAsM9B,CAAC;AAEF,eAAe,uBAAuB,CAAC"}
