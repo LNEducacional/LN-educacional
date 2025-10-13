@@ -33,6 +33,7 @@ import {
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { IMaskInput } from 'react-imask';
+import api from '@/services/api';
 
 interface ProfileData {
   name: string;
@@ -78,6 +79,16 @@ const brazilianStates = [
   { value: 'TO', label: 'Tocantins' },
 ];
 
+// Helper para converter URL relativa em absoluta
+const getFullImageUrl = (url?: string): string | undefined => {
+  if (!url) return undefined;
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3333';
+  return `${apiUrl}${url}`;
+};
+
 export function StudentProfile() {
   const { toast } = useToast();
   const { user } = useAuth();
@@ -88,6 +99,8 @@ export function StudentProfile() {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [loadingCep, setLoadingCep] = useState(false);
 
   const [profileData, setProfileData] = useState<ProfileData>({
     name: '',
@@ -95,6 +108,7 @@ export function StudentProfile() {
     phone: '',
     birthDate: '',
     profession: '',
+    profileImageUrl: '',
     address: '',
     city: '',
     state: '',
@@ -110,6 +124,7 @@ export function StudentProfile() {
         phone: profile.phone || '',
         birthDate: profile.birthDate || '',
         profession: profile.profession || '',
+        profileImageUrl: profile.profileImageUrl || '',
         address: profile.address || '',
         city: profile.city || '',
         state: profile.state || '',
@@ -123,6 +138,7 @@ export function StudentProfile() {
         phone: '',
         birthDate: '',
         profession: '',
+        profileImageUrl: '',
         address: '',
         city: '',
         state: '',
@@ -137,6 +153,78 @@ export function StudentProfile() {
     newPassword: '',
     confirmPassword: '',
   });
+
+  const handleImageUpload = async (file: File) => {
+    setUploadingImage(true);
+    try {
+      const formData = new FormData();
+      formData.append('avatar', file);
+
+      const response = await api.post('/student/profile/avatar', formData);
+
+      // Atualizar a URL da imagem no estado
+      setProfileData(prev => ({ ...prev, profileImageUrl: response.data.url }));
+      setImagePreview(null); // Limpar preview local
+
+      toast({
+        title: 'Foto atualizada',
+        description: 'Sua foto de perfil foi atualizada com sucesso.',
+      });
+    } catch (error: unknown) {
+      toast({
+        title: 'Erro ao enviar foto',
+        description: error instanceof Error ? error.message : 'Não foi possível fazer upload da imagem.',
+        variant: 'destructive',
+      });
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const handleZipCodeChange = async (value: string) => {
+    setProfileData({ ...profileData, zipCode: value });
+
+    // Remover máscara e verificar se tem 8 dígitos
+    const cleanZipCode = value.replace(/\D/g, '');
+
+    if (cleanZipCode.length === 8) {
+      setLoadingCep(true);
+      try {
+        const response = await fetch(`https://viacep.com.br/ws/${cleanZipCode}/json/`);
+        const data = await response.json();
+
+        if (data.erro) {
+          toast({
+            title: 'CEP não encontrado',
+            description: 'Não foi possível encontrar o endereço para este CEP.',
+            variant: 'destructive',
+          });
+          return;
+        }
+
+        // Preencher campos automaticamente
+        setProfileData(prev => ({
+          ...prev,
+          address: data.logradouro || prev.address,
+          city: data.localidade || prev.city,
+          state: data.uf || prev.state,
+        }));
+
+        toast({
+          title: 'Endereço encontrado',
+          description: 'Os campos foram preenchidos automaticamente.',
+        });
+      } catch (error) {
+        toast({
+          title: 'Erro ao buscar CEP',
+          description: 'Não foi possível consultar o CEP. Tente novamente.',
+          variant: 'destructive',
+        });
+      } finally {
+        setLoadingCep(false);
+      }
+    }
+  };
 
   const handleProfileSave = async () => {
     try {
@@ -162,10 +250,8 @@ export function StudentProfile() {
       }
 
       // Atualizar perfil
+      // A imagem já foi salva via upload separado, não precisa enviar novamente
       const dataToUpdate = { ...profileData };
-      if (imagePreview) {
-        dataToUpdate.profileImageUrl = imagePreview;
-      }
 
       await updateProfileMutation('/student/profile', dataToUpdate);
 
@@ -210,6 +296,7 @@ export function StudentProfile() {
         phone: profile.phone || '',
         birthDate: profile.birthDate || '',
         profession: profile.profession || '',
+        profileImageUrl: profile.profileImageUrl || '',
         address: profile.address || '',
         city: profile.city || '',
         state: profile.state || '',
@@ -223,6 +310,7 @@ export function StudentProfile() {
         phone: '',
         birthDate: '',
         profession: '',
+        profileImageUrl: '',
         address: '',
         city: '',
         state: '',
@@ -243,14 +331,38 @@ export function StudentProfile() {
   };
 
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Validar tamanho (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: 'Arquivo muito grande',
+          description: 'A imagem deve ter no máximo 5MB.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      // Validar tipo
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: 'Formato inválido',
+          description: 'Por favor, selecione uma imagem.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      // Mostrar preview local
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result as string);
       };
       reader.readAsDataURL(file);
+
+      // Fazer upload imediatamente
+      await handleImageUpload(file);
     }
   };
 
@@ -283,32 +395,23 @@ export function StudentProfile() {
             <CardContent className="space-y-6">
               {/* Avatar Section */}
               <div className="flex items-center gap-6">
-                <div className="relative">
-                  <Avatar className="h-24 w-24 border-4 border-primary/20">
-                    <AvatarImage
-                      src={imagePreview || profileData.profileImageUrl || undefined}
-                      alt={profileData.name}
-                    />
-                    <AvatarFallback className="text-2xl font-bold bg-gradient-to-br from-primary/20 to-primary/10 text-primary">
-                      {profileData.name
-                        ?.split(' ')
-                        .map((n) => n[0])
-                        .join('')
-                        .slice(0, 2)
-                        .toUpperCase() || <User className="h-12 w-12" />}
-                    </AvatarFallback>
-                  </Avatar>
-                  <label htmlFor="avatar-upload">
-                    <Button
-                      size="icon"
-                      className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full"
-                      asChild
-                    >
-                      <span>
-                        <Camera className="h-4 w-4" />
-                      </span>
-                    </Button>
-                  </label>
+                <Avatar className="h-24 w-24 border-4 border-primary/20">
+                  <AvatarImage
+                    src={imagePreview || getFullImageUrl(profileData.profileImageUrl) || undefined}
+                    alt={profileData.name}
+                  />
+                  <AvatarFallback className="text-2xl font-bold bg-gradient-to-br from-primary/20 to-primary/10 text-primary">
+                    {profileData.name
+                      ?.split(' ')
+                      .map((n) => n[0])
+                      .join('')
+                      .slice(0, 2)
+                      .toUpperCase() || <User className="h-12 w-12" />}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="space-y-2">
+                  <h3 className="text-lg font-semibold">{profileData.name}</h3>
+                  <p className="text-muted-foreground">{profileData.profession}</p>
                   <input
                     id="avatar-upload"
                     type="file"
@@ -316,13 +419,23 @@ export function StudentProfile() {
                     onChange={handleImageChange}
                     className="hidden"
                   />
-                </div>
-                <div className="space-y-2">
-                  <h3 className="text-lg font-semibold">{profileData.name}</h3>
-                  <p className="text-muted-foreground">{profileData.profession}</p>
-                  <Button variant="outline" size="sm">
-                    <Camera className="h-4 w-4 mr-2" />
-                    Alterar Foto
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={uploadingImage}
+                    onClick={() => document.getElementById('avatar-upload')?.click()}
+                  >
+                    {uploadingImage ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Enviando...
+                      </>
+                    ) : (
+                      <>
+                        <Camera className="h-4 w-4 mr-2" />
+                        Alterar Foto
+                      </>
+                    )}
                   </Button>
                 </div>
               </div>
@@ -410,10 +523,16 @@ export function StudentProfile() {
                       mask="00000-000"
                       value={profileData.zipCode}
                       unmask={false}
-                      onAccept={(value) => setProfileData({ ...profileData, zipCode: value })}
+                      onAccept={(value) => handleZipCodeChange(value)}
                       placeholder="00000-000"
                       className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 pl-10"
+                      disabled={loadingCep}
                     />
+                    {loadingCep && (
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

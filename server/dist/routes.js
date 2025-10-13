@@ -895,6 +895,15 @@ async function registerStudentRoutes(app) {
         .object({
         name: zod_1.z.string().min(2).optional(),
         email: zod_1.z.string().email().optional(),
+        phone: zod_1.z.string().optional(),
+        birthDate: zod_1.z.string().optional(),
+        profession: zod_1.z.string().optional(),
+        profileImageUrl: zod_1.z.string().optional(),
+        address: zod_1.z.string().optional(),
+        city: zod_1.z.string().optional(),
+        state: zod_1.z.string().optional(),
+        zipCode: zod_1.z.string().optional(),
+        country: zod_1.z.string().optional(),
         currentPassword: zod_1.z.string().optional(),
         newPassword: zod_1.z.string().min(8).optional(),
     })
@@ -911,6 +920,35 @@ async function registerStudentRoutes(app) {
             const data = updateProfileSchema.parse(request.body);
             const profile = await updateStudentProfile(request.currentUser.id, data);
             reply.send(profile);
+        }
+        catch (error) {
+            reply.status(400).send({ error: error.message });
+        }
+    });
+    app.post('/student/profile/avatar', { preHandler: [app.authenticate] }, async (request, reply) => {
+        try {
+            const { uploadFile } = await Promise.resolve().then(() => __importStar(require('./services/upload.service')));
+            const data = await request.file();
+            if (!data) {
+                return reply.status(400).send({ error: 'No file uploaded' });
+            }
+            // Validate file type (only images)
+            if (!data.mimetype.startsWith('image/')) {
+                return reply.status(400).send({ error: 'Only image files are allowed' });
+            }
+            // Validate file size (max 5MB)
+            const maxSize = 5 * 1024 * 1024;
+            const buffer = await data.toBuffer();
+            if (buffer.length > maxSize) {
+                return reply.status(400).send({ error: 'File size exceeds 5MB limit' });
+            }
+            // Upload file
+            const result = await uploadFile(data, 'avatars');
+            // Update user profile with new avatar URL
+            await updateStudentProfile(request.currentUser.id, {
+                profileImageUrl: result.url,
+            });
+            reply.send({ url: result.url });
         }
         catch (error) {
             reply.status(400).send({ error: error.message });

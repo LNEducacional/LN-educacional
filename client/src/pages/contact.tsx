@@ -1,6 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useState } from 'react';
-import ReCAPTCHA from 'react-google-recaptcha';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -39,7 +38,6 @@ const contactSchema = z.object({
   subject: z.string().min(3, 'Assunto deve ter pelo menos 3 caracteres'),
   message: z.string().min(10, 'Mensagem deve ter pelo menos 10 caracteres'),
   acceptTerms: z.boolean().refine(val => val === true, 'Você deve aceitar os termos de serviço'),
-  captchaToken: z.string().min(1, 'Por favor, complete a verificação captcha'),
 });
 
 type ContactFormData = z.infer<typeof contactSchema>;
@@ -64,7 +62,6 @@ const FAQ_ITEMS = [
 export default function Contact() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState('contact');
-  const [captchaRef, setCaptchaRef] = useState<ReCAPTCHA | null>(null);
   const { toast } = useToast();
 
   const {
@@ -78,7 +75,6 @@ export default function Contact() {
     resolver: zodResolver(contactSchema),
     defaultValues: {
       acceptTerms: false,
-      captchaToken: '',
     },
   });
 
@@ -100,10 +96,6 @@ export default function Contact() {
     setValue('phone', formattedPhoneNumber);
   };
 
-  const onCaptchaChange = (token: string | null) => {
-    setValue('captchaToken', token || '');
-  };
-
   const onSubmit = async (data: ContactFormData) => {
     setIsSubmitting(true);
 
@@ -122,7 +114,6 @@ export default function Contact() {
       });
 
       reset();
-      captchaRef?.reset();
     } catch (error: unknown) {
       toast({
         title: 'Erro ao enviar mensagem',
@@ -283,19 +274,6 @@ export default function Contact() {
                       {errors.acceptTerms && (
                         <p className="text-sm text-destructive">{errors.acceptTerms.message}</p>
                       )}
-
-                      {/* reCAPTCHA */}
-                      <div className="space-y-2">
-                        <ReCAPTCHA
-                          ref={(ref) => setCaptchaRef(ref)}
-                          sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY || '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI'}
-                          onChange={onCaptchaChange}
-                          className={errors.captchaToken ? 'border border-destructive rounded' : ''}
-                        />
-                        {errors.captchaToken && (
-                          <p className="text-sm text-destructive">{errors.captchaToken.message}</p>
-                        )}
-                      </div>
 
                       {/* Submit Button */}
                       <Button

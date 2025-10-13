@@ -6,7 +6,7 @@ interface UploadResult {
     mimetype: string;
 }
 export declare const uploadConfig: FastifyMultipartOptions;
-export declare function uploadFile(file: any, folder: 'thumbnails' | 'videos' | 'materials' | 'blog-images' | 'collaborator-docs'): Promise<UploadResult>;
+export declare function uploadFile(file: any, folder: 'thumbnails' | 'videos' | 'materials' | 'blog-images' | 'collaborator-docs' | 'avatars'): Promise<UploadResult>;
 export declare function deleteFile(filePath: string): Promise<void>;
 export declare function validateCollaboratorDocument(file: any): {
     valid: boolean;

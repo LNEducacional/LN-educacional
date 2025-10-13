@@ -116,6 +116,15 @@ export declare function completeCourse(userId: string, courseId: string, grade: 
         verified: boolean;
         resetToken: string | null;
         resetTokenExpiry: Date | null;
+        phone: string | null;
+        birthDate: string | null;
+        profession: string | null;
+        profileImageUrl: string | null;
+        address: string | null;
+        city: string | null;
+        state: string | null;
+        zipCode: string | null;
+        country: string | null;
     };
     course: {
         title: string;
@@ -159,10 +168,28 @@ export declare function getStudentProfile(userId: string): Promise<{
     email: string;
     role: import(".prisma/client").$Enums.UserRole;
     verified: boolean;
+    phone: string | null;
+    birthDate: string | null;
+    profession: string | null;
+    profileImageUrl: string | null;
+    address: string | null;
+    city: string | null;
+    state: string | null;
+    zipCode: string | null;
+    country: string | null;
 }>;
 export declare function updateStudentProfile(userId: string, data: {
     name?: string;
     email?: string;
+    phone?: string;
+    birthDate?: string;
+    profession?: string;
+    profileImageUrl?: string;
+    address?: string;
+    city?: string;
+    state?: string;
+    zipCode?: string;
+    country?: string;
     currentPassword?: string;
     newPassword?: string;
 }): Promise<{
@@ -171,6 +198,15 @@ export declare function updateStudentProfile(userId: string, data: {
     email: string;
     role: import(".prisma/client").$Enums.UserRole;
     verified: boolean;
+    phone: string | null;
+    birthDate: string | null;
+    profession: string | null;
+    profileImageUrl: string | null;
+    address: string | null;
+    city: string | null;
+    state: string | null;
+    zipCode: string | null;
+    country: string | null;
 }>;
 export declare function verifyCertificate(certificateNumber: string): Promise<{
     valid: boolean;

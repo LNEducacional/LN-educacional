@@ -298,7 +298,7 @@ export function StudentOrders() {
                 Explore nossos produtos e faça seu primeiro pedido.
               </p>
             </div>
-            <Button onClick={() => navigate('/')} className="mt-4 gap-2">
+            <Button onClick={() => navigate('/ready-papers')} className="mt-4 gap-2">
               <ShoppingBag className="h-4 w-4" />
               Explorar Produtos
             </Button>

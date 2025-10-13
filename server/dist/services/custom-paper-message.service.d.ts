@@ -22,6 +22,15 @@ export declare const customPaperMessageService: {
             verified: boolean;
             resetToken: string | null;
             resetTokenExpiry: Date | null;
+            phone: string | null;
+            birthDate: string | null;
+            profession: string | null;
+            profileImageUrl: string | null;
+            address: string | null;
+            city: string | null;
+            state: string | null;
+            zipCode: string | null;
+            country: string | null;
         };
     } & {
         id: string;
@@ -45,6 +54,15 @@ export declare const customPaperMessageService: {
             verified: boolean;
             resetToken: string | null;
             resetTokenExpiry: Date | null;
+            phone: string | null;
+            birthDate: string | null;
+            profession: string | null;
+            profileImageUrl: string | null;
+            address: string | null;
+            city: string | null;
+            state: string | null;
+            zipCode: string | null;
+            country: string | null;
         };
     } & {
         id: string;

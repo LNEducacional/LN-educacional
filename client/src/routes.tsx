@@ -425,7 +425,7 @@ export default function AppRoutes() {
           }
         />
         <Route
-          path="/blog/:id"
+          path="/blog/:slug"
           element={
             <MainLayout>
               <LazyWrapper component={BlogPostPage} fallback={<LoadingSpinner />} />

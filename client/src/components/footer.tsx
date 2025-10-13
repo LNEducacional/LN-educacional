@@ -1,58 +1,26 @@
 import {
-  Facebook,
   Instagram,
-  Linkedin,
   Mail,
-  MapPin,
   Phone,
-  Twitter,
+  Youtube,
 } from 'lucide-react';
-
-const footerSections = [
-  {
-    title: 'Empresa',
-    links: [
-      { name: 'Sobre nós', href: '#' },
-      { name: 'Nossa missão', href: '#' },
-      { name: 'Carreiras', href: '#' },
-      { name: 'Imprensa', href: '#' },
-    ],
-  },
-  {
-    title: 'Cursos',
-    links: [
-      { name: 'Programação', href: '#' },
-      { name: 'Design', href: '#' },
-      { name: 'Marketing', href: '#' },
-      { name: 'Negócios', href: '#' },
-    ],
-  },
-  {
-    title: 'Suporte',
-    links: [
-      { name: 'Central de ajuda', href: '#' },
-      { name: 'Contato', href: '#' },
-      { name: 'Status do sistema', href: '#' },
-      { name: 'Relatório de bugs', href: '#' },
-    ],
-  },
-  {
-    title: 'Legal',
-    links: [
-      { name: 'Termos de uso', href: '#' },
-      { name: 'Política de privacidade', href: '#' },
-      { name: 'Cookies', href: '#' },
-      { name: 'Reembolso', href: '#' },
-    ],
-  },
-];
+import { useState } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 export function Footer() {
+  const [showTermsModal, setShowTermsModal] = useState(false);
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
   return (
     <footer className="bg-card border-t border-border">
       <div className="container mx-auto px-4 py-16">
         {/* Main Footer Content */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-6 gap-8 mb-12">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
           {/* Company Info */}
           <div className="lg:col-span-2 space-y-6">
             <div className="flex items-center gap-2">
@@ -73,69 +41,73 @@ export function Footer() {
             <div className="space-y-3">
               <div className="flex items-center gap-3 text-xs sm:text-sm text-muted-foreground">
                 <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
-                <span className="break-all">contato@lneducacional.com.br</span>
+                <a
+                  href="mailto:trabalhos.academicos.assessoria2@gmail.com"
+                  className="break-all hover:text-primary transition-colors"
+                >
+                  trabalhos.academicos.assessoria2@gmail.com
+                </a>
               </div>
               <div className="flex items-center gap-3 text-xs sm:text-sm text-muted-foreground">
                 <Phone className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
-                <span>(11) 9999-9999</span>
-              </div>
-              <div className="flex items-center gap-3 text-xs sm:text-sm text-muted-foreground">
-                <MapPin className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
-                <span>São Paulo, SP - Brasil</span>
+                <a
+                  href="https://wa.me/5594984211357"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-primary transition-colors"
+                >
+                  (94) 98421-1357
+                </a>
               </div>
             </div>
 
             {/* Social Links */}
             <div className="flex items-center gap-3 sm:gap-4">
-              <button
-                type="button"
+              <a
+                href="https://www.youtube.com/channel/UCfCtiGQBz-L_FY3vY1dOjCQ"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-9 h-9 sm:w-10 sm:h-10 bg-secondary rounded-lg flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors"
-                aria-label="Facebook"
+                aria-label="YouTube"
               >
-                <Facebook className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              </button>
-              <button
-                type="button"
-                className="w-9 h-9 sm:w-10 sm:h-10 bg-secondary rounded-lg flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors"
-                aria-label="Twitter"
-              >
-                <Twitter className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              </button>
-              <button
-                type="button"
+                <Youtube className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              </a>
+              <a
+                href="https://www.instagram.com/ln_educacional"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="w-9 h-9 sm:w-10 sm:h-10 bg-secondary rounded-lg flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors"
                 aria-label="Instagram"
               >
                 <Instagram className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              </button>
-              <button
-                type="button"
-                className="w-9 h-9 sm:w-10 sm:h-10 bg-secondary rounded-lg flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors"
-                aria-label="LinkedIn"
-              >
-                <Linkedin className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              </button>
+              </a>
             </div>
           </div>
 
-          {/* Footer Links */}
-          {footerSections.map((section) => (
-            <div key={section.title} className="space-y-4">
-              <h4 className="font-semibold text-foreground">{section.title}</h4>
-              <ul className="space-y-3">
-                {section.links.map((link) => (
-                  <li key={link.name}>
-                    <a
-                      href={link.href}
-                      className="text-muted-foreground hover:text-primary transition-colors text-sm"
-                    >
-                      {link.name}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          {/* Legal Links */}
+          <div className="space-y-4">
+            <h4 className="font-semibold text-foreground">Legal</h4>
+            <ul className="space-y-3">
+              <li>
+                <button
+                  type="button"
+                  onClick={() => setShowTermsModal(true)}
+                  className="text-muted-foreground hover:text-primary transition-colors text-sm text-left"
+                >
+                  Termos de Uso
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
+                  onClick={() => setShowPrivacyModal(true)}
+                  className="text-muted-foreground hover:text-primary transition-colors text-sm text-left"
+                >
+                  Política de Privacidade
+                </button>
+              </li>
+            </ul>
+          </div>
         </div>
 
         {/* Newsletter */}
@@ -168,6 +140,112 @@ export function Footer() {
           </div>
         </div>
       </div>
+
+      {/* Terms of Use Modal */}
+      <Dialog open={showTermsModal} onOpenChange={setShowTermsModal}>
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Termos de Uso</DialogTitle>
+            <DialogDescription>
+              Última atualização: {new Date().toLocaleDateString('pt-BR')}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 text-sm text-muted-foreground">
+            <p>
+              Bem-vindo ao LN Educacional. Ao acessar e utilizar nossos serviços, você concorda com
+              os seguintes termos e condições.
+            </p>
+            <h3 className="font-semibold text-foreground mt-4">1. Aceitação dos Termos</h3>
+            <p>
+              Ao utilizar nossa plataforma, você concorda em cumprir e estar vinculado aos presentes
+              Termos de Uso. Se você não concordar com qualquer parte destes termos, não deverá
+              utilizar nossos serviços.
+            </p>
+            <h3 className="font-semibold text-foreground mt-4">2. Uso dos Serviços</h3>
+            <p>
+              Nossos serviços são destinados ao uso educacional e profissional. Você se compromete a
+              utilizar a plataforma de forma ética e em conformidade com todas as leis aplicáveis.
+            </p>
+            <h3 className="font-semibold text-foreground mt-4">3. Propriedade Intelectual</h3>
+            <p>
+              Todo o conteúdo disponibilizado na plataforma, incluindo textos, gráficos, logotipos,
+              ícones e imagens, é de propriedade do LN Educacional ou de seus licenciadores e está
+              protegido por leis de direitos autorais.
+            </p>
+            <h3 className="font-semibold text-foreground mt-4">4. Limitação de Responsabilidade</h3>
+            <p>
+              O LN Educacional não se responsabiliza por quaisquer danos diretos, indiretos,
+              incidentais ou consequenciais resultantes do uso ou da impossibilidade de uso de nossos
+              serviços.
+            </p>
+            <h3 className="font-semibold text-foreground mt-4">5. Modificações</h3>
+            <p>
+              Reservamo-nos o direito de modificar estes Termos de Uso a qualquer momento. As
+              alterações entrarão em vigor imediatamente após sua publicação na plataforma.
+            </p>
+            <p className="mt-4 italic">
+              Este é um conteúdo temporário. Os termos definitivos serão fornecidos em breve.
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Privacy Policy Modal */}
+      <Dialog open={showPrivacyModal} onOpenChange={setShowPrivacyModal}>
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Política de Privacidade</DialogTitle>
+            <DialogDescription>
+              Última atualização: {new Date().toLocaleDateString('pt-BR')}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 text-sm text-muted-foreground">
+            <p>
+              A privacidade dos nossos usuários é extremamente importante para nós. Esta Política de
+              Privacidade descreve como coletamos, usamos e protegemos suas informações pessoais.
+            </p>
+            <h3 className="font-semibold text-foreground mt-4">1. Informações Coletadas</h3>
+            <p>
+              Coletamos informações que você nos fornece diretamente, como nome, e-mail, telefone e
+              outras informações de perfil quando você se cadastra ou utiliza nossos serviços.
+            </p>
+            <h3 className="font-semibold text-foreground mt-4">2. Uso das Informações</h3>
+            <p>
+              Utilizamos suas informações para fornecer, manter e melhorar nossos serviços, processar
+              transações, enviar comunicações importantes e personalizar sua experiência na plataforma.
+            </p>
+            <h3 className="font-semibold text-foreground mt-4">3. Compartilhamento de Informações</h3>
+            <p>
+              Não vendemos, alugamos ou compartilhamos suas informações pessoais com terceiros, exceto
+              quando necessário para fornecer nossos serviços ou quando exigido por lei.
+            </p>
+            <h3 className="font-semibold text-foreground mt-4">4. Segurança</h3>
+            <p>
+              Implementamos medidas de segurança técnicas e organizacionais adequadas para proteger
+              suas informações pessoais contra acesso não autorizado, alteração, divulgação ou
+              destruição.
+            </p>
+            <h3 className="font-semibold text-foreground mt-4">5. Cookies</h3>
+            <p>
+              Utilizamos cookies e tecnologias similares para melhorar sua experiência, analisar o uso
+              da plataforma e auxiliar em nossos esforços de marketing.
+            </p>
+            <h3 className="font-semibold text-foreground mt-4">6. Seus Direitos</h3>
+            <p>
+              Você tem o direito de acessar, corrigir ou excluir suas informações pessoais a qualquer
+              momento. Entre em contato conosco para exercer esses direitos.
+            </p>
+            <h3 className="font-semibold text-foreground mt-4">7. Contato</h3>
+            <p>
+              Se você tiver dúvidas sobre esta Política de Privacidade, entre em contato conosco através
+              do e-mail: trabalhos.academicos.assessoria2@gmail.com
+            </p>
+            <p className="mt-4 italic">
+              Este é um conteúdo temporário. A política definitiva será fornecida em breve.
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
     </footer>
   );
 }

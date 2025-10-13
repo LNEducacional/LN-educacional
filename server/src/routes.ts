@@ -1066,6 +1066,15 @@ export async function registerStudentRoutes(app: FastifyInstance) {
     .object({
       name: z.string().min(2).optional(),
       email: z.string().email().optional(),
+      phone: z.string().optional(),
+      birthDate: z.string().optional(),
+      profession: z.string().optional(),
+      profileImageUrl: z.string().optional(),
+      address: z.string().optional(),
+      city: z.string().optional(),
+      state: z.string().optional(),
+      zipCode: z.string().optional(),
+      country: z.string().optional(),
       currentPassword: z.string().optional(),
       newPassword: z.string().min(8).optional(),
     })
@@ -1086,6 +1095,41 @@ export async function registerStudentRoutes(app: FastifyInstance) {
       const data = updateProfileSchema.parse(request.body);
       const profile = await updateStudentProfile(request.currentUser!.id, data);
       reply.send(profile);
+    } catch (error: unknown) {
+      reply.status(400).send({ error: (error as Error).message });
+    }
+  });
+
+  app.post('/student/profile/avatar', { preHandler: [app.authenticate] }, async (request, reply) => {
+    try {
+      const { uploadFile } = await import('./services/upload.service');
+      const data = await request.file();
+
+      if (!data) {
+        return reply.status(400).send({ error: 'No file uploaded' });
+      }
+
+      // Validate file type (only images)
+      if (!data.mimetype.startsWith('image/')) {
+        return reply.status(400).send({ error: 'Only image files are allowed' });
+      }
+
+      // Validate file size (max 5MB)
+      const maxSize = 5 * 1024 * 1024;
+      const buffer = await data.toBuffer();
+      if (buffer.length > maxSize) {
+        return reply.status(400).send({ error: 'File size exceeds 5MB limit' });
+      }
+
+      // Upload file
+      const result = await uploadFile(data, 'avatars');
+
+      // Update user profile with new avatar URL
+      await updateStudentProfile(request.currentUser!.id, {
+        profileImageUrl: result.url,
+      });
+
+      reply.send({ url: result.url });
     } catch (error: unknown) {
       reply.status(400).send({ error: (error as Error).message });
     }

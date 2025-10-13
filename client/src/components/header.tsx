@@ -9,7 +9,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { useCart } from '@/context/cart-context';
 import { cn } from '@/lib/utils';
 import {
@@ -259,7 +258,6 @@ export function Header({ showSearch = true, showNotifications = true }: HeaderPr
         {/* Actions */}
         <div className="flex items-center gap-3">
           {displayNotifications && <NotificationCenter />}
-          <ThemeToggle />
 
           {/* Cart Icon */}
           <CartDrawer>

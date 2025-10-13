@@ -379,6 +379,15 @@ async function getStudentProfile(userId) {
             id: true,
             name: true,
             email: true,
+            phone: true,
+            birthDate: true,
+            profession: true,
+            profileImageUrl: true,
+            address: true,
+            city: true,
+            state: true,
+            zipCode: true,
+            country: true,
             role: true,
             verified: true,
             createdAt: true,
@@ -418,6 +427,34 @@ async function updateStudentProfile(userId, data) {
         updateData.email = data.email;
         updateData.verified = false;
     }
+    // Handle profile fields
+    if (data.phone !== undefined) {
+        updateData.phone = data.phone;
+    }
+    if (data.birthDate !== undefined) {
+        updateData.birthDate = data.birthDate;
+    }
+    if (data.profession !== undefined) {
+        updateData.profession = data.profession;
+    }
+    if (data.profileImageUrl !== undefined) {
+        updateData.profileImageUrl = data.profileImageUrl;
+    }
+    if (data.address !== undefined) {
+        updateData.address = data.address;
+    }
+    if (data.city !== undefined) {
+        updateData.city = data.city;
+    }
+    if (data.state !== undefined) {
+        updateData.state = data.state;
+    }
+    if (data.zipCode !== undefined) {
+        updateData.zipCode = data.zipCode;
+    }
+    if (data.country !== undefined) {
+        updateData.country = data.country;
+    }
     if (data.currentPassword && data.newPassword) {
         const { verifyPassword, hashPassword } = await Promise.resolve().then(() => __importStar(require('./auth')));
         const user = await prisma_1.prisma.user.findUnique({
@@ -439,6 +476,15 @@ async function updateStudentProfile(userId, data) {
             id: true,
             name: true,
             email: true,
+            phone: true,
+            birthDate: true,
+            profession: true,
+            profileImageUrl: true,
+            address: true,
+            city: true,
+            state: true,
+            zipCode: true,
+            country: true,
             role: true,
             verified: true,
         },

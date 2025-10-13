@@ -203,7 +203,7 @@ export default function BlogPostPage() {
 
                 <div className="flex items-center gap-1">
                   <Eye className="h-4 w-4" />
-                  {post.viewCount} visualizações
+                  {post.views} visualizações
                 </div>
               </div>
             </div>
@@ -261,15 +261,10 @@ export default function BlogPostPage() {
 
           {/* Article Content */}
           <div className="prose prose-lg max-w-none dark:prose-invert">
-            <div className="article-content">
-              {post.content.split('\n').map((paragraph, index) =>
-                paragraph.trim() ? (
-                  <p key={`paragraph-${index}-${paragraph.slice(0, 20)}`} className="mb-4">
-                    {paragraph}
-                  </p>
-                ) : null
-              )}
-            </div>
+            <div
+              className="article-content"
+              dangerouslySetInnerHTML={{ __html: post.content }}
+            />
           </div>
 
           {/* Author Info */}

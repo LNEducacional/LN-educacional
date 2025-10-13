@@ -377,6 +377,15 @@ export async function getStudentProfile(userId: string) {
       id: true,
       name: true,
       email: true,
+      phone: true,
+      birthDate: true,
+      profession: true,
+      profileImageUrl: true,
+      address: true,
+      city: true,
+      state: true,
+      zipCode: true,
+      country: true,
       role: true,
       verified: true,
       createdAt: true,
@@ -409,6 +418,15 @@ export async function updateStudentProfile(
   data: {
     name?: string;
     email?: string;
+    phone?: string;
+    birthDate?: string;
+    profession?: string;
+    profileImageUrl?: string;
+    address?: string;
+    city?: string;
+    state?: string;
+    zipCode?: string;
+    country?: string;
     currentPassword?: string;
     newPassword?: string;
   }
@@ -430,6 +448,43 @@ export async function updateStudentProfile(
 
     updateData.email = data.email;
     updateData.verified = false;
+  }
+
+  // Handle profile fields
+  if (data.phone !== undefined) {
+    updateData.phone = data.phone;
+  }
+
+  if (data.birthDate !== undefined) {
+    updateData.birthDate = data.birthDate;
+  }
+
+  if (data.profession !== undefined) {
+    updateData.profession = data.profession;
+  }
+
+  if (data.profileImageUrl !== undefined) {
+    updateData.profileImageUrl = data.profileImageUrl;
+  }
+
+  if (data.address !== undefined) {
+    updateData.address = data.address;
+  }
+
+  if (data.city !== undefined) {
+    updateData.city = data.city;
+  }
+
+  if (data.state !== undefined) {
+    updateData.state = data.state;
+  }
+
+  if (data.zipCode !== undefined) {
+    updateData.zipCode = data.zipCode;
+  }
+
+  if (data.country !== undefined) {
+    updateData.country = data.country;
   }
 
   if (data.currentPassword && data.newPassword) {
@@ -459,6 +514,15 @@ export async function updateStudentProfile(
       id: true,
       name: true,
       email: true,
+      phone: true,
+      birthDate: true,
+      profession: true,
+      profileImageUrl: true,
+      address: true,
+      city: true,
+      state: true,
+      zipCode: true,
+      country: true,
       role: true,
       verified: true,
     },
