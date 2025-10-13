@@ -1036,8 +1036,7 @@ async function registerAdminRoutes(app) {
         excerpt: zod_1.z.string().optional(),
         coverImageUrl: zod_1.z.string().optional(),
         published: zod_1.z.boolean().optional(),
-        status: zod_1.z.enum(['DRAFT', 'SCHEDULED', 'PUBLISHED', 'ARCHIVED']).optional(),
-        scheduledAt: zod_1.z.string().transform((val) => val ? new Date(val) : undefined).optional(),
+        status: zod_1.z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED']).optional(),
         categoryId: zod_1.z.string().optional(),
         tagIds: zod_1.z.array(zod_1.z.string()).optional(),
     });

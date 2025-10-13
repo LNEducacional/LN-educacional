@@ -1303,8 +1303,7 @@ export async function registerAdminRoutes(app: FastifyInstance) {
     excerpt: z.string().optional(),
     coverImageUrl: z.string().optional(),
     published: z.boolean().optional(),
-    status: z.enum(['DRAFT', 'SCHEDULED', 'PUBLISHED', 'ARCHIVED']).optional(),
-    scheduledAt: z.string().transform((val) => val ? new Date(val) : undefined).optional(),
+    status: z.enum(['DRAFT', 'PUBLISHED', 'ARCHIVED']).optional(),
     categoryId: z.string().optional(),
     tagIds: z.array(z.string()).optional(),
   });

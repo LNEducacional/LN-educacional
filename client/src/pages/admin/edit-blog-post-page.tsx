@@ -16,7 +16,7 @@ import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { RichEditor } from '@/components/ui/rich-editor';
 import blogService, { type BlogPost, type Category, type Tag } from '@/services/blog.service';
-import { Loader2, Upload, X, Calendar, FileText, AlignLeft, FolderOpen, Tags as TagsIcon, Image, Search, Link } from 'lucide-react';
+import { Loader2, Upload, X, FileText, AlignLeft, FolderOpen, Tags as TagsIcon, Image, Search, Link } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -40,8 +40,7 @@ const EditBlogPostPage = () => {
     content: '',
     coverImageUrl: '',
     published: false,
-    status: 'DRAFT' as 'DRAFT' | 'SCHEDULED' | 'PUBLISHED' | 'ARCHIVED',
-    scheduledAt: '',
+    status: 'DRAFT' as 'DRAFT' | 'PUBLISHED' | 'ARCHIVED',
     categoryId: '',
     // SEO fields
     metaTitle: '',
@@ -82,7 +81,6 @@ const EditBlogPostPage = () => {
         coverImageUrl: data.coverImageUrl || '',
         published: data.published,
         status: data.status || 'DRAFT',
-        scheduledAt: data.scheduledAt ? new Date(data.scheduledAt).toISOString().slice(0, 16) : '',
         categoryId: data.categoryId || '',
         // SEO fields
         metaTitle: (data as any).metaTitle || '',
@@ -181,7 +179,6 @@ const EditBlogPostPage = () => {
         ...formData,
         categoryId: formData.categoryId && formData.categoryId !== 'none' ? formData.categoryId : undefined,
         tagIds: selectedTags.length > 0 ? selectedTags : undefined,
-        scheduledAt: formData.scheduledAt || undefined,
         // SEO fields
         metaTitle: formData.metaTitle || undefined,
         metaDescription: formData.metaDescription || undefined,
@@ -393,7 +390,7 @@ const EditBlogPostPage = () => {
                       <Label htmlFor="status">Status do Post</Label>
                       <Select
                         value={formData.status}
-                        onValueChange={(value: 'DRAFT' | 'SCHEDULED' | 'PUBLISHED' | 'ARCHIVED') => {
+                        onValueChange={(value: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED') => {
                           setFormData((prev) => ({
                             ...prev,
                             status: value,
@@ -406,31 +403,10 @@ const EditBlogPostPage = () => {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="DRAFT">Rascunho</SelectItem>
-                          <SelectItem value="SCHEDULED">Agendado</SelectItem>
                           <SelectItem value="PUBLISHED">Publicado</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
-
-                    {/* Scheduled Date */}
-                    {formData.status === 'SCHEDULED' && (
-                      <div className="space-y-2">
-                        <Label htmlFor="scheduledAt" className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4" />
-                          Data e Hora do Agendamento
-                        </Label>
-                        <Input
-                          id="scheduledAt"
-                          type="datetime-local"
-                          value={formData.scheduledAt}
-                          onChange={(e) => handleInputChange('scheduledAt', e.target.value)}
-                          min={new Date().toISOString().slice(0, 16)}
-                        />
-                        <p className="text-sm text-muted-foreground">
-                          O post será publicado automaticamente na data e hora especificadas
-                        </p>
-                      </div>
-                    )}
 
                     <div className="flex items-center space-x-2">
                       <Switch

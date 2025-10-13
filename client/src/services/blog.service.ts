@@ -30,8 +30,7 @@ export interface BlogPost {
   excerpt: string;
   coverImageUrl?: string;
   published: boolean;
-  status: 'DRAFT' | 'SCHEDULED' | 'PUBLISHED' | 'ARCHIVED';
-  scheduledAt?: string;
+  status: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
   publishedAt?: string;
   views: number;
   createdAt: string;
@@ -60,6 +59,13 @@ export interface BlogPost {
     comments: number;
     likes: number;
   };
+  // SEO fields
+  metaTitle?: string;
+  metaDescription?: string;
+  metaKeywords?: string[];
+  ogImage?: string;
+  canonicalUrl?: string;
+  readingTime?: number;
 }
 
 export interface CreateBlogPostDto {
@@ -68,8 +74,7 @@ export interface CreateBlogPostDto {
   excerpt: string;
   coverImageUrl?: string;
   published?: boolean;
-  status?: 'DRAFT' | 'SCHEDULED' | 'PUBLISHED' | 'ARCHIVED';
-  scheduledAt?: string;
+  status?: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
   categoryId?: string;
   tagIds?: string[];
 }

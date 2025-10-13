@@ -46,6 +46,13 @@ import {
   Trash2,
   User,
   XCircle,
+  FolderOpen,
+  Tags as TagsIcon,
+  Image as ImageIcon,
+  Search,
+  Link as LinkIcon,
+  Globe,
+  AlignLeft,
 } from 'lucide-react';
 import { useEffect } from 'react';
 import { toast } from 'sonner';
@@ -211,29 +218,85 @@ export default function BlogPostDetailsPage() {
               </div>
             </div>
 
-            {/* Status e Informações */}
+            {/* Informações Básicas */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <CheckCircle className="h-5 w-5" />
-                  Status e Informações
+                  <FileText className="h-5 w-5" />
+                  Informações Básicas
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-3">
+                <div>
+                  <h3 className="font-medium text-foreground mb-2 flex items-center gap-2">
+                    <FileText className="h-4 w-4 text-muted-foreground" />
+                    Título:
+                  </h3>
+                  <p className="text-muted-foreground">{post.title}</p>
+                </div>
+
+                <div>
+                  <h3 className="font-medium text-foreground mb-2 flex items-center gap-2">
+                    <AlignLeft className="h-4 w-4 text-muted-foreground" />
+                    Resumo:
+                  </h3>
+                  <p className="text-muted-foreground leading-relaxed">
+                    {post.excerpt || 'Não definido'}
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="font-medium text-foreground mb-2 flex items-center gap-2">
+                    <FolderOpen className="h-4 w-4 text-muted-foreground" />
+                    Categoria:
+                  </h3>
+                  {post.category ? (
+                    <Badge variant="outline" className="text-sm">
+                      {post.category.name}
+                    </Badge>
+                  ) : (
+                    <p className="text-muted-foreground text-sm">Não definido</p>
+                  )}
+                </div>
+
+                <div>
+                  <h3 className="font-medium text-foreground mb-2 flex items-center gap-2">
+                    <TagsIcon className="h-4 w-4 text-muted-foreground" />
+                    Tags:
+                  </h3>
+                  {post.tags && post.tags.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {post.tags.map((tagItem) => (
+                        <Badge key={tagItem.tag.id} variant="secondary">
+                          {tagItem.tag.name}
+                        </Badge>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground text-sm">Nenhuma tag</p>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t">
+                  <div>
+                    <h3 className="font-medium text-foreground mb-2 flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4 text-muted-foreground" />
+                      Status do Post:
+                    </h3>
+                    <Badge variant={post.status === 'PUBLISHED' ? 'default' : post.status === 'DRAFT' ? 'secondary' : 'outline'}>
+                      {post.status === 'PUBLISHED' ? 'Publicado' : post.status === 'DRAFT' ? 'Rascunho' : 'Arquivado'}
+                    </Badge>
+                  </div>
+
+                  <div>
+                    <h3 className="font-medium text-foreground mb-2 flex items-center gap-2">
+                      <Globe className="h-4 w-4 text-muted-foreground" />
+                      Publicação:
+                    </h3>
                     <div className="flex items-center gap-2">
-                      <span className="font-medium text-foreground">Status:</span>
                       <Badge variant={post.published ? 'default' : 'secondary'}>
                         {post.published ? 'Publicado' : 'Rascunho'}
                       </Badge>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Eye className="h-4 w-4 text-muted-foreground" />
-                      <span className="font-medium text-foreground">Visualizações:</span>
-                      <span className="text-muted-foreground">{post.views || 0}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
                       <Button
                         variant={post.published ? 'outline' : 'default'}
                         size="sm"
@@ -254,22 +317,19 @@ export default function BlogPostDetailsPage() {
                       </Button>
                     </div>
                   </div>
-
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
-                      <span className="font-medium text-foreground">Criado em:</span>
-                      <span className="text-muted-foreground">
-                        {format(new Date(post.createdAt), 'dd/MM/yyyy', { locale: ptBR })}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Hash className="h-4 w-4 text-muted-foreground" />
-                      <span className="font-medium text-foreground">ID:</span>
-                      <span className="text-muted-foreground">#{post.id}</span>
-                    </div>
-                  </div>
                 </div>
+
+                {post.publishedAt && (
+                  <div>
+                    <h3 className="font-medium text-foreground mb-2 flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      Data de Publicação:
+                    </h3>
+                    <p className="text-muted-foreground">
+                      {format(new Date(post.publishedAt), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -284,25 +344,129 @@ export default function BlogPostDetailsPage() {
               <CardContent className="space-y-4">
                 <div>
                   <h3 className="font-medium text-foreground mb-2">Slug:</h3>
-                  <p className="text-muted-foreground">{post.slug}</p>
-                </div>
-                <div>
-                  <h3 className="font-medium text-foreground mb-2">Descrição:</h3>
-                  <p className="text-muted-foreground leading-relaxed">
-                    {post.description || 'Sem descrição'}
+                  <p className="text-muted-foreground font-mono text-sm bg-muted px-3 py-2 rounded">
+                    {post.slug}
                   </p>
                 </div>
                 <div>
-                  <h3 className="font-medium text-foreground mb-2">Conteúdo:</h3>
+                  <h3 className="font-medium text-foreground mb-2">Conteúdo do Post:</h3>
                   <div
-                    className="prose prose-sm max-w-none text-muted-foreground"
+                    className="prose prose-sm max-w-none text-muted-foreground border rounded-lg p-4 bg-muted/30"
                     dangerouslySetInnerHTML={{ __html: post.content }}
                   />
                 </div>
               </CardContent>
             </Card>
 
-            {/* Autor */}
+            {/* Imagem de Capa */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ImageIcon className="h-5 w-5" />
+                  Imagem de Capa
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {post.coverImageUrl ? (
+                  <div className="space-y-2">
+                    <img
+                      src={post.coverImageUrl}
+                      alt={post.title}
+                      className="w-full max-w-2xl rounded-lg border shadow-sm"
+                    />
+                    <p className="text-sm text-muted-foreground">
+                      Imagem cadastrada
+                    </p>
+                  </div>
+                ) : (
+                  <div className="text-center py-8 border-2 border-dashed rounded-lg">
+                    <ImageIcon className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
+                    <p className="text-muted-foreground">Sem imagem de capa</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Configurações de SEO */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Search className="h-5 w-5" />
+                  Configurações de SEO
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <h3 className="font-medium text-foreground mb-2 flex items-center gap-2">
+                    <FileText className="h-4 w-4 text-muted-foreground" />
+                    Meta Título:
+                  </h3>
+                  <p className="text-muted-foreground">
+                    {post.metaTitle || 'Não definido'}
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="font-medium text-foreground mb-2 flex items-center gap-2">
+                    <AlignLeft className="h-4 w-4 text-muted-foreground" />
+                    Meta Descrição:
+                  </h3>
+                  <p className="text-muted-foreground leading-relaxed">
+                    {post.metaDescription || 'Não definido'}
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="font-medium text-foreground mb-2 flex items-center gap-2">
+                    <TagsIcon className="h-4 w-4 text-muted-foreground" />
+                    Palavras-chave:
+                  </h3>
+                  {post.metaKeywords && post.metaKeywords.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {post.metaKeywords.map((keyword, index) => (
+                        <Badge key={index} variant="outline">
+                          {keyword}
+                        </Badge>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground text-sm">Não definido</p>
+                  )}
+                </div>
+
+                <div>
+                  <h3 className="font-medium text-foreground mb-2 flex items-center gap-2">
+                    <ImageIcon className="h-4 w-4 text-muted-foreground" />
+                    Imagem Open Graph:
+                  </h3>
+                  {post.ogImage ? (
+                    <div className="space-y-2">
+                      <p className="text-sm text-muted-foreground font-mono bg-muted px-3 py-2 rounded break-all">
+                        {post.ogImage}
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground text-sm">Não definido</p>
+                  )}
+                </div>
+
+                <div>
+                  <h3 className="font-medium text-foreground mb-2 flex items-center gap-2">
+                    <LinkIcon className="h-4 w-4 text-muted-foreground" />
+                    URL Canônica:
+                  </h3>
+                  {post.canonicalUrl ? (
+                    <p className="text-sm text-muted-foreground font-mono bg-muted px-3 py-2 rounded break-all">
+                      {post.canonicalUrl}
+                    </p>
+                  ) : (
+                    <p className="text-muted-foreground text-sm">Não definido</p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Informações do Autor */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -315,6 +479,51 @@ export default function BlogPostDetailsPage() {
                   <User className="h-4 w-4 text-muted-foreground" />
                   <span className="font-medium text-foreground">Nome:</span>
                   <span className="text-muted-foreground">{post.author?.name || 'Desconhecido'}</span>
+                </div>
+                {post.author?.email && (
+                  <div className="flex items-center gap-2">
+                    <Hash className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-medium text-foreground">E-mail:</span>
+                    <span className="text-muted-foreground">{post.author.email}</span>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Estatísticas */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Eye className="h-5 w-5" />
+                  Estatísticas
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="flex items-center gap-2">
+                    <Eye className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-medium text-foreground">Visualizações:</span>
+                    <span className="text-muted-foreground">{post.views || 0}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-medium text-foreground">Criado em:</span>
+                    <span className="text-muted-foreground">
+                      {format(new Date(post.createdAt), 'dd/MM/yyyy', { locale: ptBR })}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-medium text-foreground">Atualizado em:</span>
+                    <span className="text-muted-foreground">
+                      {format(new Date(post.updatedAt), 'dd/MM/yyyy', { locale: ptBR })}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Hash className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-medium text-foreground">ID:</span>
+                    <span className="text-muted-foreground font-mono text-xs">#{post.id}</span>
+                  </div>
                 </div>
               </CardContent>
             </Card>

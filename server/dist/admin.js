@@ -427,9 +427,6 @@ async function createBlogPost(data) {
         status = 'PUBLISHED';
         publishedAt = new Date();
     }
-    else if (data.scheduledAt && data.scheduledAt > new Date()) {
-        status = 'SCHEDULED';
-    }
     // Calculate reading time if not provided
     const readingTime = data.readingTime || calculateReadingTime(data.content);
     const post = await prisma_1.prisma.blogPost.create({
@@ -439,7 +436,6 @@ async function createBlogPost(data) {
             published: data.published || false,
             status,
             publishedAt,
-            scheduledAt: data.scheduledAt,
             readingTime,
             tags: tagIds && tagIds.length > 0 ? {
                 create: tagIds.map((tagId) => ({
@@ -503,12 +499,6 @@ async function updateBlogPost(id, data) {
         dbUpdateData.status = data.status;
         if (data.status === 'PUBLISHED' && !dbUpdateData.publishedAt) {
             dbUpdateData.publishedAt = new Date();
-        }
-    }
-    if (data.scheduledAt !== undefined) {
-        dbUpdateData.scheduledAt = data.scheduledAt;
-        if (data.scheduledAt && data.scheduledAt > new Date() && !data.published) {
-            dbUpdateData.status = 'SCHEDULED';
         }
     }
     // Handle tags update separately

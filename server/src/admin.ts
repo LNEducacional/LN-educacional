@@ -388,8 +388,7 @@ export async function createBlogPost(data: {
   excerpt?: string;
   coverImageUrl?: string;
   published?: boolean;
-  status?: 'DRAFT' | 'SCHEDULED' | 'PUBLISHED' | 'ARCHIVED';
-  scheduledAt?: Date;
+  status?: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
   authorId: string;
   categoryId?: string;
   tagIds?: string[];
@@ -411,8 +410,6 @@ export async function createBlogPost(data: {
   if (data.published) {
     status = 'PUBLISHED';
     publishedAt = new Date();
-  } else if (data.scheduledAt && data.scheduledAt > new Date()) {
-    status = 'SCHEDULED';
   }
 
   // Calculate reading time if not provided
@@ -425,7 +422,6 @@ export async function createBlogPost(data: {
       published: data.published || false,
       status,
       publishedAt,
-      scheduledAt: data.scheduledAt,
       readingTime,
       tags: tagIds && tagIds.length > 0 ? {
         create: tagIds.map((tagId) => ({
@@ -476,8 +472,7 @@ export async function updateBlogPost(
     excerpt?: string;
     coverImageUrl?: string;
     published?: boolean;
-    status?: 'DRAFT' | 'SCHEDULED' | 'PUBLISHED' | 'ARCHIVED';
-    scheduledAt?: Date;
+    status?: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
     categoryId?: string;
     tagIds?: string[];
     // SEO fields
@@ -513,13 +508,6 @@ export async function updateBlogPost(
     dbUpdateData.status = data.status;
     if (data.status === 'PUBLISHED' && !dbUpdateData.publishedAt) {
       dbUpdateData.publishedAt = new Date();
-    }
-  }
-
-  if (data.scheduledAt !== undefined) {
-    dbUpdateData.scheduledAt = data.scheduledAt;
-    if (data.scheduledAt && data.scheduledAt > new Date() && !data.published) {
-      dbUpdateData.status = 'SCHEDULED';
     }
   }
 

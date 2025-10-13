@@ -136,8 +136,7 @@ export declare function createBlogPost(data: {
     excerpt?: string;
     coverImageUrl?: string;
     published?: boolean;
-    status?: 'DRAFT' | 'SCHEDULED' | 'PUBLISHED' | 'ARCHIVED';
-    scheduledAt?: Date;
+    status?: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
     authorId: string;
     categoryId?: string;
     tagIds?: string[];
@@ -179,7 +178,6 @@ export declare function createBlogPost(data: {
     slug: string;
     excerpt: string | null;
     coverImageUrl: string | null;
-    scheduledAt: Date | null;
     publishedAt: Date | null;
     authorId: string;
     categoryId: string | null;
@@ -197,8 +195,7 @@ export declare function updateBlogPost(id: string, data: {
     excerpt?: string;
     coverImageUrl?: string;
     published?: boolean;
-    status?: 'DRAFT' | 'SCHEDULED' | 'PUBLISHED' | 'ARCHIVED';
-    scheduledAt?: Date;
+    status?: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
     categoryId?: string;
     tagIds?: string[];
     metaTitle?: string;
@@ -239,7 +236,6 @@ export declare function updateBlogPost(id: string, data: {
     slug: string;
     excerpt: string | null;
     coverImageUrl: string | null;
-    scheduledAt: Date | null;
     publishedAt: Date | null;
     authorId: string;
     categoryId: string | null;
@@ -262,7 +258,6 @@ export declare function deleteBlogPost(id: string): Promise<{
     slug: string;
     excerpt: string | null;
     coverImageUrl: string | null;
-    scheduledAt: Date | null;
     publishedAt: Date | null;
     authorId: string;
     categoryId: string | null;
@@ -936,7 +931,6 @@ export declare function getRelatedPosts(postId: string, limit?: number): Promise
     slug: string;
     excerpt: string | null;
     coverImageUrl: string | null;
-    scheduledAt: Date | null;
     publishedAt: Date | null;
     authorId: string;
     categoryId: string | null;
@@ -1000,7 +994,6 @@ export declare function searchBlogPosts(query: {
         slug: string;
         excerpt: string | null;
         coverImageUrl: string | null;
-        scheduledAt: Date | null;
         publishedAt: Date | null;
         authorId: string;
         categoryId: string | null;

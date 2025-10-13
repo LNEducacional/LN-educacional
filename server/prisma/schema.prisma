@@ -183,7 +183,6 @@ enum CustomPaperUrgency {
 
 enum PostStatus {
   DRAFT
-  SCHEDULED
   PUBLISHED
   ARCHIVED
 }
@@ -348,7 +347,6 @@ model BlogPost {
   coverImageUrl String?
   published     Boolean    @default(false)
   status        PostStatus @default(DRAFT)
-  scheduledAt   DateTime?
   publishedAt   DateTime?
   authorId      String
   author        User       @relation(fields: [authorId], references: [id])

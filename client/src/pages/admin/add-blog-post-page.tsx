@@ -17,7 +17,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { RichEditor } from '@/components/ui/rich-editor';
 import { useToast } from '@/hooks/use-toast';
 import blogService, { type Category, type Tag } from '@/services/blog.service';
-import { ArrowLeft, Loader2, Upload, X, Calendar, FileText, AlignLeft, FolderOpen, Tags, Globe, Search, Image, Link } from 'lucide-react';
+import { ArrowLeft, Loader2, Upload, X, FileText, AlignLeft, FolderOpen, Tags, Globe, Search, Image, Link } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -38,8 +38,7 @@ const AddBlogPostPage = () => {
     content: '',
     coverImageUrl: '',
     published: false,
-    status: 'DRAFT' as 'DRAFT' | 'SCHEDULED' | 'PUBLISHED' | 'ARCHIVED',
-    scheduledAt: '',
+    status: 'DRAFT' as 'DRAFT' | 'PUBLISHED' | 'ARCHIVED',
     categoryId: '',
     // SEO fields
     metaTitle: '',
@@ -153,7 +152,6 @@ const AddBlogPostPage = () => {
         ...formData,
         categoryId: formData.categoryId && formData.categoryId !== 'none' ? formData.categoryId : undefined,
         tagIds: selectedTags.length > 0 ? selectedTags : undefined,
-        scheduledAt: formData.scheduledAt || undefined,
         // SEO fields
         metaTitle: formData.metaTitle || undefined,
         metaDescription: formData.metaDescription || undefined,
@@ -353,7 +351,7 @@ const AddBlogPostPage = () => {
                         <Label htmlFor="status">Status do Post</Label>
                         <Select
                           value={formData.status}
-                          onValueChange={(value: 'DRAFT' | 'SCHEDULED' | 'PUBLISHED' | 'ARCHIVED') => {
+                          onValueChange={(value: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED') => {
                             setFormData((prev) => ({
                               ...prev,
                               status: value,
@@ -366,31 +364,10 @@ const AddBlogPostPage = () => {
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="DRAFT">Rascunho</SelectItem>
-                            <SelectItem value="SCHEDULED">Agendado</SelectItem>
                             <SelectItem value="PUBLISHED">Publicado</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
-
-                      {/* Scheduled Date */}
-                      {formData.status === 'SCHEDULED' && (
-                        <div className="space-y-2">
-                          <Label htmlFor="scheduledAt" className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4" />
-                            Data e Hora do Agendamento
-                          </Label>
-                          <Input
-                            id="scheduledAt"
-                            type="datetime-local"
-                            value={formData.scheduledAt}
-                            onChange={(e) => handleInputChange('scheduledAt', e.target.value)}
-                            min={new Date().toISOString().slice(0, 16)}
-                          />
-                          <p className="text-sm text-muted-foreground">
-                            O post será publicado automaticamente na data e hora especificadas
-                          </p>
-                        </div>
-                      )}
 
                       <div className="flex items-center space-x-2">
                         <Switch
