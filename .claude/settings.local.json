@@ -45,7 +45,11 @@
       "Bash(npx prisma migrate dev:*)",
       "Bash(npx prisma generate:*)",
       "Bash(npm run build:client:*)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Read(//etc/nginx/sites-enabled/**)",
+      "Read(//etc/nginx/sites-available/**)",
+      "Bash(nginx:*)",
+      "Bash(systemctl reload:*)"
     ],
     "deny": [],
     "ask": []

@@ -79,6 +79,62 @@ const requestSchema = z.object({
 
 type RequestFormData = z.infer<typeof requestSchema>;
 
+// Função para montar a mensagem do WhatsApp
+const buildWhatsAppMessage = (data: RequestFormData, files: string[]): string => {
+  const urgencyLabels = {
+    NORMAL: 'Normal (7+ dias)',
+    URGENT: 'Urgente (3-6 dias)',
+    VERY_URGENT: 'Muito Urgente (1-2 dias)',
+  };
+
+  // Formatar data para DD/MM/AAAA
+  const formatDate = (date: Date): string => {
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
+  // Montar mensagem
+  let message = 'Olá!\n';
+  message += 'Gostaria de enviar uma solicitação personalizada através do site.\n\n';
+  message += 'Resumo da solicitação:\n';
+  message += `- Título do Trabalho: ${data.title}\n`;
+  message += `- Descrição Detalhada: ${data.description}\n`;
+  message += `- Tipo de Trabalho: ${PAPER_TYPES[data.paperType as keyof typeof PAPER_TYPES]}\n`;
+  message += `- Área Acadêmica: ${ACADEMIC_AREAS[data.academicArea as keyof typeof ACADEMIC_AREAS]}\n`;
+  message += `- Número de Páginas: ${data.pageCount}\n`;
+  message += `- Prazo de Entrega: ${formatDate(data.deadline)}\n`;
+  message += `- Urgência: ${urgencyLabels[data.urgency as keyof typeof urgencyLabels]}\n`;
+  message += `- Requisitos Específicos: ${data.requirements}\n`;
+
+  // Campos opcionais - só adicionar se preenchidos
+  if (data.keywords && data.keywords.trim()) {
+    message += `- Palavras-chave: ${data.keywords}\n`;
+  }
+
+  if (data.references && data.references.trim()) {
+    message += `- Referências Obrigatórias: ${data.references}\n`;
+  }
+
+  if (files.length > 0) {
+    const fileNames = files.map(url => url.split('/').pop()).join(', ');
+    message += `- Arquivos de Apoio: ${fileNames}\n`;
+  }
+
+  message += '\nEnvio esta cópia pelo WhatsApp para confirmar minha solicitação.';
+
+  return message;
+};
+
+// Função para enviar ao WhatsApp
+const sendToWhatsApp = (data: RequestFormData, files: string[]) => {
+  const message = buildWhatsAppMessage(data, files);
+  const encodedMessage = encodeURIComponent(message.normalize('NFC'));
+  const whatsappUrl = `https://wa.me/5581994076486?text=${encodedMessage}`;
+  window.open(whatsappUrl, '_blank');
+};
+
 export default function CustomPapersPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -108,13 +164,16 @@ export default function CustomPapersPage() {
       console.log('📤 Enviando solicitação:', payload);
       return customPapersService.createRequest(payload);
     },
-    onSuccess: (response) => {
+    onSuccess: (response, variables) => {
       console.log('✅ Solicitação criada com sucesso:', response);
 
       toast({
         title: 'Solicitação enviada!',
         description: 'Sua solicitação foi recebida. Você receberá um orçamento em breve.',
       });
+
+      // Enviar cópia para WhatsApp
+      sendToWhatsApp(variables, uploadedFiles);
 
       navigate('/student?tab=custom-papers');
     },

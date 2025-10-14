@@ -17,16 +17,12 @@ import {
   Briefcase,
   Calendar,
   Camera,
-  Eye,
-  EyeOff,
   Globe,
   Loader2,
-  Lock,
   Mail,
   MapPin,
   Phone,
   Save,
-  Shield,
   User,
   X
 } from 'lucide-react';
@@ -228,56 +224,19 @@ export function StudentProfile() {
 
   const handleProfileSave = async () => {
     try {
-      // Validar senha se foi preenchida
-      if (passwordData.newPassword || passwordData.currentPassword || passwordData.confirmPassword) {
-        if (passwordData.newPassword !== passwordData.confirmPassword) {
-          toast({
-            title: 'Erro',
-            description: 'As senhas não coincidem.',
-            variant: 'destructive',
-          });
-          return;
-        }
-
-        if (passwordData.newPassword.length < 6) {
-          toast({
-            title: 'Erro',
-            description: 'A nova senha deve ter pelo menos 6 caracteres.',
-            variant: 'destructive',
-          });
-          return;
-        }
-      }
-
       // Atualizar perfil
       // A imagem já foi salva via upload separado, não precisa enviar novamente
       const dataToUpdate = { ...profileData };
 
       await updateProfileMutation('/student/profile', dataToUpdate);
 
-      // Atualizar senha se foi alterada
-      if (passwordData.currentPassword && passwordData.newPassword) {
-        await updatePassword('/student/profile/password', {
-          currentPassword: passwordData.currentPassword,
-          newPassword: passwordData.newPassword,
-        });
-      }
-
       await refetch();
 
       toast({
         title: 'Alterações salvas',
-        description: passwordData.newPassword
-          ? 'Suas informações e senha foram atualizadas com sucesso.'
-          : 'Suas informações foram salvas com sucesso.',
+        description: 'Suas informações foram salvas com sucesso.',
       });
 
-      // Limpar campos de senha
-      setPasswordData({
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: '',
-      });
       setImagePreview(null);
     } catch (error: unknown) {
       toast({
@@ -318,11 +277,6 @@ export function StudentProfile() {
         country: '',
       });
     }
-    setPasswordData({
-      currentPassword: '',
-      newPassword: '',
-      confirmPassword: '',
-    });
     setImagePreview(null);
     toast({
       title: 'Alterações canceladas',
@@ -379,7 +333,7 @@ export function StudentProfile() {
       {/* Header */}
       <div className="space-y-2">
         <h1 className="text-3xl font-bold tracking-tight">Perfil do Usuário</h1>
-        <p className="text-muted-foreground">Gerencie suas informações pessoais e segurança</p>
+        <p className="text-muted-foreground">Gerencie suas informações pessoais</p>
       </div>
 
       <div className="space-y-6">
@@ -605,103 +559,6 @@ export function StudentProfile() {
             </CardContent>
           </Card>
         </div>
-
-        {/* Security */}
-        <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Lock className="h-5 w-5" />
-                Alterar Senha
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="currentPassword">Senha Atual</Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="currentPassword"
-                    type={showCurrentPassword ? 'text' : 'password'}
-                    value={passwordData.currentPassword}
-                    onChange={(e) =>
-                      setPasswordData({ ...passwordData, currentPassword: e.target.value })
-                    }
-                    placeholder="Digite sua senha atual"
-                    className="pl-10 pr-10"
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7"
-                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                  >
-                    {showCurrentPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="newPassword">Nova Senha</Label>
-                <div className="relative">
-                  <Shield className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="newPassword"
-                    type={showNewPassword ? 'text' : 'password'}
-                    value={passwordData.newPassword}
-                    onChange={(e) =>
-                      setPasswordData({ ...passwordData, newPassword: e.target.value })
-                    }
-                    placeholder="Digite sua nova senha"
-                    className="pl-10 pr-10"
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7"
-                    onClick={() => setShowNewPassword(!showNewPassword)}
-                  >
-                    {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </Button>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirmar Nova Senha</Label>
-                <div className="relative">
-                  <Shield className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="confirmPassword"
-                    type={showConfirmPassword ? 'text' : 'password'}
-                    value={passwordData.confirmPassword}
-                    onChange={(e) =>
-                      setPasswordData({ ...passwordData, confirmPassword: e.target.value })
-                    }
-                    placeholder="Confirme sua nova senha"
-                    className="pl-10 pr-10"
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  >
-                    {showConfirmPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
 
         {/* Action Buttons */}
         <div className="flex items-center gap-4">

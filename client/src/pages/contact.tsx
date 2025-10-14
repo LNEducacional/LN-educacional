@@ -20,7 +20,16 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
   AlertCircle,
+  CheckCircle2,
   Clock,
   ExternalLink,
   FileText,
@@ -62,6 +71,7 @@ const FAQ_ITEMS = [
 export default function Contact() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState('contact');
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const { toast } = useToast();
 
   const {
@@ -113,11 +123,32 @@ export default function Contact() {
         description: 'Obrigado por entrar em contato. Responderemos em breve.',
       });
 
+      // Abrir modal de sucesso
+      setShowSuccessModal(true);
+
+      // Fechar modal automaticamente após 5 segundos
+      setTimeout(() => {
+        setShowSuccessModal(false);
+      }, 5000);
+
       reset();
     } catch (error: unknown) {
+      const errorMessage =
+        error &&
+        typeof error === 'object' &&
+        'response' in error &&
+        error.response &&
+        typeof error.response === 'object' &&
+        'data' in error.response &&
+        error.response.data &&
+        typeof error.response.data === 'object' &&
+        'error' in error.response.data
+          ? String(error.response.data.error)
+          : 'Falha ao enviar mensagem, tente novamente.';
+
       toast({
         title: 'Erro ao enviar mensagem',
-        description: error.response?.data?.error || 'Ocorreu um erro inesperado. Tente novamente.',
+        description: errorMessage,
         variant: 'destructive',
       });
     } finally {
@@ -593,6 +624,34 @@ export default function Contact() {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Modal de Sucesso */}
+        <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <div className="flex items-center justify-center mb-4">
+                <div className="rounded-full bg-green-100 dark:bg-green-900/20 p-3">
+                  <CheckCircle2 className="h-10 w-10 text-green-600 dark:text-green-400" />
+                </div>
+              </div>
+              <DialogTitle className="text-center text-2xl">
+                Mensagem enviada com sucesso!
+              </DialogTitle>
+              <DialogDescription className="text-center text-base">
+                Obrigado por entrar em contato. Responderemos em breve.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="sm:justify-center">
+              <Button
+                type="button"
+                onClick={() => setShowSuccessModal(false)}
+                className="bg-primary hover:bg-primary-hover"
+              >
+                Fechar
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

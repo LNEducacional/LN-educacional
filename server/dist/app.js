@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.build = build;
 const cookie_1 = __importDefault(require("@fastify/cookie"));
 const cors_1 = __importDefault(require("@fastify/cors"));
+const helmet_1 = __importDefault(require("@fastify/helmet"));
 const jwt_1 = __importDefault(require("@fastify/jwt"));
 const multipart_1 = __importDefault(require("@fastify/multipart"));
 const fastify_1 = __importDefault(require("fastify"));
@@ -36,6 +37,13 @@ function build(opts = {}) {
         sameSite: (isProduction ? 'none' : 'lax'),
         path: '/',
         maxAge,
+    });
+    // Adicionar headers de segurança ANTES do CORS
+    app.register(helmet_1.default, {
+        global: true,
+        contentSecurityPolicy: false, // Desabilitar CSP para não quebrar o frontend
+        crossOriginResourcePolicy: false, // Permitir recursos cross-origin
+        crossOriginOpenerPolicy: false, // Permitir popup cross-origin
     });
     app.register(cors_1.default, {
         origin: allowedOrigins.length > 0

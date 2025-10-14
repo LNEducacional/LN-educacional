@@ -1,0 +1,19 @@
+# Browsers that we support
+
+# Modern browsers
+last 2 versions
+not dead
+> 0.2%
+
+# Safari support (for -webkit- prefixes)
+Safari >= 9
+iOS >= 9
+
+# Chrome support
+Chrome >= 54
+
+# Firefox support
+Firefox >= 52
+
+# Edge support
+Edge >= 15

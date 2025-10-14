@@ -1,5 +1,6 @@
 import cookie from '@fastify/cookie';
 import cors from '@fastify/cors';
+import helmet from '@fastify/helmet';
 import jwt from '@fastify/jwt';
 import multipart from '@fastify/multipart';
 import type { FastifyReply, FastifyRequest } from 'fastify';
@@ -35,6 +36,14 @@ export function build(opts: { logger?: boolean } = {}) {
     sameSite: (isProduction ? 'none' : 'lax') as 'none' | 'lax',
     path: '/',
     maxAge,
+  });
+
+  // Adicionar headers de segurança ANTES do CORS
+  app.register(helmet, {
+    global: true,
+    contentSecurityPolicy: false, // Desabilitar CSP para não quebrar o frontend
+    crossOriginResourcePolicy: false, // Permitir recursos cross-origin
+    crossOriginOpenerPolicy: false, // Permitir popup cross-origin
   });
 
   app.register(cors, {

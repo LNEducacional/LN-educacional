@@ -15,6 +15,7 @@ import type React from 'react';
 import { useCallback, useRef, useState } from 'react';
 
 import {
+  Controller,
   type FieldErrors,
   type UseFormHandleSubmit,
   type UseFormRegister,
@@ -119,7 +120,12 @@ const canProceedToStep2 = (values: Partial<CollaboratorFormData>): boolean => {
 };
 
 const canProceedToStep3 = (values: Partial<CollaboratorFormData>): boolean => {
-  return !!(values.area && values.availability && values.experience && values.education);
+  return !!(
+    values.area &&
+    values.availability &&
+    values.experience && values.experience.length >= 10 &&
+    values.education && values.education.length >= 10
+  );
 };
 
 const getStepProgress = (currentStep: number, totalSteps: number): number => {
@@ -437,55 +443,59 @@ function ProfessionalExperienceStep({
   errors,
   watchedValues,
   setValue,
+  control,
 }: {
   register: UseFormRegister<CollaboratorFormData>;
   errors: FieldErrors<CollaboratorFormData>;
   watchedValues: Partial<CollaboratorFormData>;
   setValue: UseFormSetValue<CollaboratorFormData>;
+  control: any;
 }) {
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="space-y-2">
         <Label htmlFor="area">Área de Interesse *</Label>
-        <Select
-          value={watchedValues.area}
-          onValueChange={(value) =>
-            setValue('area', value as keyof (typeof AREAS_OF_INTEREST)[number])
-          }
-        >
-          <SelectTrigger className={errors.area ? 'border-destructive' : ''}>
-            <SelectValue placeholder="Selecione uma área" />
-          </SelectTrigger>
-          <SelectContent>
-            {AREAS_OF_INTEREST.map((area) => (
-              <SelectItem key={area.value} value={area.value}>
-                {area.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <Controller
+          name="area"
+          control={control}
+          render={({ field }) => (
+            <Select value={field.value} onValueChange={field.onChange}>
+              <SelectTrigger id="area" className={errors.area ? 'border-destructive' : ''}>
+                <SelectValue placeholder="Selecione uma área" />
+              </SelectTrigger>
+              <SelectContent>
+                {AREAS_OF_INTEREST.map((area) => (
+                  <SelectItem key={area.value} value={area.value}>
+                    {area.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        />
         {errors.area && <p className="text-sm text-destructive">{errors.area.message}</p>}
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="availability">Disponibilidade *</Label>
-        <Select
-          value={watchedValues.availability}
-          onValueChange={(value) =>
-            setValue('availability', value as 'part-time' | 'full-time' | 'freelance' | 'contract')
-          }
-        >
-          <SelectTrigger className={errors.availability ? 'border-destructive' : ''}>
-            <SelectValue placeholder="Selecione sua disponibilidade" />
-          </SelectTrigger>
-          <SelectContent>
-            {AVAILABILITY_OPTIONS.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <Controller
+          name="availability"
+          control={control}
+          render={({ field }) => (
+            <Select value={field.value} onValueChange={field.onChange}>
+              <SelectTrigger id="availability" className={errors.availability ? 'border-destructive' : ''}>
+                <SelectValue placeholder="Selecione sua disponibilidade" />
+              </SelectTrigger>
+              <SelectContent>
+                {AVAILABILITY_OPTIONS.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        />
         {errors.availability && (
           <p className="text-sm text-destructive">{errors.availability.message}</p>
         )}
@@ -617,6 +627,7 @@ function DocumentsStep({
           onDrop={handleDrop}
         >
           <input
+            id="resume"
             ref={fileInputRef}
             type="file"
             accept=".pdf,.doc,.docx"
@@ -670,6 +681,7 @@ function DocumentsStep({
           onDrop={handlePortfolioDrop}
         >
           <input
+            id="portfolio"
             ref={portfolioInputRef}
             type="file"
             multiple
@@ -796,6 +808,7 @@ export default function Collaborator() {
     setValue,
     watch,
     reset,
+    control,
   } = useForm<CollaboratorFormData>({
     resolver: zodResolver(collaboratorSchema),
     defaultValues: getSavedData(),
@@ -874,6 +887,13 @@ export default function Collaborator() {
 
   // Form navigation functions
   const _handleNextStep = useCallback(() => {
+    console.log('DEBUG - Current Step:', currentStep);
+    console.log('DEBUG - Watched Values:', watchedValues);
+    console.log('DEBUG - area:', watchedValues.area);
+    console.log('DEBUG - availability:', watchedValues.availability);
+    console.log('DEBUG - experience:', watchedValues.experience);
+    console.log('DEBUG - education:', watchedValues.education);
+
     const validationMap = {
       1: () => canProceedToStep2(watchedValues),
       2: () => canProceedToStep3(watchedValues),
@@ -881,14 +901,31 @@ export default function Collaborator() {
 
     const isCurrentStepValid = validationMap[currentStep as keyof typeof validationMap];
 
+    console.log('DEBUG - Validation Result:', isCurrentStepValid && isCurrentStepValid());
+
     if (isCurrentStepValid && !isCurrentStepValid()) {
-      toast({
-        title: 'Preencha todos os campos',
-        description: 'Complete os campos obrigatórios para continuar.',
-        variant: 'destructive',
-      });
+      console.log('DEBUG - Validation FAILED, showing toast');
+      if (currentStep === 2) {
+        console.log('DEBUG - Step 2 validation failed');
+        console.log('DEBUG - Experience length:', watchedValues.experience?.length || 0);
+        console.log('DEBUG - Education length:', watchedValues.education?.length || 0);
+        toast({
+          title: 'Preencha todos os campos obrigatórios',
+          description: 'Os campos de Experiência Profissional e Formação Acadêmica devem ter pelo menos 10 caracteres.',
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: 'Preencha todos os campos',
+          description: 'Complete os campos obrigatórios para continuar.',
+          variant: 'destructive',
+        });
+      }
+      console.log('DEBUG - Toast should have been displayed');
       return;
     }
+
+    console.log('DEBUG - Validation PASSED, advancing to next step');
 
     if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
@@ -971,7 +1008,7 @@ export default function Collaborator() {
         setIsSubmitting(false);
       }
     },
-    [user, navigate, toast, resumeFile, portfolioFiles, convertFileToBase64]
+    [user, navigate, toast, resumeFile, portfolioFiles, convertFileToBase64, clearSavedData]
   );
 
   const handleNewApplication = useCallback(() => {
@@ -1072,7 +1109,37 @@ export default function Collaborator() {
                   <Progress value={getStepProgress(currentStep, totalSteps)} className="h-2" />
                 </div>
 
-                <form onSubmit={handleSubmit(_handleFormSubmit)} className="space-y-6">
+                <form onSubmit={handleSubmit(_handleFormSubmit, (errors) => {
+                  console.error('Form validation errors:', errors);
+
+                  // Verificar em qual etapa estão os erros
+                  const step1Fields = ['fullName', 'email', 'phone', 'linkedin'];
+                  const step2Fields = ['area', 'availability', 'experience', 'education', 'portfolioUrl'];
+
+                  const hasStep1Errors = Object.keys(errors).some(key => step1Fields.includes(key));
+                  const hasStep2Errors = Object.keys(errors).some(key => step2Fields.includes(key));
+
+                  // Voltar para a etapa com erro
+                  if (hasStep1Errors) {
+                    setCurrentStep(1);
+                  } else if (hasStep2Errors) {
+                    setCurrentStep(2);
+                  }
+
+                  // Criar mensagem de erro detalhada
+                  const errorMessages = Object.keys(errors).map(key => {
+                    const error = errors[key as keyof typeof errors];
+                    return `${key}: ${error?.message || 'campo inválido'}`;
+                  });
+
+                  toast({
+                    title: 'Erro de validação',
+                    description: errorMessages.length > 0
+                      ? `Por favor, corrija: ${errorMessages.join(', ')}`
+                      : 'Verifique se todos os campos obrigatórios estão preenchidos corretamente.',
+                    variant: 'destructive',
+                  });
+                })} className="space-y-6">
                   {currentStep === 1 && (
                     <PersonalInfoStep
                       register={register}
@@ -1088,6 +1155,7 @@ export default function Collaborator() {
                       errors={errors}
                       watchedValues={watchedValues}
                       setValue={setValue}
+                      control={control}
                     />
                   )}
 
