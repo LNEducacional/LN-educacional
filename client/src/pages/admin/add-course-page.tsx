@@ -81,6 +81,9 @@ const AddCoursePageNew = () => {
   // Preencher formulário quando carregar curso existente
   useEffect(() => {
     if (existingCourse) {
+      console.log('📚 Curso carregado:', existingCourse);
+      console.log('📊 Nível do curso:', existingCourse.level);
+
       setFormData({
         title: existingCourse.title || '',
         description: existingCourse.description || '',
@@ -399,8 +402,9 @@ const AddCoursePageNew = () => {
                           <div className="space-y-2">
                             <Label htmlFor="level">Nível do Curso *</Label>
                             <Select
-                              key={`level-${existingCourse?.id || 'new'}`}
+                              key={`level-${formData.level}-${existingCourse?.id || 'new'}`}
                               value={formData.level}
+                              defaultValue={formData.level}
                               onValueChange={(value: any) =>
                                 setFormData((prev) => ({ ...prev, level: value }))
                               }
