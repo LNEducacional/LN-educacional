@@ -1,7 +1,7 @@
 import { CardSkeleton } from '@/components/skeletons/card-skeleton';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import {
   Select,
@@ -10,13 +10,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { CourseCard } from '@/components/course-card';
 import { useAuth } from '@/context/auth-context';
 import { useCart } from '@/context/cart-context';
 import { useToast } from '@/hooks/use-toast';
 import { queryKeys } from '@/lib/query-client';
 import api from '@/services/api';
 import { useQuery } from '@tanstack/react-query';
-import { BookOpen, CheckCircle, Clock, Play, Star, Users } from 'lucide-react';
+import { BookOpen, CheckCircle, Clock, Play } from 'lucide-react';
 import type React from 'react';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -110,6 +111,8 @@ const OnlineCourses: React.FC = () => {
       return response.data as Enrollment[];
     },
     enabled: !!user,
+    gcTime: 0, // Não fazer cache após usuário sair da página
+    staleTime: 0, // Sempre refazer a query ao voltar para a página
   });
 
   // Filtrar cursos
@@ -117,14 +120,18 @@ const OnlineCourses: React.FC = () => {
 
   // Obter cursos matriculados
   const enrolledCourses = useMemo(() => {
-    if (!enrollments) return [];
+    // DEBUG: Verificar estado de autenticação
+    console.log('[COURSES] User:', user ? `${user.name} (${user.id})` : 'null');
+    console.log('[COURSES] Enrollments:', enrollments?.length || 0);
+
+    if (!user || !enrollments) return [];
     return enrollments
       .filter((e) => e.course)
       .map((e) => ({
         ...(e.course as Course),
         progress: e.progress,
       }));
-  }, [enrollments]);
+  }, [user, enrollments]);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -220,7 +227,7 @@ const OnlineCourses: React.FC = () => {
           </div>
 
           {/* Meus Cursos (apenas se logado e tiver matrículas) */}
-          {user && enrolledCourses.length > 0 && (
+          {user && user.id && enrolledCourses && enrolledCourses.length > 0 && (
             <div className="mb-12 animate-slide-up" style={{ animationDelay: '0.1s' }}>
               <Card>
                 <CardHeader>
@@ -323,85 +330,13 @@ const OnlineCourses: React.FC = () => {
           ) : (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {filteredCourses.map((course, index) => (
-                <Card
+                <div
                   key={course.id}
-                  className="hover:shadow-lg transition-all duration-300 cursor-pointer animate-slide-up"
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                  onClick={() => handleCourseClick(course.id)}
+                  className="animate-slide-up"
+                  style={{ animationDelay: `${index * 0.05}s` }}
                 >
-                  <CardContent className="p-6">
-                    <div className="flex items-start gap-4 mb-4">
-                      {course.thumbnailUrl ? (
-                        <img
-                          src={course.thumbnailUrl}
-                          alt={course.title}
-                          className="w-16 h-16 rounded-lg object-cover"
-                        />
-                      ) : (
-                        <div className="w-16 h-16 rounded-lg bg-primary/10 flex items-center justify-center">
-                          <BookOpen className="h-8 w-8 text-primary" />
-                        </div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between mb-2">
-                          <h3 className="font-semibold text-lg leading-6 line-clamp-2">
-                            {course.title}
-                          </h3>
-                        </div>
-                        <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                          {course.description}
-                        </p>
-                        <p className="text-sm font-medium text-primary mb-3">{course.instructor}</p>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      <Badge variant="secondary" className={levelColors[course.level]}>
-                        {levelLabels[course.level]}
-                      </Badge>
-                      <Badge variant="outline" className="text-xs">
-                        {areaLabels[course.academicArea] || course.academicArea}
-                      </Badge>
-                    </div>
-
-                    <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
-                      <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-1">
-                          <Clock className="h-4 w-4" />
-                          {formatDuration(course.duration)}
-                        </div>
-                        {course.enrollmentsCount && (
-                          <div className="flex items-center gap-1">
-                            <Users className="h-4 w-4" />
-                            {course.enrollmentsCount}
-                          </div>
-                        )}
-                      </div>
-                      {course.rating && (
-                        <div className="flex items-center gap-1">
-                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                          {course.rating.toFixed(1)}
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div className="text-2xl font-bold text-primary">
-                        {formatPrice(course.price)}
-                      </div>
-                      <Button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleCourseClick(course.id);
-                        }}
-                        className="btn-hero"
-                      >
-                        <Play className="h-4 w-4 mr-2" />
-                        Ver Curso
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+                  <CourseCard course={course as any} variant="default" />
+                </div>
               ))}
             </div>
           )}
