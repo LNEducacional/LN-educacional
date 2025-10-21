@@ -495,45 +495,53 @@ export function AdminIntegrations() {
                         <Button
                           variant="outline"
                           size="icon"
-                          onClick={async (e) => {
+                          type="button"
+                          onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
 
                             const urlToCopy = webhookUrl || 'https://lneducacional.com.br/api/webhooks/asaas';
 
+                            // Simple fallback method that works everywhere
+                            const textArea = document.createElement('textarea');
+                            textArea.value = urlToCopy;
+                            textArea.style.position = 'fixed';
+                            textArea.style.top = '0';
+                            textArea.style.left = '0';
+                            textArea.style.width = '2em';
+                            textArea.style.height = '2em';
+                            textArea.style.padding = '0';
+                            textArea.style.border = 'none';
+                            textArea.style.outline = 'none';
+                            textArea.style.boxShadow = 'none';
+                            textArea.style.background = 'transparent';
+                            document.body.appendChild(textArea);
+                            textArea.focus();
+                            textArea.select();
+
                             try {
-                              // Try modern clipboard API first
-                              if (navigator.clipboard && navigator.clipboard.writeText) {
-                                await navigator.clipboard.writeText(urlToCopy);
+                              const successful = document.execCommand('copy');
+                              document.body.removeChild(textArea);
+
+                              if (successful) {
+                                toast({
+                                  title: (
+                                    <div className="flex items-center gap-2">
+                                      <CheckCircle className="h-5 w-5 text-green-600" />
+                                      <span>Copiado!</span>
+                                    </div>
+                                  ),
+                                  description: 'URL copiada para a área de transferência',
+                                  className: 'border-green-600',
+                                });
                               } else {
-                                // Fallback for older browsers
-                                const textArea = document.createElement('textarea');
-                                textArea.value = urlToCopy;
-                                textArea.style.position = 'fixed';
-                                textArea.style.left = '-999999px';
-                                document.body.appendChild(textArea);
-                                textArea.focus();
-                                textArea.select();
-
-                                try {
-                                  document.execCommand('copy');
-                                } finally {
-                                  document.body.removeChild(textArea);
-                                }
+                                throw new Error('Copy command failed');
                               }
-
-                              toast({
-                                title: (
-                                  <div className="flex items-center gap-2">
-                                    <CheckCircle className="h-5 w-5 text-green-600" />
-                                    <span>Copiado!</span>
-                                  </div>
-                                ),
-                                description: 'URL copiada para a área de transferência',
-                                className: 'border-green-600',
-                              });
                             } catch (error) {
                               console.error('Error copying to clipboard:', error);
+                              if (document.body.contains(textArea)) {
+                                document.body.removeChild(textArea);
+                              }
                               toast({
                                 title: 'Erro ao copiar',
                                 description: 'Não foi possível copiar a URL',
@@ -770,45 +778,52 @@ export function AdminIntegrations() {
                             variant="ghost"
                             size="icon"
                             className="absolute right-0 top-0"
-                            onClick={async (e) => {
+                            onClick={(e) => {
                               e.preventDefault();
                               e.stopPropagation();
 
                               const urlToCopy = formData[field.name];
 
+                              // Simple fallback method that works everywhere
+                              const textArea = document.createElement('textarea');
+                              textArea.value = urlToCopy;
+                              textArea.style.position = 'fixed';
+                              textArea.style.top = '0';
+                              textArea.style.left = '0';
+                              textArea.style.width = '2em';
+                              textArea.style.height = '2em';
+                              textArea.style.padding = '0';
+                              textArea.style.border = 'none';
+                              textArea.style.outline = 'none';
+                              textArea.style.boxShadow = 'none';
+                              textArea.style.background = 'transparent';
+                              document.body.appendChild(textArea);
+                              textArea.focus();
+                              textArea.select();
+
                               try {
-                                // Try modern clipboard API first
-                                if (navigator.clipboard && navigator.clipboard.writeText) {
-                                  await navigator.clipboard.writeText(urlToCopy);
+                                const successful = document.execCommand('copy');
+                                document.body.removeChild(textArea);
+
+                                if (successful) {
+                                  toast({
+                                    title: (
+                                      <div className="flex items-center gap-2">
+                                        <CheckCircle className="h-5 w-5 text-green-600" />
+                                        <span>Copiado!</span>
+                                      </div>
+                                    ),
+                                    description: 'URL copiada para a área de transferência',
+                                    className: 'border-green-600',
+                                  });
                                 } else {
-                                  // Fallback for older browsers
-                                  const textArea = document.createElement('textarea');
-                                  textArea.value = urlToCopy;
-                                  textArea.style.position = 'fixed';
-                                  textArea.style.left = '-999999px';
-                                  document.body.appendChild(textArea);
-                                  textArea.focus();
-                                  textArea.select();
-
-                                  try {
-                                    document.execCommand('copy');
-                                  } finally {
-                                    document.body.removeChild(textArea);
-                                  }
+                                  throw new Error('Copy command failed');
                                 }
-
-                                toast({
-                                  title: (
-                                    <div className="flex items-center gap-2">
-                                      <CheckCircle className="h-5 w-5 text-green-600" />
-                                      <span>Copiado!</span>
-                                    </div>
-                                  ),
-                                  description: 'URL copiada para a área de transferência',
-                                  className: 'border-green-600',
-                                });
                               } catch (error) {
                                 console.error('Error copying to clipboard:', error);
+                                if (document.body.contains(textArea)) {
+                                  document.body.removeChild(textArea);
+                                }
                                 toast({
                                   title: 'Erro ao copiar',
                                   description: 'Não foi possível copiar a URL',
