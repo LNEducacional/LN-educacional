@@ -257,7 +257,13 @@ export default function CheckoutModal({
         {/* Step 3: Result */}
         {step === 3 && checkoutResponse && (
           <div className="space-y-4">
-            {checkoutResponse.pix && <PixPayment data={checkoutResponse.pix} />}
+            {checkoutResponse.pix && (
+              <PixPayment
+                data={checkoutResponse.pix}
+                orderId={checkoutResponse.orderId}
+                onPaymentConfirmed={handleClose}
+              />
+            )}
             {checkoutResponse.boleto && <BoletoPayment data={checkoutResponse.boleto} />}
             {checkoutResponse.paymentMethod === 'CREDIT_CARD' && checkoutResponse.status === 'CONFIRMED' && (
               <div className="text-center py-8">
