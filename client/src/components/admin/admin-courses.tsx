@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import {
   Table,
   TableBody,
@@ -31,7 +32,7 @@ import {
 import { formatAcademicArea, formatDuration, formatPrice } from '@/utils/course-formatters';
 import api from '@/services/api';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowUpDown, Edit, Eye, Loader2, Plus, Search, Trash2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { ArrowUpDown, Edit, Eye, Loader2, Plus, Search, Star, Trash2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -45,6 +46,7 @@ interface Course {
   price: number;
   duration: number;
   status: string;
+  isFeatured: boolean;
   thumbnailUrl?: string;
 }
 
@@ -84,10 +86,27 @@ export function AdminCourses() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'courses'] });
       queryClient.invalidateQueries({ queryKey: ['courses'] });
+      queryClient.invalidateQueries({ queryKey: ['featured-courses'] });
       toast.success('Curso excluído com sucesso!');
     },
     onError: () => {
       toast.error('Erro ao excluir curso');
+    },
+  });
+
+  // Mutation para atualizar destaque do curso
+  const toggleFeaturedMutation = useMutation({
+    mutationFn: async ({ courseId, isFeatured }: { courseId: string; isFeatured: boolean }) => {
+      await api.put(`/admin/courses/${courseId}`, { isFeatured });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'courses'] });
+      queryClient.invalidateQueries({ queryKey: ['courses'] });
+      queryClient.invalidateQueries({ queryKey: ['featured-courses'] });
+      toast.success('Destaque atualizado com sucesso!');
+    },
+    onError: () => {
+      toast.error('Erro ao atualizar destaque');
     },
   });
 
@@ -362,6 +381,12 @@ export function AdminCourses() {
                         <ArrowUpDown className="h-4 w-4" />
                       </Button>
                     </TableHead>
+                    <TableHead className="text-center">
+                      <div className="flex items-center justify-center gap-1">
+                        <Star className="h-4 w-4" />
+                        Destaque
+                      </div>
+                    </TableHead>
                     <TableHead className="text-right"></TableHead>
                   </TableRow>
                 </TableHeader>
@@ -380,6 +405,20 @@ export function AdminCourses() {
                       <TableCell>{formatPrice(course.price)}</TableCell>
                       <TableCell>{formatDuration(course.duration)}</TableCell>
                       <TableCell>{getStatusBadge(course.status)}</TableCell>
+                      <TableCell className="text-center">
+                        <div className="flex items-center justify-center">
+                          <Switch
+                            checked={course.isFeatured}
+                            onCheckedChange={(checked) =>
+                              toggleFeaturedMutation.mutate({
+                                courseId: course.id,
+                                isFeatured: checked
+                              })
+                            }
+                            disabled={toggleFeaturedMutation.isPending}
+                          />
+                        </div>
+                      </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">
                           <Button

@@ -15,8 +15,8 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 const fetchFeaturedCourses = async (): Promise<Course[]> => {
-  const response = await api.get('/courses?featured=true&limit=6');
-  return response.data;
+  const response = await api.get('/courses?featured=true&limit=6&status=ACTIVE');
+  return response.data.courses || response.data;
 };
 
 export default function CoursesCarousel() {
