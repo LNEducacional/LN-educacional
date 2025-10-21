@@ -46,6 +46,7 @@ const coursesRoutes = async (app) => {
         const cacheKey = `courses:list:${JSON.stringify({
             area: query.area,
             featured: query.featured,
+            status: query.status,
             page: query.page || '1',
             limit: query.limit || '12',
         })}`;
@@ -60,6 +61,7 @@ const coursesRoutes = async (app) => {
         console.log('[COURSES] 📊 Fetching from database...');
         const courses = await courseService.getCourses({
             area: query.area,
+            status: query.status,
             featured: query.featured === 'true' ? true : query.featured === 'false' ? false : undefined,
             skip: (Number.parseInt(query.page || '1') - 1) * Number.parseInt(query.limit || '12'),
             take: Number.parseInt(query.limit || '12'),
