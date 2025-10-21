@@ -188,7 +188,7 @@ export function AdminIntegrations() {
     setIsDialogOpen(true);
   };
 
-  const handleOpenDialog = (integration?: ApiIntegration) => {
+  const handleOpenDialog = async (integration?: ApiIntegration) => {
     if (integration) {
       setEditingIntegration(integration);
 
@@ -196,14 +196,49 @@ export function AdminIntegrations() {
       const template = INTEGRATION_TEMPLATES.find(t => t.name === integration.name);
       setSelectedTemplate(template || null);
 
-      setFormData({
-        name: integration.name,
-        displayName: integration.displayName,
-        apiKey: integration.apiKey || '',
-        apiSecret: integration.apiSecret || '',
-        environment: integration.environment,
-        ...(integration.metadata || {}),
-      });
+      // Fetch full integration data including API keys
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL || 'http://localhost:3333'}/admin/integrations/${integration.id}`,
+          {
+            credentials: 'include',
+          }
+        );
+
+        if (response.ok) {
+          const fullData = await response.json();
+          setFormData({
+            name: fullData.name,
+            displayName: fullData.displayName,
+            apiKey: fullData.apiKey || '',
+            apiSecret: fullData.apiSecret || '',
+            environment: fullData.environment,
+            ...(fullData.metadata || {}),
+          });
+        } else {
+          // Fallback to using existing data
+          setFormData({
+            name: integration.name,
+            displayName: integration.displayName,
+            apiKey: integration.apiKey || '',
+            apiSecret: integration.apiSecret || '',
+            environment: integration.environment,
+            ...(integration.metadata || {}),
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching integration data:', error);
+        // Fallback to using existing data
+        setFormData({
+          name: integration.name,
+          displayName: integration.displayName,
+          apiKey: integration.apiKey || '',
+          apiSecret: integration.apiSecret || '',
+          environment: integration.environment,
+          ...(integration.metadata || {}),
+        });
+      }
+
       setIsDialogOpen(true);
     } else {
       // Show template selection
@@ -442,14 +477,22 @@ export function AdminIntegrations() {
                         <Button
                           variant="outline"
                           size="icon"
-                          onClick={() => {
-                            navigator.clipboard.writeText(
-                              webhookUrl || 'https://lneducacional.com.br/api/webhooks/asaas'
-                            );
-                            toast({
-                              title: 'Copiado!',
-                              description: 'URL copiada para a área de transferência',
-                            });
+                          onClick={async () => {
+                            try {
+                              const urlToCopy = webhookUrl || 'https://lneducacional.com.br/api/webhooks/asaas';
+                              await navigator.clipboard.writeText(urlToCopy);
+                              toast({
+                                title: 'Copiado!',
+                                description: 'URL copiada para a área de transferência',
+                              });
+                            } catch (error) {
+                              console.error('Error copying to clipboard:', error);
+                              toast({
+                                title: 'Erro ao copiar',
+                                description: 'Não foi possível copiar a URL',
+                                variant: 'destructive',
+                              });
+                            }
                           }}
                           title="Copiar URL"
                         >
@@ -680,12 +723,21 @@ export function AdminIntegrations() {
                             variant="ghost"
                             size="icon"
                             className="absolute right-0 top-0"
-                            onClick={() => {
-                              navigator.clipboard.writeText(formData[field.name]);
-                              toast({
-                                title: 'Copiado!',
-                                description: 'URL copiada para a área de transferência',
-                              });
+                            onClick={async () => {
+                              try {
+                                await navigator.clipboard.writeText(formData[field.name]);
+                                toast({
+                                  title: 'Copiado!',
+                                  description: 'URL copiada para a área de transferência',
+                                });
+                              } catch (error) {
+                                console.error('Error copying to clipboard:', error);
+                                toast({
+                                  title: 'Erro ao copiar',
+                                  description: 'Não foi possível copiar a URL',
+                                  variant: 'destructive',
+                                });
+                              }
                             }}
                             title="Copiar URL"
                           >
