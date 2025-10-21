@@ -958,6 +958,16 @@ export async function registerStudentRoutes(app: FastifyInstance) {
     }
   });
 
+  app.get('/student/enrollments', { preHandler: [app.authenticate] }, async (request, reply) => {
+    try {
+      const { getUserEnrollments } = await import('./services/course-content.service');
+      const enrollments = await getUserEnrollments(request.currentUser!.id);
+      reply.send(enrollments);
+    } catch (error: unknown) {
+      reply.status(400).send({ error: (error as Error).message });
+    }
+  });
+
   app.get('/student/library', { preHandler: [app.authenticate] }, async (request, reply) => {
     try {
       const library = await getStudentLibrary(request.currentUser!.id);

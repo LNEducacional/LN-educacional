@@ -810,6 +810,16 @@ async function registerStudentRoutes(app) {
             reply.status(400).send({ error: error.message });
         }
     });
+    app.get('/student/enrollments', { preHandler: [app.authenticate] }, async (request, reply) => {
+        try {
+            const { getUserEnrollments } = await Promise.resolve().then(() => __importStar(require('./services/course-content.service')));
+            const enrollments = await getUserEnrollments(request.currentUser.id);
+            reply.send(enrollments);
+        }
+        catch (error) {
+            reply.status(400).send({ error: error.message });
+        }
+    });
     app.get('/student/library', { preHandler: [app.authenticate] }, async (request, reply) => {
         try {
             const library = await getStudentLibrary(request.currentUser.id);
