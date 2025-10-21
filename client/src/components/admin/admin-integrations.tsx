@@ -495,10 +495,33 @@ export function AdminIntegrations() {
                         <Button
                           variant="outline"
                           size="icon"
-                          onClick={async () => {
+                          onClick={async (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+
+                            const urlToCopy = webhookUrl || 'https://lneducacional.com.br/api/webhooks/asaas';
+
                             try {
-                              const urlToCopy = webhookUrl || 'https://lneducacional.com.br/api/webhooks/asaas';
-                              await navigator.clipboard.writeText(urlToCopy);
+                              // Try modern clipboard API first
+                              if (navigator.clipboard && navigator.clipboard.writeText) {
+                                await navigator.clipboard.writeText(urlToCopy);
+                              } else {
+                                // Fallback for older browsers
+                                const textArea = document.createElement('textarea');
+                                textArea.value = urlToCopy;
+                                textArea.style.position = 'fixed';
+                                textArea.style.left = '-999999px';
+                                document.body.appendChild(textArea);
+                                textArea.focus();
+                                textArea.select();
+
+                                try {
+                                  document.execCommand('copy');
+                                } finally {
+                                  document.body.removeChild(textArea);
+                                }
+                              }
+
                               toast({
                                 title: (
                                   <div className="flex items-center gap-2">
@@ -747,9 +770,33 @@ export function AdminIntegrations() {
                             variant="ghost"
                             size="icon"
                             className="absolute right-0 top-0"
-                            onClick={async () => {
+                            onClick={async (e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+
+                              const urlToCopy = formData[field.name];
+
                               try {
-                                await navigator.clipboard.writeText(formData[field.name]);
+                                // Try modern clipboard API first
+                                if (navigator.clipboard && navigator.clipboard.writeText) {
+                                  await navigator.clipboard.writeText(urlToCopy);
+                                } else {
+                                  // Fallback for older browsers
+                                  const textArea = document.createElement('textarea');
+                                  textArea.value = urlToCopy;
+                                  textArea.style.position = 'fixed';
+                                  textArea.style.left = '-999999px';
+                                  document.body.appendChild(textArea);
+                                  textArea.focus();
+                                  textArea.select();
+
+                                  try {
+                                    document.execCommand('copy');
+                                  } finally {
+                                    document.body.removeChild(textArea);
+                                  }
+                                }
+
                                 toast({
                                   title: (
                                     <div className="flex items-center gap-2">
