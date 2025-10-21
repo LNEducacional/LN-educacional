@@ -199,6 +199,7 @@ export async function trackDownload(userId: string, itemId: string, itemType: st
 export async function getCourses(filters: {
   area?: string;
   status?: string;
+  featured?: boolean;
   skip?: number;
   take?: number;
 }) {
@@ -206,6 +207,7 @@ export async function getCourses(filters: {
 
   if (filters.area) where.academicArea = filters.area as AcademicArea;
   if (filters.status) where.status = filters.status as CourseStatus;
+  if (filters.featured !== undefined) where.isFeatured = filters.featured;
 
   const [courses, total] = await Promise.all([
     prisma.course.findMany({
@@ -237,12 +239,14 @@ export async function createCourse(data: {
   thumbnailUrl?: string;
   videoUrl?: string;
   status?: string;
+  isFeatured?: boolean;
 }) {
   return prisma.course.create({
     data: {
       ...data,
       academicArea: data.academicArea.toUpperCase() as AcademicArea,
       status: (data.status?.toUpperCase() || 'ACTIVE') as CourseStatus,
+      isFeatured: data.isFeatured !== undefined ? data.isFeatured : true,
     },
   });
 }
@@ -260,6 +264,7 @@ export async function updateCourse(
     thumbnailUrl: string;
     videoUrl: string;
     status: string;
+    isFeatured: boolean;
   }>
 ) {
   const updateData: Prisma.CourseUpdateInput = {};

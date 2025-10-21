@@ -37,6 +37,7 @@ const EditCoursePage = () => {
     price: 0,
     duration: 0,
     status: 'ACTIVE',
+    isFeatured: true,
   });
 
   // Buscar curso da API
@@ -78,6 +79,7 @@ const EditCoursePage = () => {
         price: course.price,
         duration: course.duration,
         status: course.status,
+        isFeatured: course.isFeatured !== undefined ? course.isFeatured : true,
       });
     }
   }, [course]);
@@ -379,6 +381,20 @@ const EditCoursePage = () => {
                         }
                       />
                       <Label htmlFor="status">Curso ativo</Label>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        id="isFeatured"
+                        checked={formData.isFeatured}
+                        onCheckedChange={(checked) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            isFeatured: checked,
+                          }))
+                        }
+                      />
+                      <Label htmlFor="isFeatured">Destacar curso na home</Label>
                     </div>
                   </CardContent>
                 </Card>

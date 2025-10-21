@@ -199,6 +199,7 @@ export declare function getUserEnrollments(userId: string): Promise<({
         duration: number;
         level: import(".prisma/client").$Enums.CourseLevel;
         videoUrl: string | null;
+        isFeatured: boolean;
     };
 } & {
     id: string;

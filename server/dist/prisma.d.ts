@@ -143,6 +143,7 @@ export declare function trackDownload(userId: string, itemId: string, itemType: 
 export declare function getCourses(filters: {
     area?: string;
     status?: string;
+    featured?: boolean;
     skip?: number;
     take?: number;
 }): Promise<{
@@ -160,6 +161,7 @@ export declare function getCourses(filters: {
         duration: number;
         level: import(".prisma/client").$Enums.CourseLevel;
         videoUrl: string | null;
+        isFeatured: boolean;
     }[];
     total: number;
 }>;
@@ -177,6 +179,7 @@ export declare function getCourseById(id: string): Promise<{
     duration: number;
     level: import(".prisma/client").$Enums.CourseLevel;
     videoUrl: string | null;
+    isFeatured: boolean;
 } | null>;
 export declare function createCourse(data: {
     title: string;
@@ -189,6 +192,7 @@ export declare function createCourse(data: {
     thumbnailUrl?: string;
     videoUrl?: string;
     status?: string;
+    isFeatured?: boolean;
 }): Promise<{
     title: string;
     description: string;
@@ -203,6 +207,7 @@ export declare function createCourse(data: {
     duration: number;
     level: import(".prisma/client").$Enums.CourseLevel;
     videoUrl: string | null;
+    isFeatured: boolean;
 }>;
 export declare function updateCourse(id: string, data: Partial<{
     title: string;
@@ -215,6 +220,7 @@ export declare function updateCourse(id: string, data: Partial<{
     thumbnailUrl: string;
     videoUrl: string;
     status: string;
+    isFeatured: boolean;
 }>): Promise<{
     title: string;
     description: string;
@@ -229,6 +235,7 @@ export declare function updateCourse(id: string, data: Partial<{
     duration: number;
     level: import(".prisma/client").$Enums.CourseLevel;
     videoUrl: string | null;
+    isFeatured: boolean;
 }>;
 export declare function deleteCourse(id: string): Promise<{
     title: string;
@@ -244,6 +251,7 @@ export declare function deleteCourse(id: string): Promise<{
     duration: number;
     level: import(".prisma/client").$Enums.CourseLevel;
     videoUrl: string | null;
+    isFeatured: boolean;
 }>;
 export declare function getEbooks(filters: {
     area?: string;
@@ -405,6 +413,7 @@ export declare function createOrder(data: {
             duration: number;
             level: import(".prisma/client").$Enums.CourseLevel;
             videoUrl: string | null;
+            isFeatured: boolean;
         } | null;
         ebook: {
             title: string;
@@ -482,6 +491,7 @@ export declare function getOrderById(id: string): Promise<({
             duration: number;
             level: import(".prisma/client").$Enums.CourseLevel;
             videoUrl: string | null;
+            isFeatured: boolean;
         } | null;
         ebook: {
             title: string;
@@ -674,6 +684,7 @@ export declare function processPaymentWebhook(data: {
             duration: number;
             level: import(".prisma/client").$Enums.CourseLevel;
             videoUrl: string | null;
+            isFeatured: boolean;
         } | null;
         ebook: {
             title: string;

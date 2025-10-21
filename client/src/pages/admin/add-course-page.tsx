@@ -37,6 +37,7 @@ const AddCoursePage = () => {
     price: 0,
     duration: 0,
     status: 'ACTIVE',
+    isFeatured: true,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -60,6 +61,7 @@ const AddCoursePage = () => {
         price: formData.price, // já está em centavos
         duration: formData.duration || 480, // duração padrão de 8 horas
         status: formData.status, // já está em ACTIVE ou INACTIVE
+        isFeatured: formData.isFeatured !== undefined ? formData.isFeatured : true, // padrão true
         level: 'BEGINNER', // padrão
         thumbnailUrl: '', // será atualizado depois se houver upload
         videoUrl: '' // será atualizado depois se houver upload
@@ -334,6 +336,20 @@ const AddCoursePage = () => {
                         }
                       />
                       <Label htmlFor="status">Curso ativo</Label>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        id="isFeatured"
+                        checked={formData.isFeatured}
+                        onCheckedChange={(checked) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            isFeatured: checked,
+                          }))
+                        }
+                      />
+                      <Label htmlFor="isFeatured">Destacar curso na home</Label>
                     </div>
                   </CardContent>
                 </Card>

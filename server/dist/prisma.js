@@ -198,6 +198,8 @@ async function getCourses(filters) {
         where.academicArea = filters.area;
     if (filters.status)
         where.status = filters.status;
+    if (filters.featured !== undefined)
+        where.isFeatured = filters.featured;
     const [courses, total] = await Promise.all([
         exports.prisma.course.findMany({
             where,
@@ -220,6 +222,7 @@ async function createCourse(data) {
             ...data,
             academicArea: data.academicArea.toUpperCase(),
             status: (data.status?.toUpperCase() || 'ACTIVE'),
+            isFeatured: data.isFeatured !== undefined ? data.isFeatured : true,
         },
     });
 }

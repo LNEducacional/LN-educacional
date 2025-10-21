@@ -67,6 +67,7 @@ export declare function getStudentCourses(userId: string): Promise<{
     duration?: number | undefined;
     level?: import(".prisma/client").$Enums.CourseLevel | undefined;
     videoUrl?: string | null | undefined;
+    isFeatured?: boolean | undefined;
 }[]>;
 export declare function getStudentLibrary(userId: string): Promise<{
     id: string;
@@ -140,6 +141,7 @@ export declare function completeCourse(userId: string, courseId: string, grade: 
         duration: number;
         level: import(".prisma/client").$Enums.CourseLevel;
         videoUrl: string | null;
+        isFeatured: boolean;
     };
 } & {
     id: string;

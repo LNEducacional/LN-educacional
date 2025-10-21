@@ -71,6 +71,7 @@ export interface Course {
   thumbnailUrl?: string;
   videoUrl?: string;
   status: 'ACTIVE' | 'INACTIVE';
+  isFeatured: boolean;
   createdAt: string;
   modules?: CourseModule[];
   enrollments?: CourseEnrollment[];
@@ -97,6 +98,7 @@ export interface CourseFormData {
   price: number;
   duration: number;
   status: CourseStatus;
+  isFeatured?: boolean;
   thumbnail?: File;
   video?: File;
 }
