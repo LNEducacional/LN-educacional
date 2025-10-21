@@ -123,11 +123,12 @@ const paymentRoutes: FastifyPluginAsync = async (app) => {
           dueDate: dueDateStr,
           description: `Curso: ${course.title}`,
           externalReference: order.id,
-          installmentCount,
         };
 
-        // Só adicionar installmentValue se houver parcelamento (> 1)
+        // Só adicionar campos de parcelamento se houver parcelamento real (> 1)
+        // Para pagamento à vista (PIX, Boleto, Cartão 1x), NÃO enviar esses campos
         if (installmentCount > 1) {
+          chargeData.installmentCount = installmentCount;
           chargeData.installmentValue = (course.price / 100) / installmentCount;
         }
 
