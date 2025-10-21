@@ -22,6 +22,7 @@ import { useApi } from '@/hooks/use-api';
 import {
   AlertCircle,
   CheckCircle,
+  Copy,
   CreditCard,
   Edit,
   Eye,
@@ -73,6 +74,8 @@ interface IntegrationTemplate {
     required: boolean;
     options?: { value: string; label: string }[];
     helper?: string;
+    readonly?: boolean;
+    defaultValue?: string;
   }[];
 }
 
@@ -94,11 +97,13 @@ const INTEGRATION_TEMPLATES: IntegrationTemplate[] = [
       },
       {
         name: 'webhookUrl',
-        label: 'URL do Webhook (opcional)',
+        label: 'URL do Webhook',
         type: 'text',
-        placeholder: 'https://seusite.com.br/api/webhooks/asaas',
+        placeholder: '',
         required: false,
-        helper: 'URL para receber notificações de eventos de pagamento',
+        readonly: true,
+        defaultValue: 'https://lneducacional.com.br/api/webhooks/asaas',
+        helper: 'Cole esta URL no painel Asaas em: Configurações > Integrações > Webhooks',
       },
     ],
   },
@@ -173,6 +178,9 @@ export function AdminIntegrations() {
     template.fields.forEach((field) => {
       if (field.type === 'select' && field.options && field.options.length > 0) {
         defaultValues[field.name] = field.options[0].value;
+      }
+      if (field.defaultValue) {
+        defaultValues[field.name] = field.defaultValue;
       }
     });
 
@@ -596,14 +604,36 @@ export function AdminIntegrations() {
                         </Button>
                       </div>
                     ) : (
-                      <Input
-                        id={field.name}
-                        type={field.type}
-                        value={formData[field.name] || ''}
-                        onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })}
-                        placeholder={field.placeholder}
-                        required={field.required}
-                      />
+                      <div className="relative">
+                        <Input
+                          id={field.name}
+                          type={field.type}
+                          value={formData[field.name] || ''}
+                          onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })}
+                          placeholder={field.placeholder}
+                          required={field.required}
+                          readOnly={field.readonly}
+                          className={field.readonly ? 'pr-10 bg-muted' : ''}
+                        />
+                        {field.readonly && formData[field.name] && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="absolute right-0 top-0"
+                            onClick={() => {
+                              navigator.clipboard.writeText(formData[field.name]);
+                              toast({
+                                title: 'Copiado!',
+                                description: 'URL copiada para a área de transferência',
+                              });
+                            }}
+                            title="Copiar URL"
+                          >
+                            <Copy className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
                     )}
 
                     {field.helper && (
