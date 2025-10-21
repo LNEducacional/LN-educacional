@@ -302,10 +302,16 @@ export function AdminIntegrations() {
       }
 
       toast({
-        title: 'Sucesso!',
+        title: (
+          <div className="flex items-center gap-2">
+            <CheckCircle className="h-5 w-5 text-green-600" />
+            <span>Sucesso!</span>
+          </div>
+        ),
         description: editingIntegration
           ? 'Integração atualizada com sucesso!'
           : 'Integração criada com sucesso!',
+        className: 'border-green-600',
       });
 
       handleCloseDialog();
@@ -334,8 +340,14 @@ export function AdminIntegrations() {
       }
 
       toast({
-        title: 'Sucesso!',
+        title: (
+          <div className="flex items-center gap-2">
+            <CheckCircle className="h-5 w-5 text-green-600" />
+            <span>Sucesso!</span>
+          </div>
+        ),
         description: 'Status da integração alterado com sucesso!',
+        className: 'border-green-600',
       });
 
       refetch();
@@ -367,8 +379,14 @@ export function AdminIntegrations() {
       }
 
       toast({
-        title: 'Sucesso!',
+        title: (
+          <div className="flex items-center gap-2">
+            <CheckCircle className="h-5 w-5 text-green-600" />
+            <span>Sucesso!</span>
+          </div>
+        ),
         description: 'Integração excluída com sucesso!',
+        className: 'border-green-600',
       });
 
       refetch();
@@ -482,8 +500,14 @@ export function AdminIntegrations() {
                               const urlToCopy = webhookUrl || 'https://lneducacional.com.br/api/webhooks/asaas';
                               await navigator.clipboard.writeText(urlToCopy);
                               toast({
-                                title: 'Copiado!',
+                                title: (
+                                  <div className="flex items-center gap-2">
+                                    <CheckCircle className="h-5 w-5 text-green-600" />
+                                    <span>Copiado!</span>
+                                  </div>
+                                ),
                                 description: 'URL copiada para a área de transferência',
+                                className: 'border-green-600',
                               });
                             } catch (error) {
                               console.error('Error copying to clipboard:', error);
@@ -727,8 +751,14 @@ export function AdminIntegrations() {
                               try {
                                 await navigator.clipboard.writeText(formData[field.name]);
                                 toast({
-                                  title: 'Copiado!',
+                                  title: (
+                                    <div className="flex items-center gap-2">
+                                      <CheckCircle className="h-5 w-5 text-green-600" />
+                                      <span>Copiado!</span>
+                                    </div>
+                                  ),
                                   description: 'URL copiada para a área de transferência',
+                                  className: 'border-green-600',
                                 });
                               } catch (error) {
                                 console.error('Error copying to clipboard:', error);
