@@ -93,17 +93,6 @@ const INTEGRATION_TEMPLATES: IntegrationTemplate[] = [
         helper: 'Você pode gerar sua API Key em: Configurações > Integrações no painel Asaas',
       },
       {
-        name: 'environment',
-        label: 'Ambiente',
-        type: 'select',
-        required: true,
-        options: [
-          { value: 'production', label: 'Produção' },
-          { value: 'sandbox', label: 'Sandbox (Testes)' },
-        ],
-        helper: 'Use Sandbox para testes. As API Keys de Sandbox são diferentes das de Produção.',
-      },
-      {
         name: 'webhookUrl',
         label: 'URL do Webhook (opcional)',
         type: 'text',
@@ -405,7 +394,6 @@ export function AdminIntegrations() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Nome</TableHead>
-                  <TableHead>Ambiente</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Criado em</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
@@ -415,11 +403,6 @@ export function AdminIntegrations() {
                 {integrations.map((integration) => (
                   <TableRow key={integration.id}>
                     <TableCell className="font-medium">{integration.displayName}</TableCell>
-                    <TableCell>
-                      <Badge variant={integration.environment === 'production' ? 'default' : 'secondary'}>
-                        {integration.environment === 'production' ? 'Produção' : 'Sandbox'}
-                      </Badge>
-                    </TableCell>
                     <TableCell>
                       {integration.isActive ? (
                         <Badge variant="default" className="bg-green-600">
@@ -708,23 +691,6 @@ export function AdminIntegrations() {
                     </div>
                   </div>
 
-                  <div className="grid gap-2">
-                    <Label htmlFor="environment">Ambiente</Label>
-                    <Select
-                      value={formData.environment || 'production'}
-                      onValueChange={(value: 'production' | 'sandbox') =>
-                        setFormData({ ...formData, environment: value })
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="production">Produção</SelectItem>
-                        <SelectItem value="sandbox">Sandbox (Testes)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
                 </>
               )}
             </div>
