@@ -2153,6 +2153,57 @@ export async function registerAdminRoutes(app: FastifyInstance) {
     }
   );
 
+  // Upload de anexos para aulas
+  app.post('/upload/lesson-attachment',
+    { preHandler: [app.authenticate, app.requireAdmin] },
+    async (request, reply) => {
+      try {
+        const data = await request.file();
+
+        if (!data) {
+          return reply.status(400).send({ error: 'Nenhum arquivo enviado' });
+        }
+
+        // Validate file type - accept documents, PDFs, presentations, spreadsheets, archives
+        const allowedTypes = [
+          'application/pdf',
+          'application/msword',
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          'application/vnd.ms-powerpoint',
+          'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+          'application/vnd.ms-excel',
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          'application/zip',
+          'application/x-rar-compressed',
+          'application/x-7z-compressed'
+        ];
+
+        if (!allowedTypes.includes(data.mimetype)) {
+          return reply.status(400).send({
+            error: 'Tipo de arquivo não permitido. Apenas PDF, Word, PowerPoint, Excel e arquivos comprimidos são aceitos.'
+          });
+        }
+
+        // Validate file size (50MB max for lesson attachments)
+        const buffer = await data.toBuffer();
+        if (buffer.length > 50 * 1024 * 1024) {
+          return reply.status(400).send({
+            error: 'Arquivo muito grande. Tamanho máximo permitido: 50MB.'
+          });
+        }
+
+        const uploaded = await uploadFile(data, 'lesson-attachments');
+        reply.send({
+          url: uploaded.url,
+          size: uploaded.size,
+          mimetype: uploaded.mimetype
+        });
+      } catch (error: unknown) {
+        reply.status(500).send({ error: (error as Error).message });
+      }
+    }
+  );
+
   // Verificar status da aplicação (público)
   app.get<{ Params: IdParams; Querystring: { email: string } }>(
     '/collaborator/application/status/:id',
@@ -3467,6 +3518,11 @@ export async function registerNewsletterRoutes(app: FastifyInstance) {
   await app.register(newsletterRoutes);
 }
 
+export async function registerNotificationRoutes(app: FastifyInstance) {
+  const notificationRoutes = (await import('./routes/notifications')).default;
+  await app.register(notificationRoutes);
+}
+
 export async function registerAllRoutes(app: FastifyInstance) {
   await registerProductRoutes(app);
   await registerOrderRoutes(app);
@@ -3476,4 +3532,9 @@ export async function registerAllRoutes(app: FastifyInstance) {
   await registerEnhancedCoursesRoutes(app);
   await registerAnalyticsRoutes(app);
   await registerNewsletterRoutes(app);
+  await registerNotificationRoutes(app);
+
+  // Register payment routes
+  const paymentRoutes = await import('./routes/payments');
+  await app.register(paymentRoutes.default);
 }

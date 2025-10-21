@@ -41,6 +41,7 @@ exports.registerCustomPapersRoutes = registerCustomPapersRoutes;
 exports.registerEnhancedCoursesRoutes = registerEnhancedCoursesRoutes;
 exports.registerAnalyticsRoutes = registerAnalyticsRoutes;
 exports.registerNewsletterRoutes = registerNewsletterRoutes;
+exports.registerNotificationRoutes = registerNotificationRoutes;
 exports.registerAllRoutes = registerAllRoutes;
 const zod_1 = require("zod");
 const prisma_1 = require("./prisma");
@@ -1717,6 +1718,49 @@ async function registerAdminRoutes(app) {
             reply.status(500).send({ error: error.message });
         }
     });
+    // Upload de anexos para aulas
+    app.post('/upload/lesson-attachment', { preHandler: [app.authenticate, app.requireAdmin] }, async (request, reply) => {
+        try {
+            const data = await request.file();
+            if (!data) {
+                return reply.status(400).send({ error: 'Nenhum arquivo enviado' });
+            }
+            // Validate file type - accept documents, PDFs, presentations, spreadsheets, archives
+            const allowedTypes = [
+                'application/pdf',
+                'application/msword',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'application/vnd.ms-powerpoint',
+                'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+                'application/vnd.ms-excel',
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'application/zip',
+                'application/x-rar-compressed',
+                'application/x-7z-compressed'
+            ];
+            if (!allowedTypes.includes(data.mimetype)) {
+                return reply.status(400).send({
+                    error: 'Tipo de arquivo não permitido. Apenas PDF, Word, PowerPoint, Excel e arquivos comprimidos são aceitos.'
+                });
+            }
+            // Validate file size (50MB max for lesson attachments)
+            const buffer = await data.toBuffer();
+            if (buffer.length > 50 * 1024 * 1024) {
+                return reply.status(400).send({
+                    error: 'Arquivo muito grande. Tamanho máximo permitido: 50MB.'
+                });
+            }
+            const uploaded = await (0, upload_service_1.uploadFile)(data, 'lesson-attachments');
+            reply.send({
+                url: uploaded.url,
+                size: uploaded.size,
+                mimetype: uploaded.mimetype
+            });
+        }
+        catch (error) {
+            reply.status(500).send({ error: error.message });
+        }
+    });
     // Verificar status da aplicação (público)
     app.get('/collaborator/application/status/:id', async (request, reply) => {
         try {
@@ -2764,6 +2808,10 @@ async function registerNewsletterRoutes(app) {
     const newsletterRoutes = (await Promise.resolve().then(() => __importStar(require('./routes/newsletter')))).default;
     await app.register(newsletterRoutes);
 }
+async function registerNotificationRoutes(app) {
+    const notificationRoutes = (await Promise.resolve().then(() => __importStar(require('./routes/notifications')))).default;
+    await app.register(notificationRoutes);
+}
 async function registerAllRoutes(app) {
     await registerProductRoutes(app);
     await registerOrderRoutes(app);
@@ -2773,5 +2821,9 @@ async function registerAllRoutes(app) {
     await registerEnhancedCoursesRoutes(app);
     await registerAnalyticsRoutes(app);
     await registerNewsletterRoutes(app);
+    await registerNotificationRoutes(app);
+    // Register payment routes
+    const paymentRoutes = await Promise.resolve().then(() => __importStar(require('./routes/payments')));
+    await app.register(paymentRoutes.default);
 }
 //# sourceMappingURL=routes.js.map

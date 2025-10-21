@@ -7,5 +7,6 @@ export declare function registerCustomPapersRoutes(app: FastifyInstance): Promis
 export declare function registerEnhancedCoursesRoutes(app: FastifyInstance): Promise<void>;
 export declare function registerAnalyticsRoutes(app: FastifyInstance): Promise<void>;
 export declare function registerNewsletterRoutes(app: FastifyInstance): Promise<void>;
+export declare function registerNotificationRoutes(app: FastifyInstance): Promise<void>;
 export declare function registerAllRoutes(app: FastifyInstance): Promise<void>;
 //# sourceMappingURL=routes.d.ts.map
