@@ -29,15 +29,55 @@ const paymentRoutes: FastifyPluginAsync = async (app) => {
       ccv: z.string(),
     }).optional(),
     installments: z.number().min(1).max(12).optional(),
+    registration: z.object({
+      password: z.string().min(8),
+    }).optional(),
   });
 
   app.post(
     '/checkout/create',
-    { preHandler: app.authenticate },
     async (request, reply) => {
       try {
         const body = createCheckoutSchema.parse(request.body);
-        const userId = request.currentUser!.id;
+
+        let userId: string;
+        let isNewUser = false;
+
+        // Se há dados de registro, criar novo usuário
+        if (body.registration) {
+          // Verificar se email já existe
+          const existingUser = await prisma.user.findUnique({
+            where: { email: body.customer.email },
+          });
+
+          if (existingUser) {
+            return reply.status(400).send({ error: 'Email já cadastrado. Faça login para continuar.' });
+          }
+
+          // Criar novo usuário
+          const bcrypt = require('bcrypt');
+          const hashedPassword = await bcrypt.hash(body.registration.password, 10);
+
+          const newUser = await prisma.user.create({
+            data: {
+              name: body.customer.name,
+              email: body.customer.email,
+              password: hashedPassword,
+              role: 'STUDENT',
+            },
+          });
+
+          userId = newUser.id;
+          isNewUser = true;
+        } else {
+          // Usuário deve estar autenticado
+          try {
+            await app.authenticate(request, reply);
+            userId = request.currentUser!.id;
+          } catch (error) {
+            return reply.status(401).send({ error: 'Autenticação necessária' });
+          }
+        }
 
         // Buscar curso
         const course = await prisma.course.findUnique({
@@ -195,7 +235,7 @@ const paymentRoutes: FastifyPluginAsync = async (app) => {
             },
           });
 
-          return reply.send({
+          const response: any = {
             success: true,
             orderId: order.id,
             chargeId: charge.id,
@@ -205,7 +245,21 @@ const paymentRoutes: FastifyPluginAsync = async (app) => {
               qrCodeImage: pixData.encodedImage,
               expirationDate: pixData.expirationDate,
             },
-          });
+          };
+
+          // Se é novo usuário, enviar token para auto-login
+          if (isNewUser) {
+            const token = app.jwt.sign({ userId, role: 'STUDENT' });
+            response.token = token;
+            response.user = {
+              id: userId,
+              name: body.customer.name,
+              email: body.customer.email,
+              role: 'STUDENT',
+            };
+          }
+
+          return reply.send(response);
         }
 
         // Para Boleto

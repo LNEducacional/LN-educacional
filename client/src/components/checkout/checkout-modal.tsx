@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CreditCard, QrCode, Receipt, Check, Loader2 } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { CreditCard, QrCode, Receipt, Check, Loader2, Eye, EyeOff } from 'lucide-react';
 import { useCheckout, type CheckoutData } from '@/hooks/use-checkout';
 import { useAuth } from '@/context/auth-context';
 import { formatPrice } from '@/utils/course-formatters';
@@ -33,6 +34,15 @@ export default function CheckoutModal({
   const [step, setStep] = useState(1);
   const [paymentMethod, setPaymentMethod] = useState<'CREDIT_CARD' | 'PIX' | 'BOLETO'>('CREDIT_CARD');
 
+  // Registration data (for non-authenticated users)
+  const [registrationData, setRegistrationData] = useState({
+    password: '',
+    confirmPassword: '',
+    acceptTerms: false,
+  });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   // Step 1: Customer data
   const [customerData, setCustomerData] = useState({
     name: user?.name || '',
@@ -58,6 +68,20 @@ export default function CheckoutModal({
       if (!customerData.name || !customerData.email || !customerData.cpfCnpj) {
         return;
       }
+
+      // Se não estiver logado, validar campos de registro
+      if (!user) {
+        if (!registrationData.password || registrationData.password.length < 8) {
+          return;
+        }
+        if (registrationData.password !== registrationData.confirmPassword) {
+          return;
+        }
+        if (!registrationData.acceptTerms) {
+          return;
+        }
+      }
+
       setStep(2);
     }
   };
@@ -78,6 +102,12 @@ export default function CheckoutModal({
       ...(paymentMethod === 'CREDIT_CARD' && {
         creditCard: creditCardData,
         installments,
+      }),
+      // Se não estiver logado, incluir dados de registro
+      ...(!user && {
+        registration: {
+          password: registrationData.password,
+        },
       }),
     };
 
@@ -101,6 +131,11 @@ export default function CheckoutModal({
       expiryMonth: '',
       expiryYear: '',
       ccv: '',
+    });
+    setRegistrationData({
+      password: '',
+      confirmPassword: '',
+      acceptTerms: false,
     });
     setInstallments(1);
     onOpenChange(false);
@@ -179,6 +214,86 @@ export default function CheckoutModal({
                 maxLength={11}
               />
             </div>
+
+            {/* Campos de registro para usuários não autenticados */}
+            {!user && (
+              <>
+                <div className="border-t pt-4 mt-4">
+                  <h3 className="font-semibold text-lg mb-4">Crie sua Conta</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Crie uma senha para acessar sua área de membros após a compra
+                  </p>
+                </div>
+
+                <div>
+                  <Label htmlFor="password">Senha *</Label>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? 'text' : 'password'}
+                      value={registrationData.password}
+                      onChange={(e) => setRegistrationData({ ...registrationData, password: e.target.value })}
+                      placeholder="Mínimo 8 caracteres"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-0 top-0 h-full"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </Button>
+                  </div>
+                  {registrationData.password && registrationData.password.length < 8 && (
+                    <p className="text-xs text-destructive mt-1">Senha deve ter pelo menos 8 caracteres</p>
+                  )}
+                </div>
+
+                <div>
+                  <Label htmlFor="confirmPassword">Confirmar Senha *</Label>
+                  <div className="relative">
+                    <Input
+                      id="confirmPassword"
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      value={registrationData.confirmPassword}
+                      onChange={(e) => setRegistrationData({ ...registrationData, confirmPassword: e.target.value })}
+                      placeholder="Digite a senha novamente"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-0 top-0 h-full"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    >
+                      {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </Button>
+                  </div>
+                  {registrationData.confirmPassword && registrationData.password !== registrationData.confirmPassword && (
+                    <p className="text-xs text-destructive mt-1">Senhas não coincidem</p>
+                  )}
+                </div>
+
+                <div className="flex items-start space-x-2">
+                  <Checkbox
+                    id="terms"
+                    checked={registrationData.acceptTerms}
+                    onCheckedChange={(checked) => setRegistrationData({ ...registrationData, acceptTerms: !!checked })}
+                  />
+                  <Label htmlFor="terms" className="text-sm leading-tight">
+                    Aceito os{' '}
+                    <a href="/terms" target="_blank" className="text-primary hover:underline">
+                      Termos de Uso
+                    </a>{' '}
+                    e a{' '}
+                    <a href="/privacy" target="_blank" className="text-primary hover:underline">
+                      Política de Privacidade
+                    </a>
+                  </Label>
+                </div>
+              </>
+            )}
 
             <Button onClick={handleNext} className="w-full" size="lg">
               Continuar para Pagamento
