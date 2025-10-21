@@ -52,7 +52,10 @@
       "Bash(systemctl reload:*)",
       "Read(//etc/nginx/**)",
       "Bash(pm2 info ln-educacional-client)",
-      "Bash(git add -A)"
+      "Bash(git add -A)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nfeat(admin): adicionar aba de integrações para gerenciar chaves de API\n\n- Criar modelo ApiIntegration no banco de dados\n- Adicionar rotas CRUD completas no backend (/admin/integrations)\n- Implementar componente AdminIntegrations com interface completa\n- Adicionar menu Integrações na sidebar do admin com ícone Link2\n- Configurar página de integrações com layout consistente\n- Suportar campos: apiKey, apiSecret, environment (production/sandbox)\n- Implementar toggle de visibilidade para campos sensíveis\n- Adicionar ações: criar, editar, ativar/desativar, excluir\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "WebSearch",
+      "Bash(git commit -m \"$(cat <<''EOF''\nfeat(admin): adicionar templates pré-configurados para Asaas e SendGrid\n\n- Criar sistema de templates de integração com cards selecionáveis\n- Adicionar template Asaas com campos: API Key, ambiente, webhook URL\n- Adicionar template SendGrid com campos: API Key, remetente\n- Implementar UX melhorada com seleção visual de integrações\n- Adicionar helper text com instruções para cada campo\n- Suportar campos dinâmicos baseados no template selecionado\n- Armazenar campos adicionais em metadata JSON\n- Manter opção de integração customizada para outros serviços\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
     ],
     "deny": [],
     "ask": []
