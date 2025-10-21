@@ -44,7 +44,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
+import { copyToClipboard } from '@/lib/toast';
+import { showToast } from '@/lib/toast';
 import { Textarea } from '@/components/ui/textarea';
 
 interface ApiIntegration {
@@ -143,13 +144,13 @@ const INTEGRATION_TEMPLATES: IntegrationTemplate[] = [
 ];
 
 export function AdminIntegrations() {
-  const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isTemplateSelectOpen, setIsTemplateSelectOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<IntegrationTemplate | null>(null);
   const [editingIntegration, setEditingIntegration] = useState<ApiIntegration | null>(null);
   const [showApiKey, setShowApiKey] = useState(false);
   const [showApiSecret, setShowApiSecret] = useState(false);
+  const [copiedStates, setCopiedStates] = useState<Record<string, boolean>>({});
 
   const [formData, setFormData] = useState<Record<string, any>>({
     environment: 'production',
@@ -301,27 +302,18 @@ export function AdminIntegrations() {
         throw new Error(errorData.error || 'Failed to save integration');
       }
 
-      toast({
-        title: (
-          <div className="flex items-center gap-2">
-            <CheckCircle className="h-5 w-5 text-green-600" />
-            <span>Sucesso!</span>
-          </div>
-        ),
-        description: editingIntegration
+      showToast.success(
+        editingIntegration
           ? 'Integração atualizada com sucesso!'
-          : 'Integração criada com sucesso!',
-        className: 'border-green-600',
-      });
+          : 'Integração criada com sucesso!'
+      );
 
       handleCloseDialog();
       refetch();
     } catch (error) {
-      toast({
-        title: 'Erro',
-        description: error instanceof Error ? error.message : 'Erro ao salvar integração',
-        variant: 'destructive',
-      });
+      showToast.error(
+        error instanceof Error ? error.message : 'Erro ao salvar integração'
+      );
     }
   };
 
@@ -339,24 +331,13 @@ export function AdminIntegrations() {
         throw new Error('Failed to toggle integration status');
       }
 
-      toast({
-        title: (
-          <div className="flex items-center gap-2">
-            <CheckCircle className="h-5 w-5 text-green-600" />
-            <span>Sucesso!</span>
-          </div>
-        ),
-        description: 'Status da integração alterado com sucesso!',
-        className: 'border-green-600',
-      });
+      showToast.success('Status da integração alterado com sucesso!');
 
       refetch();
     } catch (error) {
-      toast({
-        title: 'Erro',
-        description: error instanceof Error ? error.message : 'Erro ao alterar status',
-        variant: 'destructive',
-      });
+      showToast.error(
+        error instanceof Error ? error.message : 'Erro ao alterar status'
+      );
     }
   };
 
@@ -378,24 +359,13 @@ export function AdminIntegrations() {
         throw new Error('Failed to delete integration');
       }
 
-      toast({
-        title: (
-          <div className="flex items-center gap-2">
-            <CheckCircle className="h-5 w-5 text-green-600" />
-            <span>Sucesso!</span>
-          </div>
-        ),
-        description: 'Integração excluída com sucesso!',
-        className: 'border-green-600',
-      });
+      showToast.success('Integração excluída com sucesso!');
 
       refetch();
     } catch (error) {
-      toast({
-        title: 'Erro',
-        description: error instanceof Error ? error.message : 'Erro ao excluir integração',
-        variant: 'destructive',
-      });
+      showToast.error(
+        error instanceof Error ? error.message : 'Erro ao excluir integração'
+      );
     }
   };
 
@@ -493,64 +463,34 @@ export function AdminIntegrations() {
                           className="flex-1 text-sm bg-muted font-mono"
                         />
                         <Button
-                          variant="outline"
+                          variant={copiedStates[`card-${integration.id}`] ? "default" : "outline"}
                           size="icon"
                           type="button"
+                          className={copiedStates[`card-${integration.id}`] ? "bg-green-600 hover:bg-green-700 border-green-600" : ""}
                           onClick={async (e) => {
                             e.preventDefault();
                             e.stopPropagation();
 
                             const urlToCopy = webhookUrl || 'https://lneducacional.com.br/api/webhooks/asaas';
+                            const success = await copyToClipboard(urlToCopy, 'URL do webhook copiada!');
 
-                            try {
-                              // Try modern clipboard API first
-                              if (navigator.clipboard && window.isSecureContext) {
-                                await navigator.clipboard.writeText(urlToCopy);
-                                console.log('Copied using Clipboard API');
-                              } else {
-                                // Fallback to execCommand
-                                const textArea = document.createElement('textarea');
-                                textArea.value = urlToCopy;
-                                textArea.style.position = 'fixed';
-                                textArea.style.top = '0';
-                                textArea.style.left = '0';
-                                textArea.style.opacity = '0';
-                                document.body.appendChild(textArea);
-                                textArea.focus();
-                                textArea.select();
+                            if (success) {
+                              // Show visual feedback
+                              setCopiedStates(prev => ({ ...prev, [`card-${integration.id}`]: true }));
 
-                                const successful = document.execCommand('copy');
-                                document.body.removeChild(textArea);
-
-                                if (!successful) {
-                                  throw new Error('Copy command failed');
-                                }
-                                console.log('Copied using execCommand');
-                              }
-
-                              // Show success toast
-                              toast({
-                                title: (
-                                  <div className="flex items-center gap-2">
-                                    <CheckCircle className="h-5 w-5 text-green-600" />
-                                    <span>Copiado!</span>
-                                  </div>
-                                ),
-                                description: 'URL do webhook copiada com sucesso',
-                                className: 'border-green-600',
-                              });
-                            } catch (error) {
-                              console.error('Error copying to clipboard:', error);
-                              toast({
-                                title: 'Erro ao copiar',
-                                description: 'Não foi possível copiar a URL',
-                                variant: 'destructive',
-                              });
+                              // Reset after 2 seconds
+                              setTimeout(() => {
+                                setCopiedStates(prev => ({ ...prev, [`card-${integration.id}`]: false }));
+                              }, 2000);
                             }
                           }}
-                          title="Copiar URL"
+                          title={copiedStates[`card-${integration.id}`] ? "Copiado!" : "Copiar URL"}
                         >
-                          <Copy className="h-4 w-4" />
+                          {copiedStates[`card-${integration.id}`] ? (
+                            <CheckCircle className="h-4 w-4" />
+                          ) : (
+                            <Copy className="h-4 w-4" />
+                          )}
                         </Button>
                       </div>
                       <p className="text-xs text-muted-foreground">
@@ -776,62 +716,31 @@ export function AdminIntegrations() {
                             type="button"
                             variant="ghost"
                             size="icon"
-                            className="absolute right-0 top-0"
+                            className={`absolute right-0 top-0 ${copiedStates[`form-${field.name}`] ? 'text-green-600' : ''}`}
                             onClick={async (e) => {
                               e.preventDefault();
                               e.stopPropagation();
 
                               const urlToCopy = formData[field.name];
+                              const success = await copyToClipboard(urlToCopy, 'URL do webhook copiada!');
 
-                              try {
-                                // Try modern clipboard API first
-                                if (navigator.clipboard && window.isSecureContext) {
-                                  await navigator.clipboard.writeText(urlToCopy);
-                                  console.log('Copied using Clipboard API');
-                                } else {
-                                  // Fallback to execCommand
-                                  const textArea = document.createElement('textarea');
-                                  textArea.value = urlToCopy;
-                                  textArea.style.position = 'fixed';
-                                  textArea.style.top = '0';
-                                  textArea.style.left = '0';
-                                  textArea.style.opacity = '0';
-                                  document.body.appendChild(textArea);
-                                  textArea.focus();
-                                  textArea.select();
+                              if (success) {
+                                // Show visual feedback
+                                setCopiedStates(prev => ({ ...prev, [`form-${field.name}`]: true }));
 
-                                  const successful = document.execCommand('copy');
-                                  document.body.removeChild(textArea);
-
-                                  if (!successful) {
-                                    throw new Error('Copy command failed');
-                                  }
-                                  console.log('Copied using execCommand');
-                                }
-
-                                // Show success toast
-                                toast({
-                                  title: (
-                                    <div className="flex items-center gap-2">
-                                      <CheckCircle className="h-5 w-5 text-green-600" />
-                                      <span>Copiado!</span>
-                                    </div>
-                                  ),
-                                  description: 'URL do webhook copiada com sucesso',
-                                  className: 'border-green-600',
-                                });
-                              } catch (error) {
-                                console.error('Error copying to clipboard:', error);
-                                toast({
-                                  title: 'Erro ao copiar',
-                                  description: 'Não foi possível copiar a URL',
-                                  variant: 'destructive',
-                                });
+                                // Reset after 2 seconds
+                                setTimeout(() => {
+                                  setCopiedStates(prev => ({ ...prev, [`form-${field.name}`]: false }));
+                                }, 2000);
                               }
                             }}
-                            title="Copiar URL"
+                            title={copiedStates[`form-${field.name}`] ? "Copiado!" : "Copiar URL"}
                           >
-                            <Copy className="h-4 w-4" />
+                            {copiedStates[`form-${field.name}`] ? (
+                              <CheckCircle className="h-4 w-4" />
+                            ) : (
+                              <Copy className="h-4 w-4" />
+                            )}
                           </Button>
                         )}
                       </div>
