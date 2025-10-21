@@ -381,83 +381,142 @@ export function AdminIntegrations() {
         </Button>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Integrações Configuradas</CardTitle>
-          <CardDescription>
-            Lista de todas as integrações ativas no sistema
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {integrations.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground mb-4">Nenhuma integração configurada</p>
-              <Button onClick={() => handleOpenDialog()}>
-                <Plus className="h-4 w-4 mr-2" />
-                Adicionar Primeira Integração
-              </Button>
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Criado em</TableHead>
-                  <TableHead className="text-right">Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {integrations.map((integration) => (
-                  <TableRow key={integration.id}>
-                    <TableCell className="font-medium">{integration.displayName}</TableCell>
-                    <TableCell>
-                      {integration.isActive ? (
-                        <Badge variant="default" className="bg-green-600">
-                          <CheckCircle className="h-3 w-3 mr-1" />
-                          Ativo
-                        </Badge>
-                      ) : (
-                        <Badge variant="secondary">
-                          <XCircle className="h-3 w-3 mr-1" />
-                          Inativo
-                        </Badge>
-                      )}
-                    </TableCell>
-                    <TableCell>{new Date(integration.createdAt).toLocaleDateString('pt-BR')}</TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex items-center justify-end gap-2">
+{integrations.length === 0 ? (
+        <Card>
+          <CardContent className="text-center py-12">
+            <p className="text-muted-foreground mb-4">Nenhuma integração configurada</p>
+            <Button onClick={() => handleOpenDialog()}>
+              <Plus className="h-4 w-4 mr-2" />
+              Adicionar Primeira Integração
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {integrations.map((integration) => {
+            const template = INTEGRATION_TEMPLATES.find(t => t.name === integration.name);
+            const Icon = template?.icon || Wrench;
+            const color = template?.color || 'bg-gray-500';
+            const webhookUrl = integration.metadata?.webhookUrl;
+
+            return (
+              <Card key={integration.id} className="relative">
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className={`${color} p-3 rounded-lg text-white`}>
+                        <Icon className="h-6 w-6" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-lg">{integration.displayName}</CardTitle>
+                        <CardDescription className="mt-1">
+                          {integration.isActive ? (
+                            <Badge variant="default" className="bg-green-600">
+                              <CheckCircle className="h-3 w-3 mr-1" />
+                              Ativo
+                            </Badge>
+                          ) : (
+                            <Badge variant="secondary">
+                              <XCircle className="h-3 w-3 mr-1" />
+                              Inativo
+                            </Badge>
+                          )}
+                        </CardDescription>
+                      </div>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Webhook URL Section (only for Asaas) */}
+                  {integration.name === 'asaas' && (
+                    <div className="space-y-2">
+                      <Label className="text-xs font-medium text-muted-foreground">
+                        URL do Webhook
+                      </Label>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          value={webhookUrl || 'https://lneducacional.com.br/api/webhooks/asaas'}
+                          readOnly
+                          className="flex-1 text-sm bg-muted font-mono"
+                        />
                         <Button
-                          variant="ghost"
+                          variant="outline"
                           size="icon"
-                          onClick={() => handleToggleStatus(integration.id)}
-                          title={integration.isActive ? 'Desativar' : 'Ativar'}
+                          onClick={() => {
+                            navigator.clipboard.writeText(
+                              webhookUrl || 'https://lneducacional.com.br/api/webhooks/asaas'
+                            );
+                            toast({
+                              title: 'Copiado!',
+                              description: 'URL copiada para a área de transferência',
+                            });
+                          }}
+                          title="Copiar URL"
                         >
-                          <Power className={`h-4 w-4 ${integration.isActive ? 'text-green-600' : 'text-gray-400'}`} />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleOpenDialog(integration)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDelete(integration.id)}
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
+                          <Copy className="h-4 w-4" />
                         </Button>
                       </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+                      <p className="text-xs text-muted-foreground">
+                        Cole esta URL no painel Asaas em: Configurações {'>'} Webhooks
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Email Info (only for SendGrid) */}
+                  {integration.name === 'sendgrid' && integration.metadata?.senderEmail && (
+                    <div className="space-y-1">
+                      <Label className="text-xs font-medium text-muted-foreground">
+                        Remetente
+                      </Label>
+                      <p className="text-sm">
+                        {integration.metadata.senderName && (
+                          <span className="font-medium">{integration.metadata.senderName}</span>
+                        )}
+                        {integration.metadata.senderName && ' '}
+                        <span className="text-muted-foreground">&lt;{integration.metadata.senderEmail}&gt;</span>
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-2 pt-2 border-t">
+                    <Button
+                      variant={integration.isActive ? "default" : "outline"}
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => handleToggleStatus(integration.id)}
+                    >
+                      <Power className="h-4 w-4 mr-2" />
+                      {integration.isActive ? 'Desativar' : 'Ativar'}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleOpenDialog(integration)}
+                    >
+                      <Edit className="h-4 w-4 mr-2" />
+                      Editar
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDelete(integration.id)}
+                      className="text-destructive hover:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+
+                  {/* Created Date */}
+                  <p className="text-xs text-muted-foreground text-center">
+                    Criado em {new Date(integration.createdAt).toLocaleDateString('pt-BR')}
+                  </p>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
 
       {/* Template Selection Dialog */}
       <Dialog open={isTemplateSelectOpen} onOpenChange={setIsTemplateSelectOpen}>
