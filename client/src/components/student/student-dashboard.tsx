@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { useAuth } from '@/context/auth-context';
 import { useApi } from '@/hooks/use-api';
+import { useNavigate } from 'react-router-dom';
 import {
   Award,
   BookOpen,
@@ -42,6 +43,7 @@ interface RecentActivity {
 
 export function StudentDashboard() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const {
     data: dashboardData,
     loading,
@@ -150,6 +152,7 @@ export function StudentDashboard() {
               <div
                 key={course.id}
                 className="flex items-center gap-4 p-3 rounded-lg border border-border hover:bg-accent/50 transition-colors cursor-pointer"
+                onClick={() => navigate(`/student/courses/${course.id}`)}
               >
                 <img
                   src={course.thumbnailUrl || '/placeholder-course.jpg'}

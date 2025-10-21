@@ -1,5 +1,5 @@
 import api from '@/services/api';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useDebounce } from './use-debounce';
 
 interface SearchResult {
@@ -44,12 +44,21 @@ interface SearchResponse {
 }
 
 export const useSearch = (initialQuery = '') => {
+  const isMountedRef = useRef(false);
   const [query, setQuery] = useState(initialQuery);
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const debouncedQuery = useDebounce(query, 500);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   const formatPapers = useCallback(
     (papers: SearchPaper[]) =>
@@ -103,6 +112,8 @@ export const useSearch = (initialQuery = '') => {
   );
 
   const handleSearchError = useCallback((err: unknown) => {
+    if (!isMountedRef.current) return;
+
     const errorMessage = err instanceof Error ? err.message : 'Erro ao buscar produtos';
     setError(errorMessage);
     setResults([]);
@@ -115,24 +126,32 @@ export const useSearch = (initialQuery = '') => {
   const search = useCallback(
     async (searchQuery: string) => {
       if (!isValidQuery(searchQuery)) {
-        setResults([]);
+        if (isMountedRef.current) {
+          setResults([]);
+        }
         return;
       }
 
-      setLoading(true);
-      setError(null);
+      if (isMountedRef.current) {
+        setLoading(true);
+        setError(null);
+      }
 
       try {
         const response = await api.get<SearchResponse>('/search', {
           params: { q: searchQuery },
         });
 
-        const formattedResults = processSearchResults(response.data);
-        setResults(formattedResults);
+        if (isMountedRef.current) {
+          const formattedResults = processSearchResults(response.data);
+          setResults(formattedResults);
+        }
       } catch (err: unknown) {
         handleSearchError(err);
       } finally {
-        setLoading(false);
+        if (isMountedRef.current) {
+          setLoading(false);
+        }
       }
     },
     [processSearchResults, handleSearchError, isValidQuery]
@@ -142,7 +161,9 @@ export const useSearch = (initialQuery = '') => {
     if (debouncedQuery) {
       search(debouncedQuery);
     } else {
-      setResults([]);
+      if (isMountedRef.current) {
+        setResults([]);
+      }
     }
   }, [debouncedQuery, search]);
 

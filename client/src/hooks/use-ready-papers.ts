@@ -1,6 +1,6 @@
 import api from '@/services/api';
 import type { ReadyPaper } from '@/types/paper';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface UseReadyPapersOptions {
   type?: string;
@@ -15,12 +15,23 @@ interface ReadyPapersResponse {
 }
 
 export function useReadyPapers(options?: UseReadyPapersOptions) {
+  const isMountedRef = useRef(false);
   const [papers, setPapers] = useState<ReadyPaper[]>([]);
   const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
+  useEffect(() => {
+    isMountedRef.current = true;
+
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
   const fetchPapers = useCallback(async () => {
+    if (!isMountedRef.current) return;
+
     try {
       setIsLoading(true);
       setError(null);
@@ -36,23 +47,32 @@ export function useReadyPapers(options?: UseReadyPapersOptions) {
 
       const response = await api.get<ReadyPapersResponse>('/admin/papers', { params });
 
-      setPapers(response.data.papers);
-      setTotal(response.data.total);
+      if (isMountedRef.current) {
+        setPapers(response.data.papers);
+        setTotal(response.data.total);
+      }
     } catch (err) {
-      setError(err instanceof Error ? err : new Error('Failed to fetch papers'));
-      setPapers([]);
-      setTotal(0);
+      if (isMountedRef.current) {
+        setError(err instanceof Error ? err : new Error('Failed to fetch papers'));
+        setPapers([]);
+        setTotal(0);
+      }
     } finally {
-      setIsLoading(false);
+      if (isMountedRef.current) {
+        setIsLoading(false);
+      }
     }
   }, [options?.type, options?.area, options?.skip, options?.take]);
 
   const deletePaper = useCallback(async (id: string) => {
     try {
       await api.delete(`/admin/papers/${id}`);
-      // Atualizar lista local removendo o paper deletado
-      setPapers((prev) => prev.filter((p) => p.id !== id));
-      setTotal((prev) => prev - 1);
+
+      if (isMountedRef.current) {
+        // Atualizar lista local removendo o paper deletado
+        setPapers((prev) => prev.filter((p) => p.id !== id));
+        setTotal((prev) => prev - 1);
+      }
       return { success: true };
     } catch (err) {
       throw err instanceof Error ? err : new Error('Failed to delete paper');

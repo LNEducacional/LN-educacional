@@ -49,7 +49,10 @@
       "Read(//etc/nginx/sites-enabled/**)",
       "Read(//etc/nginx/sites-available/**)",
       "Bash(nginx:*)",
-      "Bash(systemctl reload:*)"
+      "Bash(systemctl reload:*)",
+      "Read(//etc/nginx/**)",
+      "Bash(pm2 info ln-educacional-client)",
+      "Bash(git add -A)"
     ],
     "deny": [],
     "ask": []

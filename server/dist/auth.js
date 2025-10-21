@@ -102,7 +102,7 @@ async function registerUser(data) {
         where: { email: data.email },
     });
     if (existingUser) {
-        throw new Error('User already exists');
+        throw new Error('E-mail já cadastrado');
     }
     const hashedPassword = await hashPassword(data.password);
     const user = await prisma_1.prisma.user.create({

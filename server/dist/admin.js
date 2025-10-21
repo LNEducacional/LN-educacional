@@ -93,6 +93,13 @@ exports.createMessageTemplate = createMessageTemplate;
 exports.updateMessageTemplate = updateMessageTemplate;
 exports.deleteMessageTemplate = deleteMessageTemplate;
 exports.getMessageTemplateById = getMessageTemplateById;
+exports.getApiIntegrations = getApiIntegrations;
+exports.getApiIntegrationById = getApiIntegrationById;
+exports.getApiIntegrationByName = getApiIntegrationByName;
+exports.createApiIntegration = createApiIntegration;
+exports.updateApiIntegration = updateApiIntegration;
+exports.deleteApiIntegration = deleteApiIntegration;
+exports.toggleApiIntegrationStatus = toggleApiIntegrationStatus;
 const prisma_1 = require("./prisma");
 const redis_1 = require("./redis");
 async function getAdminDashboardStats() {
@@ -2048,6 +2055,141 @@ async function deleteMessageTemplate(id) {
 async function getMessageTemplateById(id) {
     return prisma_1.prisma.messageTemplate.findUnique({
         where: { id }
+    });
+}
+// API Integrations Management Functions
+async function getApiIntegrations(filters) {
+    const where = {};
+    if (filters?.name) {
+        where.name = filters.name;
+    }
+    if (filters?.isActive !== undefined) {
+        where.isActive = filters.isActive;
+    }
+    const [integrations, total] = await Promise.all([
+        prisma_1.prisma.apiIntegration.findMany({
+            where,
+            skip: filters?.skip || 0,
+            take: filters?.take || 20,
+            orderBy: { createdAt: 'desc' },
+            select: {
+                id: true,
+                name: true,
+                displayName: true,
+                environment: true,
+                isActive: true,
+                createdAt: true,
+                updatedAt: true,
+                // Não retornar apiKey e apiSecret por segurança
+            }
+        }),
+        prisma_1.prisma.apiIntegration.count({ where })
+    ]);
+    return { integrations, total };
+}
+async function getApiIntegrationById(id) {
+    return prisma_1.prisma.apiIntegration.findUnique({
+        where: { id },
+        select: {
+            id: true,
+            name: true,
+            displayName: true,
+            environment: true,
+            isActive: true,
+            metadata: true,
+            createdAt: true,
+            updatedAt: true,
+            // Não retornar apiKey e apiSecret completos, apenas indicar que existem
+            apiKey: true,
+            apiSecret: true,
+        }
+    });
+}
+async function getApiIntegrationByName(name) {
+    return prisma_1.prisma.apiIntegration.findUnique({
+        where: { name },
+        select: {
+            id: true,
+            name: true,
+            displayName: true,
+            apiKey: true,
+            apiSecret: true,
+            environment: true,
+            isActive: true,
+            metadata: true,
+        }
+    });
+}
+async function createApiIntegration(data) {
+    // Verificar se já existe uma integração com esse nome
+    const existing = await prisma_1.prisma.apiIntegration.findUnique({
+        where: { name: data.name }
+    });
+    if (existing) {
+        throw new Error('Integration with this name already exists');
+    }
+    return prisma_1.prisma.apiIntegration.create({
+        data: {
+            name: data.name,
+            displayName: data.displayName,
+            apiKey: data.apiKey,
+            apiSecret: data.apiSecret,
+            environment: data.environment || 'production',
+            metadata: data.metadata,
+            isActive: true
+        },
+        select: {
+            id: true,
+            name: true,
+            displayName: true,
+            environment: true,
+            isActive: true,
+            createdAt: true,
+            updatedAt: true,
+        }
+    });
+}
+async function updateApiIntegration(id, data) {
+    return prisma_1.prisma.apiIntegration.update({
+        where: { id },
+        data,
+        select: {
+            id: true,
+            name: true,
+            displayName: true,
+            environment: true,
+            isActive: true,
+            metadata: true,
+            createdAt: true,
+            updatedAt: true,
+        }
+    });
+}
+async function deleteApiIntegration(id) {
+    return prisma_1.prisma.apiIntegration.delete({
+        where: { id }
+    });
+}
+async function toggleApiIntegrationStatus(id) {
+    const integration = await prisma_1.prisma.apiIntegration.findUnique({
+        where: { id },
+        select: { isActive: true }
+    });
+    if (!integration) {
+        throw new Error('Integration not found');
+    }
+    return prisma_1.prisma.apiIntegration.update({
+        where: { id },
+        data: { isActive: !integration.isActive },
+        select: {
+            id: true,
+            name: true,
+            displayName: true,
+            environment: true,
+            isActive: true,
+            createdAt: true,
+            updatedAt: true,
+        }
     });
 }
 //# sourceMappingURL=admin.js.map

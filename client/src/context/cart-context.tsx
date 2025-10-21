@@ -1,6 +1,6 @@
 import api from '@/services/api';
 import type React from 'react';
-import { createContext, useCallback, useContext, useEffect, useReducer } from 'react';
+import { createContext, useCallback, useContext, useEffect, useReducer, useRef } from 'react';
 
 export interface CartItem {
   id: string;
@@ -118,10 +118,20 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 const STORAGE_KEY = 'ln-educacional-cart';
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const isMountedRef = useRef(false);
   const [state, dispatch] = useReducer(cartReducer, {
     items: [],
     isOpen: false,
   });
+
+  // Manage component mount state
+  useEffect(() => {
+    isMountedRef.current = true;
+
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   // Load cart from localStorage on mount
   useEffect(() => {
@@ -132,7 +142,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         dispatch({ type: 'LOAD_CART', payload: items });
       }
     } catch (error) {
-      console.error('Error loading cart from localStorage:', error);
+      // Silently fail - cart will be empty
     }
   }, []);
 
@@ -141,7 +151,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state.items));
     } catch (error) {
-      console.error('Error saving cart to localStorage:', error);
+      // Silently fail - cart will not be persisted
     }
   }, [state.items]);
 
@@ -182,16 +192,18 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const unavailable = response.data.unavailable || [];
 
       if (unavailable.length > 0) {
-        // Remove itens indisponíveis do carrinho
-        for (const id of unavailable) {
-          dispatch({ type: 'REMOVE_ITEM', payload: id });
+        if (isMountedRef.current) {
+          // Remove itens indisponíveis do carrinho
+          for (const id of unavailable) {
+            dispatch({ type: 'REMOVE_ITEM', payload: id });
+          }
         }
         return false;
       }
 
       return true;
     } catch (error) {
-      console.error('Erro ao validar carrinho:', error);
+      // In case of validation error, allow checkout to proceed
       return true;
     }
   }, [state.items]);

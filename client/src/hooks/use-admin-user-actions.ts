@@ -1,5 +1,6 @@
 import { useToast } from '@/hooks/use-toast';
 import api from '@/services/api';
+import { getErrorMessage } from '@/lib/error';
 import { format } from 'date-fns';
 import { useCallback } from 'react';
 
@@ -43,7 +44,7 @@ export function useAdminUserActions(
       } catch (error: unknown) {
         toast({
           title: 'Erro ao criar usuário',
-          description: error.response?.data?.message || 'Não foi possível criar o usuário',
+          description: getErrorMessage(error, 'Não foi possível criar o usuário'),
           variant: 'destructive',
         });
         return false;

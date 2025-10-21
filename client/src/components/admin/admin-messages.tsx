@@ -83,7 +83,7 @@ export function AdminMessages() {
         status: statusFilter !== 'all' ? statusFilter : undefined,
         search: searchFilter || undefined,
       });
-      setContactMessages(result.items || []);
+      setContactMessages(result.messages || []);
     } catch (error) {
       console.error('Error fetching messages:', error);
       toast({

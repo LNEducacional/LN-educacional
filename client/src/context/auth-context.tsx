@@ -1,7 +1,9 @@
 import type React from 'react';
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import api from '../services/api';
+import { getErrorMessage } from '../lib/error';
 
 interface User {
   id: string;
@@ -43,17 +45,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const navigate = useNavigate();
 
   const checkAuth = useCallback(async () => {
-    console.log('[AUTH] 🔍 Checking authentication...');
     try {
-      console.log('[AUTH] 📡 Calling GET /auth/me...');
       const response = await api.get('/auth/me');
-      console.log('[AUTH] ✅ Response received:', response.data);
       setUser(response.data);
     } catch (error) {
-      console.log('[AUTH] ❌ Authentication check failed:', error.response?.status, error.response?.data);
       setUser(null);
     } finally {
-      console.log('[AUTH] ⏱️ Setting loading to false');
       setLoading(false);
     }
   }, []);
@@ -79,8 +76,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           navigate('/dashboard');
         }
       } catch (error: unknown) {
-        const message = error.response?.data?.message || 'Email ou senha inválidos';
-        throw new Error(message);
+        throw new Error(getErrorMessage(error, 'Email ou senha inválidos'));
       }
     },
     [navigate]
@@ -95,14 +91,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           password,
         });
 
+        // Seta o usuário retornado pelo registro
         setUser(response.data.user);
+
+        // Aguarda um pouco para garantir que cookies foram salvos
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        // Verifica autenticação para garantir que cookies estão OK
+        await checkAuth();
+
+        // Agora sim redireciona
         navigate('/dashboard');
       } catch (error: unknown) {
-        const message = error.response?.data?.message || 'Erro ao criar conta';
-        throw new Error(message);
+        throw new Error(getErrorMessage(error, 'Erro ao criar conta'));
       }
     },
-    [navigate]
+    [navigate, checkAuth]
   );
 
   const signOut = useCallback(async () => {
@@ -120,8 +124,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       await api.post('/auth/forgot-password', { email });
     } catch (error: unknown) {
-      const message = error.response?.data?.message || 'Erro ao enviar email de recuperação';
-      throw new Error(message);
+      throw new Error(getErrorMessage(error, 'Erro ao enviar email de recuperação'));
     }
   }, []);
 
@@ -131,8 +134,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         await api.post('/auth/reset-password', { token, password });
         navigate('/login');
       } catch (error: unknown) {
-        const message = error.response?.data?.message || 'Erro ao resetar senha';
-        throw new Error(message);
+        throw new Error(getErrorMessage(error, 'Erro ao resetar senha'));
       }
     },
     [navigate]
@@ -143,8 +145,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const response = await api.put('/student/profile', data);
       setUser(response.data);
     } catch (error: unknown) {
-      const message = error.response?.data?.message || 'Erro ao atualizar perfil';
-      throw new Error(message);
+      throw new Error(getErrorMessage(error, 'Erro ao atualizar perfil'));
     }
   }, []);
 

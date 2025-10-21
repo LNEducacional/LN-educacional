@@ -1252,4 +1252,97 @@ export declare function getMessageTemplateById(id: string): Promise<{
     variables: string[];
     createdBy: string;
 } | null>;
+export declare function getApiIntegrations(filters?: {
+    name?: string;
+    isActive?: boolean;
+    skip?: number;
+    take?: number;
+}): Promise<{
+    integrations: {
+        id: string;
+        createdAt: Date;
+        name: string;
+        updatedAt: Date;
+        isActive: boolean;
+        displayName: string;
+        environment: string;
+    }[];
+    total: number;
+}>;
+export declare function getApiIntegrationById(id: string): Promise<{
+    id: string;
+    createdAt: Date;
+    name: string;
+    updatedAt: Date;
+    metadata: import("@prisma/client/runtime/library").JsonValue;
+    isActive: boolean;
+    displayName: string;
+    apiKey: string;
+    apiSecret: string | null;
+    environment: string;
+} | null>;
+export declare function getApiIntegrationByName(name: string): Promise<{
+    id: string;
+    name: string;
+    metadata: import("@prisma/client/runtime/library").JsonValue;
+    isActive: boolean;
+    displayName: string;
+    apiKey: string;
+    apiSecret: string | null;
+    environment: string;
+} | null>;
+export declare function createApiIntegration(data: {
+    name: string;
+    displayName: string;
+    apiKey: string;
+    apiSecret?: string;
+    environment?: string;
+    metadata?: any;
+}): Promise<{
+    id: string;
+    createdAt: Date;
+    name: string;
+    updatedAt: Date;
+    isActive: boolean;
+    displayName: string;
+    environment: string;
+}>;
+export declare function updateApiIntegration(id: string, data: {
+    displayName?: string;
+    apiKey?: string;
+    apiSecret?: string;
+    environment?: string;
+    isActive?: boolean;
+    metadata?: any;
+}): Promise<{
+    id: string;
+    createdAt: Date;
+    name: string;
+    updatedAt: Date;
+    metadata: import("@prisma/client/runtime/library").JsonValue;
+    isActive: boolean;
+    displayName: string;
+    environment: string;
+}>;
+export declare function deleteApiIntegration(id: string): Promise<{
+    id: string;
+    createdAt: Date;
+    name: string;
+    updatedAt: Date;
+    metadata: import("@prisma/client/runtime/library").JsonValue | null;
+    isActive: boolean;
+    displayName: string;
+    apiKey: string;
+    apiSecret: string | null;
+    environment: string;
+}>;
+export declare function toggleApiIntegrationStatus(id: string): Promise<{
+    id: string;
+    createdAt: Date;
+    name: string;
+    updatedAt: Date;
+    isActive: boolean;
+    displayName: string;
+    environment: string;
+}>;
 //# sourceMappingURL=admin.d.ts.map

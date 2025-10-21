@@ -7,6 +7,7 @@ import { Edit, Loader2, Plus, Search, Trash2, UserCheck, UserX } from 'lucide-re
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '@/services/api';
+import { getErrorMessage } from '@/lib/error';
 import { useToast } from '@/hooks/use-toast';
 
 import {
@@ -59,16 +60,11 @@ export function AdminUsers() {
       try {
         setIsLoading(true);
         const response = await api.get<UsersResponse>('/admin/users');
-        console.log('API Response:', response);
-        console.log('Users data:', response.data);
-        console.log('Users array:', response.data.users);
         setUsers(response.data.users || []);
-      } catch (error: any) {
-        console.error('Error fetching users:', error);
-        console.error('Error response:', error.response);
+      } catch (error: unknown) {
         toast({
           title: 'Erro ao carregar usuários',
-          description: error.response?.data?.error || error.response?.data?.message || 'Não foi possível carregar a lista de usuários',
+          description: getErrorMessage(error, 'Não foi possível carregar a lista de usuários'),
           variant: 'destructive',
         });
       } finally {

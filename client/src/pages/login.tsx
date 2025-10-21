@@ -42,8 +42,8 @@ export default function Login() {
     if (!formData.password) {
       newErrors.password = 'Senha é obrigatória';
       isValid = false;
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Senha deve ter pelo menos 6 caracteres';
+    } else if (formData.password.length < 8) {
+      newErrors.password = 'Senha deve ter pelo menos 8 caracteres';
       isValid = false;
     }
 
@@ -67,11 +67,23 @@ export default function Login() {
         description: 'Redirecionando...',
       });
     } catch (error: unknown) {
-      setErrors({
-        email: '',
-        password: '',
-        general: error.message || 'E-mail ou senha inválidos',
-      });
+      // Type narrowing para acessar propriedades do erro de forma segura
+      let errorMessage = 'E-mail ou senha inválidos';
+
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      }
+
+      // Usar setTimeout para garantir que a atualização do DOM ocorra após o estado ser limpo
+      setTimeout(() => {
+        setErrors({
+          email: '',
+          password: '',
+          general: errorMessage,
+        });
+      }, 0);
     } finally {
       setIsLoading(false);
     }
@@ -135,7 +147,7 @@ export default function Login() {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* General Error */}
             {errors.general && (
-              <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 animate-fade-in">
+              <div key="general-error" className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 animate-fade-in">
                 <p className="text-sm text-destructive">{errors.general}</p>
               </div>
             )}
@@ -160,7 +172,7 @@ export default function Login() {
                 />
               </div>
               {errors.email && (
-                <p className="text-sm text-destructive animate-fade-in">{errors.email}</p>
+                <p key="email-error" className="text-sm text-destructive animate-fade-in">{errors.email}</p>
               )}
             </div>
 
@@ -194,7 +206,7 @@ export default function Login() {
                 </Button>
               </div>
               {errors.password && (
-                <p className="text-sm text-destructive animate-fade-in">{errors.password}</p>
+                <p key="password-error" className="text-sm text-destructive animate-fade-in">{errors.password}</p>
               )}
             </div>
 

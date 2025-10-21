@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import { getErrorMessage } from '../lib/error';
 
 interface User {
   id: string;
@@ -65,7 +66,7 @@ export const useAuth = () => {
 
         return response.data;
       } catch (error: unknown) {
-        const message = error.response?.data?.message || 'Erro ao fazer login';
+        const message = getErrorMessage(error, 'Erro ao fazer login');
         setAuthState({
           user: null,
           loading: false,
@@ -90,7 +91,7 @@ export const useAuth = () => {
         navigate('/dashboard');
         return response.data;
       } catch (error: unknown) {
-        const message = error.response?.data?.message || 'Erro ao criar conta';
+        const message = getErrorMessage(error, 'Erro ao criar conta');
         setAuthState({
           user: null,
           loading: false,

@@ -887,13 +887,6 @@ export default function Collaborator() {
 
   // Form navigation functions
   const _handleNextStep = useCallback(() => {
-    console.log('DEBUG - Current Step:', currentStep);
-    console.log('DEBUG - Watched Values:', watchedValues);
-    console.log('DEBUG - area:', watchedValues.area);
-    console.log('DEBUG - availability:', watchedValues.availability);
-    console.log('DEBUG - experience:', watchedValues.experience);
-    console.log('DEBUG - education:', watchedValues.education);
-
     const validationMap = {
       1: () => canProceedToStep2(watchedValues),
       2: () => canProceedToStep3(watchedValues),
@@ -901,14 +894,8 @@ export default function Collaborator() {
 
     const isCurrentStepValid = validationMap[currentStep as keyof typeof validationMap];
 
-    console.log('DEBUG - Validation Result:', isCurrentStepValid && isCurrentStepValid());
-
     if (isCurrentStepValid && !isCurrentStepValid()) {
-      console.log('DEBUG - Validation FAILED, showing toast');
       if (currentStep === 2) {
-        console.log('DEBUG - Step 2 validation failed');
-        console.log('DEBUG - Experience length:', watchedValues.experience?.length || 0);
-        console.log('DEBUG - Education length:', watchedValues.education?.length || 0);
         toast({
           title: 'Preencha todos os campos obrigatórios',
           description: 'Os campos de Experiência Profissional e Formação Acadêmica devem ter pelo menos 10 caracteres.',
@@ -921,11 +908,8 @@ export default function Collaborator() {
           variant: 'destructive',
         });
       }
-      console.log('DEBUG - Toast should have been displayed');
       return;
     }
-
-    console.log('DEBUG - Validation PASSED, advancing to next step');
 
     if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);

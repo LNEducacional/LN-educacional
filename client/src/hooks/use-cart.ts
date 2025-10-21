@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import api from '../services/api';
+import { getErrorMessage } from '../lib/error';
 
 export interface CartItem {
   id: string;
@@ -33,11 +34,14 @@ interface CheckoutResponse {
 const CART_STORAGE_KEY = 'ln_educacional_cart';
 
 export const useCart = () => {
+  const isMountedRef = useRef(false);
   const [items, setItems] = useState<CartItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    isMountedRef.current = true;
+
     const savedCart = localStorage.getItem(CART_STORAGE_KEY);
     if (savedCart) {
       try {
@@ -47,6 +51,10 @@ export const useCart = () => {
         console.error('Erro ao carregar carrinho:', error);
       }
     }
+
+    return () => {
+      isMountedRef.current = false;
+    };
   }, []);
 
   const saveCart = useCallback((newItems: CartItem[]) => {
@@ -110,6 +118,8 @@ export const useCart = () => {
 
   const checkout = useCallback(
     async (checkoutData: Omit<CheckoutData, 'items'>): Promise<CheckoutResponse> => {
+      if (!isMountedRef.current) return Promise.reject(new Error('Component unmounted'));
+
       setIsLoading(true);
       setError(null);
 
@@ -128,14 +138,19 @@ export const useCart = () => {
           paymentMethod: checkoutData.paymentMethod,
         });
 
-        clearCart();
+        if (isMountedRef.current) {
+          clearCart();
+        }
         return response.data;
       } catch (error: unknown) {
-        const message = error.response?.data?.message || 'Erro ao processar pagamento';
-        setError(message);
+        if (isMountedRef.current) {
+          setError(getErrorMessage(error, 'Erro ao processar pagamento'));
+        }
         throw error;
       } finally {
-        setIsLoading(false);
+        if (isMountedRef.current) {
+          setIsLoading(false);
+        }
       }
     },
     [items, clearCart]
@@ -150,8 +165,10 @@ export const useCart = () => {
       const unavailable = response.data.unavailable || [];
 
       if (unavailable.length > 0) {
-        const updatedItems = items.filter((item) => !unavailable.includes(item.id));
-        saveCart(updatedItems);
+        if (isMountedRef.current) {
+          const updatedItems = items.filter((item) => !unavailable.includes(item.id));
+          saveCart(updatedItems);
+        }
         return false;
       }
 

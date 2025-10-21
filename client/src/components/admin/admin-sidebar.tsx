@@ -20,6 +20,7 @@ import {
   Folder,
   LayoutDashboard,
   Library,
+  Link2,
   LogOut,
   Menu,
   MessageSquare,
@@ -107,6 +108,11 @@ const menuItems = [
     path: '/admin/downloads',
     title: 'Downloads',
     icon: Download,
+  },
+  {
+    path: '/admin/integracoes',
+    title: 'Integrações',
+    icon: Link2,
   },
 ];
 

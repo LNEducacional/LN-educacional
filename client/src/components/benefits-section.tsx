@@ -36,7 +36,7 @@ const benefits = [
 
 export function BenefitsSection() {
   return (
-    <section className="py-20 bg-gradient-subtle">
+    <section className="py-20 bg-gray-100">
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="text-center space-y-4 mb-16 animate-fade-in">

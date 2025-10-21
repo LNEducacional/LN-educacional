@@ -73,7 +73,7 @@ export async function registerUser(data: z.infer<typeof registerSchema>): Promis
   });
 
   if (existingUser) {
-    throw new Error('User already exists');
+    throw new Error('E-mail já cadastrado');
   }
 
   const hashedPassword = await hashPassword(data.password);

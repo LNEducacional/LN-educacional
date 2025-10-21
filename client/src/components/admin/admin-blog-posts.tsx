@@ -29,6 +29,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import blogService, { type BlogPost } from '@/services/blog.service';
+import { getErrorMessage } from '@/lib/error';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
@@ -76,9 +77,9 @@ export function AdminBlogPosts() {
     try {
       const data = await blogService.getAllPosts();
       setPosts(data.posts || []);
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.error('Erro ao carregar posts', {
-        description: error.response?.data?.message || 'Não foi possível carregar os posts do blog',
+        description: getErrorMessage(error, 'Não foi possível carregar os posts do blog'),
       });
       setPosts([]);
     } finally {
@@ -185,9 +186,9 @@ export function AdminBlogPosts() {
         description: `"${title}" foi removido.`,
       });
       loadPosts();
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.error('Erro ao excluir', {
-        description: error.response?.data?.message || 'Não foi possível excluir o post. Tente novamente.',
+        description: getErrorMessage(error, 'Não foi possível excluir o post. Tente novamente.'),
       });
     }
   };
@@ -199,9 +200,9 @@ export function AdminBlogPosts() {
         description: 'O status do post foi atualizado com sucesso.',
       });
       loadPosts();
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.error('Erro ao atualizar status', {
-        description: error.response?.data?.message || 'Não foi possível atualizar o status.',
+        description: getErrorMessage(error, 'Não foi possível atualizar o status.'),
       });
     }
   };

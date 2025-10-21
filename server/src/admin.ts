@@ -2397,3 +2397,176 @@ export async function getMessageTemplateById(id: string) {
     where: { id }
   });
 }
+
+// API Integrations Management Functions
+
+export async function getApiIntegrations(filters?: {
+  name?: string;
+  isActive?: boolean;
+  skip?: number;
+  take?: number;
+}) {
+  const where: Record<string, unknown> = {};
+
+  if (filters?.name) {
+    where.name = filters.name;
+  }
+
+  if (filters?.isActive !== undefined) {
+    where.isActive = filters.isActive;
+  }
+
+  const [integrations, total] = await Promise.all([
+    prisma.apiIntegration.findMany({
+      where,
+      skip: filters?.skip || 0,
+      take: filters?.take || 20,
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        name: true,
+        displayName: true,
+        environment: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true,
+        // Não retornar apiKey e apiSecret por segurança
+      }
+    }),
+    prisma.apiIntegration.count({ where })
+  ]);
+
+  return { integrations, total };
+}
+
+export async function getApiIntegrationById(id: string) {
+  return prisma.apiIntegration.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      name: true,
+      displayName: true,
+      environment: true,
+      isActive: true,
+      metadata: true,
+      createdAt: true,
+      updatedAt: true,
+      // Não retornar apiKey e apiSecret completos, apenas indicar que existem
+      apiKey: true,
+      apiSecret: true,
+    }
+  });
+}
+
+export async function getApiIntegrationByName(name: string) {
+  return prisma.apiIntegration.findUnique({
+    where: { name },
+    select: {
+      id: true,
+      name: true,
+      displayName: true,
+      apiKey: true,
+      apiSecret: true,
+      environment: true,
+      isActive: true,
+      metadata: true,
+    }
+  });
+}
+
+export async function createApiIntegration(data: {
+  name: string;
+  displayName: string;
+  apiKey: string;
+  apiSecret?: string;
+  environment?: string;
+  metadata?: any;
+}) {
+  // Verificar se já existe uma integração com esse nome
+  const existing = await prisma.apiIntegration.findUnique({
+    where: { name: data.name }
+  });
+
+  if (existing) {
+    throw new Error('Integration with this name already exists');
+  }
+
+  return prisma.apiIntegration.create({
+    data: {
+      name: data.name,
+      displayName: data.displayName,
+      apiKey: data.apiKey,
+      apiSecret: data.apiSecret,
+      environment: data.environment || 'production',
+      metadata: data.metadata,
+      isActive: true
+    },
+    select: {
+      id: true,
+      name: true,
+      displayName: true,
+      environment: true,
+      isActive: true,
+      createdAt: true,
+      updatedAt: true,
+    }
+  });
+}
+
+export async function updateApiIntegration(
+  id: string,
+  data: {
+    displayName?: string;
+    apiKey?: string;
+    apiSecret?: string;
+    environment?: string;
+    isActive?: boolean;
+    metadata?: any;
+  }
+) {
+  return prisma.apiIntegration.update({
+    where: { id },
+    data,
+    select: {
+      id: true,
+      name: true,
+      displayName: true,
+      environment: true,
+      isActive: true,
+      metadata: true,
+      createdAt: true,
+      updatedAt: true,
+    }
+  });
+}
+
+export async function deleteApiIntegration(id: string) {
+  return prisma.apiIntegration.delete({
+    where: { id }
+  });
+}
+
+export async function toggleApiIntegrationStatus(id: string) {
+  const integration = await prisma.apiIntegration.findUnique({
+    where: { id },
+    select: { isActive: true }
+  });
+
+  if (!integration) {
+    throw new Error('Integration not found');
+  }
+
+  return prisma.apiIntegration.update({
+    where: { id },
+    data: { isActive: !integration.isActive },
+    select: {
+      id: true,
+      name: true,
+      displayName: true,
+      environment: true,
+      isActive: true,
+      createdAt: true,
+      updatedAt: true,
+    }
+  });
+}

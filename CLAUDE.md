@@ -1,0 +1,1 @@
+- sem pre que fizer uma alteração faça o build no sistema e faça um git commit com semantica para não perder alterações bem sucedidas. Todas as perguntas e respostas me traga em português

@@ -971,7 +971,9 @@ async function registerAdminRoutes(app) {
     // Legal documents functions
     getLegalDocuments, getLegalDocumentByType, createLegalDocument, updateLegalDocument, deleteLegalDocument, getLegalDocumentVersions, 
     // Message templates functions
-    getMessageTemplates, createMessageTemplate, updateMessageTemplate, deleteMessageTemplate, getMessageTemplateById, getCollaboratorApplications, applyAsCollaborator, updateCollaboratorStatus, getAnalytics, getEbookAnalytics, getEbookDownloadsByPeriod, getCategories, getCategoryById, createCategory, updateCategory, deleteCategory, getTags, getTagById, createTag, updateTag, deleteTag, getComments, getCommentsByPostId, createComment, updateComment, deleteComment, approveComment, toggleLike, getPostLikeCount, getUserLikeStatus, getPostLikes, getRelatedPosts, generateSitemap, generateRssFeed, searchBlogPosts, } = await Promise.resolve().then(() => __importStar(require('./admin')));
+    getMessageTemplates, createMessageTemplate, updateMessageTemplate, deleteMessageTemplate, getMessageTemplateById, 
+    // API Integrations functions
+    getApiIntegrations, getApiIntegrationById, getApiIntegrationByName, createApiIntegration, updateApiIntegration, deleteApiIntegration, toggleApiIntegrationStatus, getCollaboratorApplications, applyAsCollaborator, updateCollaboratorStatus, getAnalytics, getEbookAnalytics, getEbookDownloadsByPeriod, getCategories, getCategoryById, createCategory, updateCategory, deleteCategory, getTags, getTagById, createTag, updateTag, deleteTag, getComments, getCommentsByPostId, createComment, updateComment, deleteComment, approveComment, toggleLike, getPostLikeCount, getUserLikeStatus, getPostLikes, getRelatedPosts, generateSitemap, generateRssFeed, searchBlogPosts, } = await Promise.resolve().then(() => __importStar(require('./admin')));
     app.get('/admin/dashboard/stats', { preHandler: [app.authenticate, app.requireAdmin] }, async (_request, reply) => {
         try {
             const stats = await getAdminDashboardStats();
@@ -2625,6 +2627,123 @@ async function registerAdminRoutes(app) {
     });
     // ===================================================================
     // END: ADMIN FREE PAPERS ROUTES
+    // ===================================================================
+    // ===================================================================
+    // START: ADMIN API INTEGRATIONS ROUTES
+    // ===================================================================
+    // GET /admin/integrations - Listar todas as integrações
+    app.get('/admin/integrations', { preHandler: [app.authenticate, app.requireAdmin] }, async (request, reply) => {
+        try {
+            const query = request.query;
+            const result = await getApiIntegrations({
+                name: query.name,
+                isActive: query.isActive === 'true' ? true : query.isActive === 'false' ? false : undefined,
+                skip: query.skip ? Number(query.skip) : undefined,
+                take: query.take ? Number(query.take) : undefined,
+            });
+            reply.send(result);
+        }
+        catch (error) {
+            reply.status(400).send({ error: error.message });
+        }
+    });
+    // GET /admin/integrations/:id - Obter integração específica
+    app.get('/admin/integrations/:id', { preHandler: [app.authenticate, app.requireAdmin] }, async (request, reply) => {
+        try {
+            const { id } = request.params;
+            const integration = await getApiIntegrationById(id);
+            if (!integration) {
+                return reply.status(404).send({ error: 'Integration not found' });
+            }
+            reply.send(integration);
+        }
+        catch (error) {
+            reply.status(400).send({ error: error.message });
+        }
+    });
+    // GET /admin/integrations/name/:name - Obter integração por nome
+    app.get('/admin/integrations/name/:name', { preHandler: [app.authenticate, app.requireAdmin] }, async (request, reply) => {
+        try {
+            const { name } = request.params;
+            const integration = await getApiIntegrationByName(name);
+            if (!integration) {
+                return reply.status(404).send({ error: 'Integration not found' });
+            }
+            reply.send(integration);
+        }
+        catch (error) {
+            reply.status(400).send({ error: error.message });
+        }
+    });
+    // POST /admin/integrations - Criar nova integração
+    const createIntegrationSchema = zod_1.z.object({
+        name: zod_1.z.string().min(1),
+        displayName: zod_1.z.string().min(1),
+        apiKey: zod_1.z.string().min(1),
+        apiSecret: zod_1.z.string().optional(),
+        environment: zod_1.z.enum(['production', 'sandbox']).optional(),
+        metadata: zod_1.z.any().optional(),
+    });
+    app.post('/admin/integrations', { preHandler: [app.authenticate, app.requireAdmin] }, async (request, reply) => {
+        try {
+            const body = createIntegrationSchema.parse(request.body);
+            const integration = await createApiIntegration(body);
+            reply.code(201).send(integration);
+        }
+        catch (error) {
+            if (error instanceof zod_1.z.ZodError) {
+                return reply.status(400).send({ error: error.errors });
+            }
+            reply.status(400).send({ error: error.message });
+        }
+    });
+    // PUT /admin/integrations/:id - Atualizar integração
+    const updateIntegrationSchema = zod_1.z.object({
+        displayName: zod_1.z.string().min(1).optional(),
+        apiKey: zod_1.z.string().min(1).optional(),
+        apiSecret: zod_1.z.string().optional(),
+        environment: zod_1.z.enum(['production', 'sandbox']).optional(),
+        isActive: zod_1.z.boolean().optional(),
+        metadata: zod_1.z.any().optional(),
+    });
+    app.put('/admin/integrations/:id', { preHandler: [app.authenticate, app.requireAdmin] }, async (request, reply) => {
+        try {
+            const { id } = request.params;
+            const body = updateIntegrationSchema.parse(request.body);
+            const integration = await updateApiIntegration(id, body);
+            reply.send(integration);
+        }
+        catch (error) {
+            if (error instanceof zod_1.z.ZodError) {
+                return reply.status(400).send({ error: error.errors });
+            }
+            reply.status(400).send({ error: error.message });
+        }
+    });
+    // DELETE /admin/integrations/:id - Deletar integração
+    app.delete('/admin/integrations/:id', { preHandler: [app.authenticate, app.requireAdmin] }, async (request, reply) => {
+        try {
+            const { id } = request.params;
+            await deleteApiIntegration(id);
+            reply.send({ success: true });
+        }
+        catch (error) {
+            reply.status(400).send({ error: error.message });
+        }
+    });
+    // PATCH /admin/integrations/:id/toggle - Ativar/desativar integração
+    app.patch('/admin/integrations/:id/toggle', { preHandler: [app.authenticate, app.requireAdmin] }, async (request, reply) => {
+        try {
+            const { id } = request.params;
+            const integration = await toggleApiIntegrationStatus(id);
+            reply.send(integration);
+        }
+        catch (error) {
+            reply.status(400).send({ error: error.message });
+        }
+    });
+    // ===================================================================
+    // END: ADMIN API INTEGRATIONS ROUTES
     // ===================================================================
 }
 async function registerCustomPapersRoutes(app) {

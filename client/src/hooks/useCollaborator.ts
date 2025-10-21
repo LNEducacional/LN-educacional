@@ -6,6 +6,7 @@ import collaboratorService, {
   CollaboratorApplication
 } from '../services/collaborator.service';
 import { useToast } from './use-toast';
+import { getErrorMessage } from '../lib/error';
 
 // Hook para perfil do colaborador (próprio perfil)
 export function useCollaboratorProfile() {
@@ -43,10 +44,10 @@ export function useApplyAsCollaborator() {
       // Invalidar cache do perfil para refletir nova aplicação
       queryClient.invalidateQueries({ queryKey: ['collaborator-profile'] });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: "Erro ao enviar aplicação",
-        description: error.response?.data?.message || "Tente novamente mais tarde.",
+        description: getErrorMessage(error, "Tente novamente mais tarde."),
         variant: "destructive",
       });
     },
@@ -80,10 +81,10 @@ export function useUpdateCollaboratorStatus() {
       // Invalidar cache das aplicações
       queryClient.invalidateQueries({ queryKey: ['collaborator-applications'] });
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       toast({
         title: "Erro ao atualizar status",
-        description: error.response?.data?.message || "Tente novamente mais tarde.",
+        description: getErrorMessage(error, "Tente novamente mais tarde."),
         variant: "destructive",
       });
     },

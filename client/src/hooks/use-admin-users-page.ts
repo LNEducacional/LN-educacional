@@ -1,6 +1,6 @@
 import { useToast } from '@/hooks/use-toast';
 import api from '@/services/api';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface User {
   id: string;
@@ -38,6 +38,7 @@ interface UserStats {
 }
 
 export function useAdminUsersPage() {
+  const isMountedRef = useRef(false);
   const { toast } = useToast();
   const [users, setUsers] = useState<User[]>([]);
   const [stats, setStats] = useState<UserStats | null>(null);
@@ -47,7 +48,17 @@ export function useAdminUsersPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
+  useEffect(() => {
+    isMountedRef.current = true;
+
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
   const fetchUsers = useCallback(async () => {
+    if (!isMountedRef.current) return;
+
     setLoading(true);
     try {
       const params: Record<string, string> = {};
@@ -60,16 +71,22 @@ export function useAdminUsersPage() {
         api.get('/admin/users/stats'),
       ]);
 
+      if (!isMountedRef.current) return;
+
       setUsers(usersResponse.data);
       setStats(statsResponse.data);
     } catch (_error) {
+      if (!isMountedRef.current) return;
+
       toast({
         title: 'Erro ao carregar usuários',
         description: 'Não foi possível carregar a lista de usuários',
         variant: 'destructive',
       });
     } finally {
-      setLoading(false);
+      if (isMountedRef.current) {
+        setLoading(false);
+      }
     }
   }, [searchQuery, roleFilter, statusFilter, toast]);
 
@@ -144,13 +161,18 @@ export function useAdminUsersPage() {
     async (user: User) => {
       try {
         const response = await api.get(`/admin/users/${user.id}`);
-        setSelectedUser(response.data);
+
+        if (isMountedRef.current) {
+          setSelectedUser(response.data);
+        }
       } catch (_error) {
-        toast({
-          title: 'Erro ao carregar detalhes',
-          description: 'Não foi possível carregar os detalhes do usuário',
-          variant: 'destructive',
-        });
+        if (isMountedRef.current) {
+          toast({
+            title: 'Erro ao carregar detalhes',
+            description: 'Não foi possível carregar os detalhes do usuário',
+            variant: 'destructive',
+          });
+        }
       }
     },
     [toast]

@@ -66,8 +66,8 @@ export default function Register() {
     if (!password) {
       return 'Senha é obrigatória';
     }
-    if (password.length < 6) {
-      return 'Senha deve ter pelo menos 6 caracteres';
+    if (password.length < 8) {
+      return 'Senha deve ter pelo menos 8 caracteres';
     }
     return '';
   };
@@ -127,17 +127,29 @@ export default function Register() {
         description: 'Bem-vindo à LN Educacional!',
       });
     } catch (error: unknown) {
-      if (error.message?.includes('email')) {
-        setErrors((prev) => ({
-          ...prev,
-          email: error.message,
-        }));
-      } else {
-        setErrors((prev) => ({
-          ...prev,
-          general: error.message || 'Erro ao criar conta. Tente novamente.',
-        }));
+      // Type narrowing para acessar propriedades do erro de forma segura
+      let errorMessage = 'Erro ao criar conta. Tente novamente.';
+
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (typeof error === 'string') {
+        errorMessage = error;
       }
+
+      // Usar setTimeout para garantir que a atualização do DOM ocorra após o estado ser limpo
+      setTimeout(() => {
+        if (errorMessage.toLowerCase().includes('email') || errorMessage.toLowerCase().includes('e-mail')) {
+          setErrors((prev) => ({
+            ...prev,
+            email: errorMessage,
+          }));
+        } else {
+          setErrors((prev) => ({
+            ...prev,
+            general: errorMessage,
+          }));
+        }
+      }, 0);
     } finally {
       setIsLoading(false);
     }
@@ -201,7 +213,7 @@ export default function Register() {
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* General Error */}
             {errors.general && (
-              <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 animate-fade-in">
+              <div key="general-error" className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 animate-fade-in">
                 <p className="text-sm text-destructive">{errors.general}</p>
               </div>
             )}
@@ -226,7 +238,7 @@ export default function Register() {
                 />
               </div>
               {errors.name && (
-                <p className="text-sm text-destructive animate-fade-in">{errors.name}</p>
+                <p key="name-error" className="text-sm text-destructive animate-fade-in">{errors.name}</p>
               )}
             </div>
 
@@ -250,7 +262,7 @@ export default function Register() {
                 />
               </div>
               {errors.email && (
-                <p className="text-sm text-destructive animate-fade-in">{errors.email}</p>
+                <p key="email-error" className="text-sm text-destructive animate-fade-in">{errors.email}</p>
               )}
             </div>
 
@@ -264,7 +276,7 @@ export default function Register() {
                 <Input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="Mínimo 6 caracteres"
+                  placeholder="Mínimo 8 caracteres"
                   value={formData.password}
                   onChange={(e) => handleInputChange('password', e.target.value)}
                   className={`pl-10 pr-10 transition-all duration-200 focus:ring-2 focus:ring-primary/20 ${
@@ -284,7 +296,7 @@ export default function Register() {
                 </Button>
               </div>
               {errors.password && (
-                <p className="text-sm text-destructive animate-fade-in">{errors.password}</p>
+                <p key="password-error" className="text-sm text-destructive animate-fade-in">{errors.password}</p>
               )}
             </div>
 
@@ -322,7 +334,7 @@ export default function Register() {
                 </Button>
               </div>
               {errors.confirmPassword && (
-                <p className="text-sm text-destructive animate-fade-in">{errors.confirmPassword}</p>
+                <p key="confirm-password-error" className="text-sm text-destructive animate-fade-in">{errors.confirmPassword}</p>
               )}
             </div>
 
@@ -351,7 +363,7 @@ export default function Register() {
                 </Label>
               </div>
               {errors.acceptTerms && (
-                <p className="text-sm text-destructive animate-fade-in">{errors.acceptTerms}</p>
+                <p key="terms-error" className="text-sm text-destructive animate-fade-in">{errors.acceptTerms}</p>
               )}
             </div>
 

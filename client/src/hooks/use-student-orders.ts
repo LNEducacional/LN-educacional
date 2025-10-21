@@ -1,6 +1,6 @@
 import api from '@/services/api';
 import type { StudentOrder, StudentOrdersResponse } from '@/types/student-order';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface UseStudentOrdersOptions {
   status?: string;
@@ -9,12 +9,23 @@ interface UseStudentOrdersOptions {
 }
 
 export function useStudentOrders(options?: UseStudentOrdersOptions) {
+  const isMountedRef = useRef(false);
   const [orders, setOrders] = useState<StudentOrder[]>([]);
   const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
+  useEffect(() => {
+    isMountedRef.current = true;
+
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
   const fetchOrders = useCallback(async () => {
+    if (!isMountedRef.current) return;
+
     try {
       setIsLoading(true);
       setError(null);
@@ -26,14 +37,20 @@ export function useStudentOrders(options?: UseStudentOrdersOptions) {
 
       const response = await api.get<StudentOrdersResponse>('/student/orders', { params });
 
-      setOrders(response.data.orders);
-      setTotal(response.data.total);
+      if (isMountedRef.current) {
+        setOrders(response.data.orders);
+        setTotal(response.data.total);
+      }
     } catch (err) {
-      setError(err instanceof Error ? err : new Error('Failed to fetch orders'));
-      setOrders([]);
-      setTotal(0);
+      if (isMountedRef.current) {
+        setError(err instanceof Error ? err : new Error('Failed to fetch orders'));
+        setOrders([]);
+        setTotal(0);
+      }
     } finally {
-      setIsLoading(false);
+      if (isMountedRef.current) {
+        setIsLoading(false);
+      }
     }
   }, [options?.status, options?.skip, options?.take]);
 

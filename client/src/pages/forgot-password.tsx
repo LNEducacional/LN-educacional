@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { useAuth } from '@/context/auth-context';
 import { useToast } from '@/hooks/use-toast';
 import { AlertCircle, ArrowLeft, CheckCircle2, GraduationCap, Loader2, Mail } from 'lucide-react';
 import type React from 'react';
@@ -11,6 +12,7 @@ import { Link } from 'react-router-dom';
 
 export default function ForgotPassword() {
   const { toast } = useToast();
+  const { forgotPassword } = useAuth();
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
@@ -41,33 +43,24 @@ export default function ForgotPassword() {
     setStatus('idle');
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      // Chamar API real de recuperação de senha
+      await forgotPassword(email);
 
-      // Mock logic: check if email exists in our "database"
-      const validEmails = [
-        'admin@lneducacional.com',
-        'aluno@lneducacional.com',
-        'usuario@teste.com',
-      ];
-
-      if (validEmails.includes(email.toLowerCase())) {
-        setStatus('success');
-        toast({
-          title: 'E-mail enviado com sucesso!',
-          description: 'Verifique sua caixa de entrada e spam.',
-        });
-      } else {
-        // Even for security, we show success message to prevent email enumeration
-        setStatus('success');
-        toast({
-          title: 'Instruções enviadas',
-          description: 'Se o e-mail estiver cadastrado, você receberá as instruções.',
-        });
-      }
-    } catch (_error) {
-      setError('Erro interno do servidor. Tente novamente mais tarde.');
-      setStatus('error');
+      // Sempre mostra sucesso por segurança (não revelar se email existe)
+      setStatus('success');
+      toast({
+        title: 'Instruções enviadas',
+        description: 'Se o e-mail estiver cadastrado, você receberá as instruções.',
+      });
+    } catch (error) {
+      // Mesmo em caso de erro, mostrar mensagem genérica de sucesso
+      // para não permitir enumeração de emails
+      setStatus('success');
+      console.error('[FORGOT-PASSWORD] Error:', error);
+      toast({
+        title: 'Instruções enviadas',
+        description: 'Se o e-mail estiver cadastrado, você receberá as instruções.',
+      });
     } finally {
       setIsLoading(false);
     }
@@ -201,18 +194,6 @@ export default function ForgotPassword() {
                   </>
                 )}
               </Button>
-
-              {/* Demo Info */}
-              <div className="p-3 rounded-lg bg-muted/50 border border-border">
-                <p className="text-xs text-muted-foreground text-center mb-2 font-medium">
-                  E-mails de demonstração que funcionam:
-                </p>
-                <div className="space-y-1 text-xs text-muted-foreground">
-                  <p>• admin@lneducacional.com</p>
-                  <p>• aluno@lneducacional.com</p>
-                  <p>• usuario@teste.com</p>
-                </div>
-              </div>
             </form>
           )}
 

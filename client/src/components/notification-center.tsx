@@ -21,7 +21,7 @@ import {
   X,
   XCircle,
 } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 export interface Notification {
   id: string;
@@ -44,6 +44,7 @@ interface NotificationSettings {
 }
 
 export function NotificationCenter() {
+  const isMountedRef = useRef(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -60,6 +61,14 @@ export function NotificationCenter() {
 
   const { user } = useAuth();
   const { toast } = useToast();
+
+  useEffect(() => {
+    isMountedRef.current = true;
+
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   // Update unread count
   const updateUnreadCount = useCallback((notifs: Notification[]) => {
@@ -99,18 +108,23 @@ export function NotificationCenter() {
 
   // Load notifications from API
   const loadNotifications = useCallback(async () => {
-    if (!user) return;
+    if (!user || !isMountedRef.current) return;
 
     setLoading(true);
     try {
       const response = await api.get('/notifications');
-      setNotifications(response.data);
-      updateUnreadCount(response.data);
+
+      if (isMountedRef.current) {
+        setNotifications(response.data);
+        updateUnreadCount(response.data);
+      }
     } catch (error) {
       // Silently fail if notifications endpoint doesn't exist
       console.log('Notifications not available');
     } finally {
-      setLoading(false);
+      if (isMountedRef.current) {
+        setLoading(false);
+      }
     }
   }, [user, updateUnreadCount]);
 
@@ -154,8 +168,11 @@ export function NotificationCenter() {
   const markAsRead = async (id: string) => {
     try {
       await api.patch(`/notifications/${id}/read`);
-      setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
-      setUnreadCount((prev) => Math.max(0, prev - 1));
+
+      if (isMountedRef.current) {
+        setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
+        setUnreadCount((prev) => Math.max(0, prev - 1));
+      }
     } catch (error) {
       console.error('Error marking notification as read:', error);
     }
@@ -165,8 +182,11 @@ export function NotificationCenter() {
   const markAllAsRead = async () => {
     try {
       await api.patch('/notifications/read-all');
-      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-      setUnreadCount(0);
+
+      if (isMountedRef.current) {
+        setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+        setUnreadCount(0);
+      }
     } catch (error) {
       console.error('Error marking all as read:', error);
     }
@@ -176,11 +196,14 @@ export function NotificationCenter() {
   const deleteNotification = async (id: string) => {
     try {
       await api.delete(`/notifications/${id}`);
-      setNotifications((prev) => {
-        const updated = prev.filter((n) => n.id !== id);
-        updateUnreadCount(updated);
-        return updated;
-      });
+
+      if (isMountedRef.current) {
+        setNotifications((prev) => {
+          const updated = prev.filter((n) => n.id !== id);
+          updateUnreadCount(updated);
+          return updated;
+        });
+      }
     } catch (error) {
       console.error('Error deleting notification:', error);
     }
@@ -190,8 +213,11 @@ export function NotificationCenter() {
   const clearAll = async () => {
     try {
       await api.delete('/notifications/all');
-      setNotifications([]);
-      setUnreadCount(0);
+
+      if (isMountedRef.current) {
+        setNotifications([]);
+        setUnreadCount(0);
+      }
     } catch (error) {
       console.error('Error clearing notifications:', error);
     }
@@ -214,11 +240,14 @@ export function NotificationCenter() {
   const saveSettings = async (newSettings: NotificationSettings) => {
     try {
       await api.put('/notifications/settings', newSettings);
-      setSettings(newSettings);
-      toast({
-        title: 'Configurações salvas',
-        description: 'Suas preferências foram atualizadas.',
-      });
+
+      if (isMountedRef.current) {
+        setSettings(newSettings);
+        toast({
+          title: 'Configurações salvas',
+          description: 'Suas preferências foram atualizadas.',
+        });
+      }
     } catch (error) {
       console.error('Error saving settings:', error);
     }

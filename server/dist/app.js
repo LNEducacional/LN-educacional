@@ -37,6 +37,7 @@ function build(opts = {}) {
         sameSite: (isProduction ? 'none' : 'lax'),
         path: '/',
         maxAge,
+        domain: isProduction ? 'lneducacional.com.br' : undefined,
     });
     // Adicionar headers de segurança ANTES do CORS
     app.register(helmet_1.default, {
@@ -62,20 +63,14 @@ function build(opts = {}) {
     app.register(multipart_1.default, upload_service_1.uploadConfig);
     app.decorate('authenticate', async (request, reply) => {
         try {
-            console.log('[AUTH] 🔍 Checking authentication...');
-            console.log('[AUTH] 📋 Cookies received:', Object.keys(request.cookies));
             const token = request.cookies.token;
-            console.log('[AUTH] 🎫 Token present:', !!token);
             if (!token) {
-                console.log('[AUTH] ❌ No token in cookies');
                 throw new Error('No token');
             }
             const decoded = await (0, auth_1.verifyToken)(token);
-            console.log('[AUTH] ✅ Token verified for user:', decoded.email);
             request.currentUser = decoded;
         }
         catch (err) {
-            console.log('[AUTH] ❌ Authentication failed:', err.message);
             return reply.status(401).send({ error: 'Unauthorized' });
         }
     });
@@ -95,6 +90,8 @@ function build(opts = {}) {
             const user = await (0, auth_1.registerUser)(body);
             const tokens = await (0, auth_1.generateTokens)(user);
             reply
+                .clearCookie('token')
+                .clearCookie('refreshToken')
                 .setCookie('token', tokens.accessToken, getCookieOptions(7 * 24 * 60 * 60 * 1000))
                 .setCookie('refreshToken', tokens.refreshToken, getCookieOptions(30 * 24 * 60 * 60 * 1000))
                 .send({
@@ -107,7 +104,12 @@ function build(opts = {}) {
             });
         }
         catch (error) {
-            reply.status(400).send({ error: error.message });
+            if (error instanceof zod_1.z.ZodError) {
+                // Extrair mensagens amigáveis dos erros do Zod
+                const messages = error.errors.map((e) => e.message).join(', ');
+                return reply.status(400).send({ message: messages });
+            }
+            reply.status(400).send({ message: error.message });
         }
     });
     const loginSchema = zod_1.z.object({
@@ -123,6 +125,8 @@ function build(opts = {}) {
             console.log('[LOGIN] 🍪 Setting cookies with options:', cookieOptions);
             console.log('[LOGIN] ✅ User logged in:', user.email, 'Role:', user.role);
             reply
+                .clearCookie('token')
+                .clearCookie('refreshToken')
                 .setCookie('token', tokens.accessToken, cookieOptions)
                 .setCookie('refreshToken', tokens.refreshToken, getCookieOptions(30 * 24 * 60 * 60 * 1000))
                 .send({
@@ -183,6 +187,7 @@ function build(opts = {}) {
             const user = await (0, auth_1.validateRefreshToken)(refreshToken);
             const tokens = await (0, auth_1.generateTokens)(user);
             reply
+                .clearCookie('token')
                 .setCookie('token', tokens.accessToken, getCookieOptions(7 * 24 * 60 * 60 * 1000))
                 .send({ success: true });
         }

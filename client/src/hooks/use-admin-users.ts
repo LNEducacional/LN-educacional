@@ -1,7 +1,7 @@
 import { useToast } from '@/hooks/use-toast';
 import api from '@/services/api';
 import { format } from 'date-fns';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 export interface User {
   id: string;
@@ -44,13 +44,24 @@ export interface UserStats {
 }
 
 export const useAdminUsers = () => {
+  const isMountedRef = useRef(false);
   const { toast } = useToast();
   const [users, setUsers] = useState<User[]>([]);
   const [stats, setStats] = useState<UserStats | null>(null);
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    isMountedRef.current = true;
+
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
   const fetchUsers = useCallback(
     async (searchQuery: string, roleFilter: string, statusFilter: string) => {
+      if (!isMountedRef.current) return;
+
       setLoading(true);
       try {
         const params: Record<string, string> = {};
@@ -61,6 +72,8 @@ export const useAdminUsers = () => {
         console.log('Fetching users with params:', params);
 
         const usersResponse = await api.get('/admin/users', { params });
+
+        if (!isMountedRef.current) return;
 
         console.log('Users response:', usersResponse);
         console.log('Users response data:', usersResponse.data);
@@ -96,6 +109,8 @@ export const useAdminUsers = () => {
         console.log('Calculated stats:', calculatedStats);
         setStats(calculatedStats);
       } catch (error: any) {
+        if (!isMountedRef.current) return;
+
         console.error('Error fetching users:', error);
         console.error('Error response:', error?.response);
         console.error('Error data:', error?.response?.data);
@@ -105,8 +120,10 @@ export const useAdminUsers = () => {
           variant: 'destructive',
         });
       } finally {
-        console.log('Setting loading to false');
-        setLoading(false);
+        if (isMountedRef.current) {
+          console.log('Setting loading to false');
+          setLoading(false);
+        }
       }
     },
     [toast]
@@ -118,18 +135,22 @@ export const useAdminUsers = () => {
         const newStatus = user.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
         await api.patch(`/admin/users/${user.id}/status`, { status: newStatus });
 
-        setUsers((prev) => prev.map((u) => (u.id === user.id ? { ...u, status: newStatus } : u)));
+        if (isMountedRef.current) {
+          setUsers((prev) => prev.map((u) => (u.id === user.id ? { ...u, status: newStatus } : u)));
 
-        toast({
-          title: 'Status atualizado',
-          description: `O usuário foi ${newStatus === 'ACTIVE' ? 'ativado' : 'desativado'} com sucesso`,
-        });
+          toast({
+            title: 'Status atualizado',
+            description: `O usuário foi ${newStatus === 'ACTIVE' ? 'ativado' : 'desativado'} com sucesso`,
+          });
+        }
       } catch {
-        toast({
-          title: 'Erro ao alterar status',
-          description: 'Não foi possível alterar o status do usuário',
-          variant: 'destructive',
-        });
+        if (isMountedRef.current) {
+          toast({
+            title: 'Erro ao alterar status',
+            description: 'Não foi possível alterar o status do usuário',
+            variant: 'destructive',
+          });
+        }
       }
     },
     [toast]
@@ -140,18 +161,22 @@ export const useAdminUsers = () => {
       try {
         await api.patch(`/admin/users/${userId}/suspend`);
 
-        setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, status: 'SUSPENDED' } : u)));
+        if (isMountedRef.current) {
+          setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, status: 'SUSPENDED' } : u)));
 
-        toast({
-          title: 'Usuário suspenso',
-          description: 'O usuário foi suspenso com sucesso',
-        });
+          toast({
+            title: 'Usuário suspenso',
+            description: 'O usuário foi suspenso com sucesso',
+          });
+        }
       } catch {
-        toast({
-          title: 'Erro ao suspender usuário',
-          description: 'Não foi possível suspender o usuário',
-          variant: 'destructive',
-        });
+        if (isMountedRef.current) {
+          toast({
+            title: 'Erro ao suspender usuário',
+            description: 'Não foi possível suspender o usuário',
+            variant: 'destructive',
+          });
+        }
       }
     },
     [toast]
@@ -273,6 +298,8 @@ export const useAdminUsers = () => {
         const response = await api.put(`/admin/users/${userId}`, dataToSend);
         console.log('Update response:', response.data);
 
+        if (!isMountedRef.current) return false;
+
         // Atualizar lista local
         setUsers((prev) =>
           prev.map((u) =>
@@ -294,6 +321,8 @@ export const useAdminUsers = () => {
 
         return true;
       } catch (error: any) {
+        if (!isMountedRef.current) return false;
+
         console.error('Error updating user:', error);
         toast({
           title: 'Erro ao atualizar usuário',
@@ -311,6 +340,8 @@ export const useAdminUsers = () => {
       try {
         console.log('Deleting user:', userId);
         await api.delete(`/admin/users/${userId}`);
+
+        if (!isMountedRef.current) return false;
 
         // Remover da lista local
         setUsers((prev) => prev.filter((u) => u.id !== userId));
@@ -330,6 +361,8 @@ export const useAdminUsers = () => {
 
         return true;
       } catch (error: any) {
+        if (!isMountedRef.current) return false;
+
         console.error('Error deleting user:', error);
         toast({
           title: 'Erro ao remover usuário',

@@ -17,29 +17,32 @@ export function Footer() {
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
   return (
-    <footer className="bg-card border-t border-border">
-      <div className="container mx-auto px-4 py-16">
+    <footer className="bg-black border-t border-gray-800">
+      <div className="container mx-auto px-4 py-10">
         {/* Main Footer Content */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+        <div className="grid md:grid-cols-3 gap-8 mb-8">
           {/* Company Info */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="space-y-6">
             <div className="flex items-center gap-2">
               <img
                 src="/logo.png"
                 alt="LN Educacional"
-                className="h-8 w-8 object-contain"
+                className="h-8 w-8 object-contain brightness-0 invert"
               />
-              <h3 className="text-xl font-bold text-gradient-primary">LN Educacional</h3>
+              <h3 className="text-xl font-bold text-white">LN Educacional</h3>
             </div>
 
-            <p className="text-muted-foreground leading-relaxed max-w-sm">
+            <p className="text-gray-400 leading-relaxed max-w-sm">
               Transformando vidas através da educação online de qualidade. Aprenda com os melhores e
               alcance seus objetivos profissionais.
             </p>
+          </div>
 
+          {/* Contact Info & Social Links - Centered */}
+          <div className="space-y-6 flex flex-col items-center justify-center text-center">
             {/* Contact Info */}
             <div className="space-y-3">
-              <div className="flex items-center gap-3 text-xs sm:text-sm text-muted-foreground">
+              <div className="flex items-center gap-3 text-xs sm:text-sm text-gray-400">
                 <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
                 <a
                   href="mailto:trabalhos.academicos.assessoria2@gmail.com"
@@ -48,7 +51,7 @@ export function Footer() {
                   trabalhos.academicos.assessoria2@gmail.com
                 </a>
               </div>
-              <div className="flex items-center gap-3 text-xs sm:text-sm text-muted-foreground">
+              <div className="flex items-center gap-3 text-xs sm:text-sm text-gray-400">
                 <Phone className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
                 <a
                   href="https://wa.me/5594984211357"
@@ -67,7 +70,7 @@ export function Footer() {
                 href="https://www.youtube.com/channel/UCfCtiGQBz-L_FY3vY1dOjCQ"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-9 h-9 sm:w-10 sm:h-10 bg-secondary rounded-lg flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors"
+                className="w-9 h-9 sm:w-10 sm:h-10 bg-gray-800 text-gray-300 rounded-lg flex items-center justify-center hover:bg-primary hover:text-white transition-colors"
                 aria-label="YouTube"
               >
                 <Youtube className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -76,7 +79,7 @@ export function Footer() {
                 href="https://www.instagram.com/ln_educacional"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-9 h-9 sm:w-10 sm:h-10 bg-secondary rounded-lg flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors"
+                className="w-9 h-9 sm:w-10 sm:h-10 bg-gray-800 text-gray-300 rounded-lg flex items-center justify-center hover:bg-primary hover:text-white transition-colors"
                 aria-label="Instagram"
               >
                 <Instagram className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -86,13 +89,13 @@ export function Footer() {
 
           {/* Legal Links */}
           <div className="space-y-4">
-            <h4 className="font-semibold text-foreground">Legal</h4>
+            <h4 className="font-semibold text-white">Legal</h4>
             <ul className="space-y-3">
               <li>
                 <button
                   type="button"
                   onClick={() => setShowTermsModal(true)}
-                  className="text-muted-foreground hover:text-primary transition-colors text-sm text-left"
+                  className="text-gray-400 hover:text-primary transition-colors text-sm text-left"
                 >
                   Termos de Uso
                 </button>
@@ -101,7 +104,7 @@ export function Footer() {
                 <button
                   type="button"
                   onClick={() => setShowPrivacyModal(true)}
-                  className="text-muted-foreground hover:text-primary transition-colors text-sm text-left"
+                  className="text-gray-400 hover:text-primary transition-colors text-sm text-left"
                 >
                   Política de Privacidade
                 </button>
@@ -111,17 +114,17 @@ export function Footer() {
         </div>
 
         {/* Newsletter */}
-        <div className="border-t border-border pt-8 mb-8">
+        <div className="border-t border-gray-800 pt-6 mb-6">
           <div className="max-w-md mx-auto sm:mx-0">
-            <h4 className="font-semibold mb-2 text-center sm:text-left">Receba novidades</h4>
-            <p className="text-muted-foreground text-sm mb-4 text-center sm:text-left">
+            <h4 className="font-semibold mb-2 text-center sm:text-left text-white">Receba novidades</h4>
+            <p className="text-gray-400 text-sm mb-4 text-center sm:text-left">
               Fique por dentro dos novos cursos e promoções exclusivas.
             </p>
             <div className="flex flex-col sm:flex-row gap-2">
               <input
                 type="email"
                 placeholder="Seu e-mail"
-                className="flex-1 px-4 py-2 bg-background border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none text-sm"
+                className="flex-1 px-4 py-2 bg-gray-900 border border-gray-700 text-white placeholder-gray-500 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none text-sm"
               />
               <button type="button" className="btn-accent whitespace-nowrap">
                 Inscrever
@@ -131,11 +134,11 @@ export function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="border-t border-border pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="text-sm text-muted-foreground">
+        <div className="border-t border-gray-800 pt-6 flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="text-sm text-gray-400">
             © 2024 LN Educacional. Todos os direitos reservados.
           </div>
-          <div className="text-sm text-muted-foreground">
+          <div className="text-sm text-gray-400">
             Feito com ❤️ para transformar a educação
           </div>
         </div>

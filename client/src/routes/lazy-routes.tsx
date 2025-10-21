@@ -68,6 +68,9 @@ export const AdminMessages = lazy(
 export const AdminCollaborators = lazy(
   () => import(/* webpackPrefetch: true */ '@/pages/admin/collaborators-page')
 );
+export const AdminIntegrations = lazy(
+  () => import(/* webpackPrefetch: true */ '@/pages/admin/integrations-page')
+);
 export const AdminAnalyticsDownloads = lazy(
   () => import(/* webpackPrefetch: true */ '@/pages/admin/analytics-downloads')
 );

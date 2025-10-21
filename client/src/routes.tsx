@@ -16,6 +16,7 @@ import {
   AdminAnalyticsDownloads,
   AdminBlogPosts,
   AdminCollaborators,
+  AdminIntegrations,
   AdminCourses,
   AdminCustomPaperDetails,
   AdminCustomPapers,
@@ -302,6 +303,10 @@ export default function AppRoutes() {
             element={
               <LazyWrapper component={AdminAnalyticsDownloads} fallback={<LoadingSpinner />} />
             }
+          />
+          <Route
+            path="/admin/integracoes"
+            element={<LazyWrapper component={AdminIntegrations} fallback={<LoadingSpinner />} />}
           />
           <Route
             path="/admin/custom-papers"

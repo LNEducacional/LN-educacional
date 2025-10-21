@@ -36,6 +36,7 @@ export function build(opts: { logger?: boolean } = {}) {
     sameSite: (isProduction ? 'none' : 'lax') as 'none' | 'lax',
     path: '/',
     maxAge,
+    domain: isProduction ? 'lneducacional.com.br' : undefined,
   });
 
   // Adicionar headers de segurança ANTES do CORS
@@ -69,19 +70,13 @@ export function build(opts: { logger?: boolean } = {}) {
 
   app.decorate('authenticate', async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      console.log('[AUTH] 🔍 Checking authentication...');
-      console.log('[AUTH] 📋 Cookies received:', Object.keys(request.cookies));
       const token = request.cookies.token;
-      console.log('[AUTH] 🎫 Token present:', !!token);
       if (!token) {
-        console.log('[AUTH] ❌ No token in cookies');
         throw new Error('No token');
       }
       const decoded = await verifyToken(token);
-      console.log('[AUTH] ✅ Token verified for user:', decoded.email);
       request.currentUser = decoded as any;
     } catch (err) {
-      console.log('[AUTH] ❌ Authentication failed:', (err as Error).message);
       return reply.status(401).send({ error: 'Unauthorized' });
     }
   });
@@ -105,6 +100,8 @@ export function build(opts: { logger?: boolean } = {}) {
       const tokens = await generateTokens(user);
 
       reply
+        .clearCookie('token')
+        .clearCookie('refreshToken')
         .setCookie('token', tokens.accessToken, getCookieOptions(7 * 24 * 60 * 60 * 1000))
         .setCookie('refreshToken', tokens.refreshToken, getCookieOptions(30 * 24 * 60 * 60 * 1000))
         .send({
@@ -116,7 +113,12 @@ export function build(opts: { logger?: boolean } = {}) {
           },
         });
     } catch (error: unknown) {
-      reply.status(400).send({ error: (error as Error).message });
+      if (error instanceof z.ZodError) {
+        // Extrair mensagens amigáveis dos erros do Zod
+        const messages = error.errors.map((e) => e.message).join(', ');
+        return reply.status(400).send({ message: messages });
+      }
+      reply.status(400).send({ message: (error as Error).message });
     }
   });
 
@@ -136,6 +138,8 @@ export function build(opts: { logger?: boolean } = {}) {
       console.log('[LOGIN] ✅ User logged in:', user.email, 'Role:', user.role);
 
       reply
+        .clearCookie('token')
+        .clearCookie('refreshToken')
         .setCookie('token', tokens.accessToken, cookieOptions)
         .setCookie('refreshToken', tokens.refreshToken, getCookieOptions(30 * 24 * 60 * 60 * 1000))
         .send({
@@ -210,6 +214,7 @@ export function build(opts: { logger?: boolean } = {}) {
       const tokens = await generateTokens(user);
 
       reply
+        .clearCookie('token')
         .setCookie('token', tokens.accessToken, getCookieOptions(7 * 24 * 60 * 60 * 1000))
         .send({ success: true });
     } catch (_error: unknown) {

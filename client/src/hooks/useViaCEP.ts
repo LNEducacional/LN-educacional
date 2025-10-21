@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 
 interface AddressData {
   cep: string;
@@ -15,36 +15,55 @@ interface AddressData {
 }
 
 export function useViaCEP() {
+  const isMountedRef = useRef(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   const fetchAddress = useCallback(async (cep: string): Promise<AddressData | null> => {
     const cleanCep = cep.replace(/\D/g, '');
 
     if (cleanCep.length !== 8) {
-      setError('CEP deve ter 8 dígitos');
+      if (isMountedRef.current) {
+        setError('CEP deve ter 8 dígitos');
+      }
       return null;
     }
 
-    setLoading(true);
-    setError(null);
+    if (isMountedRef.current) {
+      setLoading(true);
+      setError(null);
+    }
 
     try {
       const response = await fetch(`https://viacep.com.br/ws/${cleanCep}/json/`);
       const data: AddressData = await response.json();
 
       if (data.erro) {
-        setError('CEP não encontrado');
+        if (isMountedRef.current) {
+          setError('CEP não encontrado');
+        }
         return null;
       }
 
       return data;
     } catch (error) {
       console.error('Erro ao buscar CEP:', error);
-      setError('Erro ao buscar CEP. Tente novamente.');
+      if (isMountedRef.current) {
+        setError('Erro ao buscar CEP. Tente novamente.');
+      }
       return null;
     } finally {
-      setLoading(false);
+      if (isMountedRef.current) {
+        setLoading(false);
+      }
     }
   }, []);
 
@@ -53,11 +72,17 @@ export function useViaCEP() {
     return cleanValue.replace(/(\d{5})(\d{3})/, '$1-$2');
   }, []);
 
+  const clearError = useCallback(() => {
+    if (isMountedRef.current) {
+      setError(null);
+    }
+  }, []);
+
   return {
     fetchAddress,
     formatCep,
     loading,
     error,
-    clearError: () => setError(null)
+    clearError,
   };
 }
