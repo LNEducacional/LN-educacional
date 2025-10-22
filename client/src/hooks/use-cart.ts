@@ -129,7 +129,7 @@ export const useCart = () => {
           title: item.title,
           description: item.description,
           price: item.price,
-          type: item.type.toUpperCase() as string,
+          type: item.type, // Manter em minúsculo como a API espera
         }));
 
         const response = await api.post<CheckoutResponse>('/checkout', {
