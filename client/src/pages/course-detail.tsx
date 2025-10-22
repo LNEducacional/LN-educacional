@@ -12,14 +12,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/components/ui/use-toast';
 import { useAuth } from '@/context/auth-context';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { Award, BookOpen, CheckCircle, Clock, PlayCircle, ShoppingCart, Users, Video, FileText } from 'lucide-react';
+import { Award, BookOpen, CheckCircle, Clock, PlayCircle, ShoppingCart, Users, Video, FileText, ShoppingBag } from 'lucide-react';
 import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import CheckoutModal from '@/components/checkout/checkout-modal';
+import { useCart } from '@/hooks/use-cart';
 
 export default function CourseDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { addItem } = useCart();
 
   const { data: course, isLoading } = useQuery({
     queryKey: ['course', id],
@@ -32,6 +35,9 @@ export default function CourseDetailPage() {
     queryFn: () => coursesApi.getCourseModules(id!),
     enabled: !!id,
   });
+
+  // Estado para controlar o modal de checkout
+  const [checkoutModalOpen, setCheckoutModalOpen] = React.useState(false);
 
   // Debug: Log course data
   React.useEffect(() => {
@@ -87,21 +93,21 @@ export default function CourseDetailPage() {
   const handleEnroll = () => {
     console.log('🛒 Enroll clicked:', { user, coursePrice: course?.price });
 
-    if (!user) {
-      toast({
-        title: 'Login necessário',
-        description: 'Faça login para se inscrever no curso',
-        variant: 'destructive',
-      });
-      navigate('/login');
-      return;
-    }
-
     if (course?.price && course.price > 0) {
-      console.log('💳 Redirecting to checkout');
-      // Redirect to checkout for paid courses
-      navigate(`/checkout?type=course&id=${id}`);
+      console.log('💳 Opening checkout modal');
+      // Abrir modal de checkout para cursos pagos
+      setCheckoutModalOpen(true);
     } else {
+      // Para cursos gratuitos, verificar se está logado
+      if (!user) {
+        toast({
+          title: 'Login necessário',
+          description: 'Faça login para se inscrever no curso gratuito',
+          variant: 'destructive',
+        });
+        navigate('/login');
+        return;
+      }
       console.log('🎁 Free enrollment');
       // Direct enrollment for free courses
       enrollMutation.mutate();
@@ -110,6 +116,24 @@ export default function CourseDetailPage() {
 
   const handleStartCourse = () => {
     navigate(`/student/courses/${id}`);
+  };
+
+  const handleAddToCart = () => {
+    if (!course) return;
+
+    addItem({
+      id: course.id,
+      title: course.title,
+      description: course.description,
+      price: course.price,
+      type: 'course',
+      thumbnailUrl: course.thumbnailUrl,
+    });
+
+    toast({
+      title: 'Adicionado ao carrinho!',
+      description: `${course.title} foi adicionado ao seu carrinho.`,
+    });
   };
 
   const formatPrice = (price: number | undefined | null) => {
@@ -177,7 +201,7 @@ export default function CourseDetailPage() {
             {/* Course Header */}
             <div className="space-y-4">
               <Badge className="bg-accent text-accent-foreground">{course.academicArea}</Badge>
-              <h1 className="text-4xl lg:text-5xl font-bold text-gradient-primary leading-tight">
+              <h1 className="text-4xl lg:text-5xl font-bold text-gradient-primary leading-tight break-words">
                 {course.title}
               </h1>
               <p className="text-lg text-muted-foreground leading-relaxed">{course.description}</p>
@@ -291,19 +315,34 @@ export default function CourseDetailPage() {
                       Continuar Aprendendo
                     </Button>
                   ) : (
-                    <Button
-                      onClick={handleEnroll}
-                      className="w-full btn-accent text-lg py-6"
-                      size="lg"
-                      disabled={enrollMutation.isPending}
-                    >
-                      <ShoppingCart className="h-5 w-5 mr-2" />
-                      {enrollMutation.isPending
-                        ? 'Processando...'
-                        : course.price && course.price > 0
-                          ? 'Comprar Agora'
-                          : 'Inscrever-se Gratuitamente'}
-                    </Button>
+                    <div className="space-y-2">
+                      <Button
+                        onClick={handleEnroll}
+                        className="w-full btn-accent text-lg py-6"
+                        size="lg"
+                        disabled={enrollMutation.isPending}
+                      >
+                        <ShoppingCart className="h-5 w-5 mr-2" />
+                        {enrollMutation.isPending
+                          ? 'Processando...'
+                          : course.price && course.price > 0
+                            ? 'Comprar Agora'
+                            : 'Inscrever-se Gratuitamente'}
+                      </Button>
+
+                      {/* Botão Adicionar ao Carrinho - só para cursos pagos */}
+                      {course.price && course.price > 0 && (
+                        <Button
+                          onClick={handleAddToCart}
+                          variant="outline"
+                          className="w-full text-lg py-6 border-2"
+                          size="lg"
+                        >
+                          <ShoppingBag className="h-5 w-5 mr-2" />
+                          Adicionar ao Carrinho
+                        </Button>
+                      )}
+                    </div>
                   )}
 
                   {/* Benefits */}
@@ -383,61 +422,75 @@ export default function CourseDetailPage() {
                         >
                           <AccordionTrigger className="hover:no-underline py-4">
                             <div className="flex items-center justify-between w-full pr-4 text-left">
-                              <div className="flex items-center gap-3">
-                                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-semibold flex-shrink-0">
+                              <div className="flex items-center gap-3 flex-1">
+                                <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold text-lg flex-shrink-0">
                                   {index + 1}
                                 </div>
-                                <div>
-                                  <p className="font-semibold">{module.title}</p>
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-bold text-base">{module.title}</p>
                                   {module.description && (
-                                    <p className="text-sm text-muted-foreground mt-0.5 line-clamp-1">
+                                    <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
                                       {module.description}
                                     </p>
                                   )}
+                                  <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
+                                    <span className="flex items-center gap-1">
+                                      <Video className="h-3 w-3" />
+                                      {lessons.length} aula{lessons.length !== 1 ? 's' : ''}
+                                    </span>
+                                    <span className="flex items-center gap-1">
+                                      <Clock className="h-3 w-3" />
+                                      {formatDuration(moduleDuration)}
+                                    </span>
+                                  </div>
                                 </div>
-                              </div>
-                              <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                                <span>{lessons.length} aulas</span>
-                                <span>{formatDuration(moduleDuration)}</span>
                               </div>
                             </div>
                           </AccordionTrigger>
                           <AccordionContent className="pb-4">
-                            <div className="space-y-1 mt-2 pl-13">
-                              {lessons.map((lesson, lessonIndex) => (
-                                <div
-                                  key={lesson.id}
-                                  className="flex items-center justify-between p-3 rounded-md hover:bg-background transition-colors group"
-                                >
-                                  <div className="flex items-center gap-3 flex-1">
-                                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-accent/10 group-hover:bg-accent/20 transition-colors flex-shrink-0">
-                                      <PlayCircle className="h-4 w-4 text-accent-foreground" />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                      <p className="text-sm font-medium">
-                                        {lessonIndex + 1}. {lesson.title}
-                                      </p>
-                                      {lesson.description && (
-                                        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
-                                          {lesson.description}
+                            <div className="space-y-2 mt-2 pl-2">
+                              {lessons.length > 0 ? (
+                                lessons.map((lesson, lessonIndex) => (
+                                  <div
+                                    key={lesson.id}
+                                    className="flex items-start justify-between p-3 rounded-md bg-background/50 hover:bg-background border border-transparent hover:border-primary/20 transition-all group"
+                                  >
+                                    <div className="flex items-start gap-3 flex-1">
+                                      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-accent/10 group-hover:bg-accent/20 transition-colors flex-shrink-0 mt-0.5">
+                                        <PlayCircle className="h-4 w-4 text-accent-foreground" />
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-semibold">
+                                          Aula {lessonIndex + 1}: {lesson.title}
                                         </p>
-                                      )}
+                                        {lesson.description && (
+                                          <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                                            {lesson.description}
+                                          </p>
+                                        )}
+                                        <div className="flex items-center gap-3 mt-2">
+                                          {lesson?.duration && (
+                                            <span className="text-xs text-muted-foreground font-medium flex items-center gap-1">
+                                              <Clock className="h-3 w-3" />
+                                              {lesson.duration} min
+                                            </span>
+                                          )}
+                                          {lesson?.attachments && Array.isArray(lesson.attachments) && lesson.attachments.length > 0 && (
+                                            <Badge variant="secondary" className="text-xs">
+                                              <FileText className="h-3 w-3 mr-1" />
+                                              {lesson.attachments.length} arquivo{lesson.attachments.length > 1 ? 's' : ''}
+                                            </Badge>
+                                          )}
+                                        </div>
+                                      </div>
                                     </div>
                                   </div>
-                                  <div className="flex items-center gap-3 flex-shrink-0 ml-4">
-                                    {lesson?.attachments && Array.isArray(lesson.attachments) && lesson.attachments.length > 0 && (
-                                      <Badge variant="outline" className="text-xs">
-                                        {lesson.attachments.length} arquivo{lesson.attachments.length > 1 ? 's' : ''}
-                                      </Badge>
-                                    )}
-                                    {lesson?.duration && (
-                                      <span className="text-xs text-muted-foreground font-medium">
-                                        {lesson.duration} min
-                                      </span>
-                                    )}
-                                  </div>
-                                </div>
-                              ))}
+                                ))
+                              ) : (
+                                <p className="text-sm text-muted-foreground text-center py-4">
+                                  Nenhuma aula cadastrada neste módulo
+                                </p>
+                              )}
                             </div>
                           </AccordionContent>
                         </AccordionItem>
@@ -498,6 +551,17 @@ export default function CourseDetailPage() {
           )}
         </Tabs>
       </div>
+
+      {/* Checkout Modal */}
+      {course && (
+        <CheckoutModal
+          open={checkoutModalOpen}
+          onOpenChange={setCheckoutModalOpen}
+          courseId={course.id}
+          courseTitle={course.title}
+          coursePrice={course.price}
+        />
+      )}
     </div>
   );
 }
