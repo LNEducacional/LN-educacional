@@ -6,10 +6,12 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { useCart } from '@/context/cart-context';
+import { useAuth } from '@/context/auth-context';
 import { cn } from '@/lib/utils';
 import {
   BookOpen,
@@ -17,6 +19,7 @@ import {
   FileText,
   Gift,
   LogIn,
+  LogOut,
   Menu,
   MessageCircle,
   MonitorPlay,
@@ -24,7 +27,10 @@ import {
   PenTool,
   ShoppingCart,
   User,
+  UserCheck,
+  UserX,
   Users,
+  LayoutDashboard,
 } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
@@ -145,6 +151,7 @@ interface HeaderProps {
 export function Header({ showSearch = true, showNotifications = true }: HeaderProps) {
   const [isOpen, setIsOpen] = useState(false);
   const { cartCount } = useCart();
+  const { user, signOut } = useAuth();
   const location = useLocation();
   const isHome = location.pathname === '/';
   const displaySearch = showSearch && !isHome;
@@ -271,12 +278,57 @@ export function Header({ showSearch = true, showNotifications = true }: HeaderPr
             </Button>
           </CartDrawer>
 
-          <Button size="sm" className="btn-hero group hidden md:flex" asChild>
-            <Link to="/login">
-              <LogIn className="h-4 w-4 mr-2 transition-transform group-hover:scale-110" />
-              Entrar
-            </Link>
-          </Button>
+          {/* Authentication Status Button - Desktop */}
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  size="sm"
+                  className="hidden md:flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white border-2 border-green-600 shadow-lg transition-all duration-300"
+                >
+                  <UserCheck className="h-4 w-4" />
+                  <span className="font-medium">{user.name.split(' ')[0]}</span>
+                  <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <div className="px-2 py-1.5 text-sm">
+                  <p className="font-medium">{user.name}</p>
+                  <p className="text-xs text-muted-foreground">{user.email}</p>
+                </div>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link to={user.role === 'ADMIN' ? '/admin' : '/dashboard'} className="cursor-pointer">
+                    <LayoutDashboard className="h-4 w-4 mr-2" />
+                    Dashboard
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to={user.role === 'ADMIN' ? '/admin/profile' : '/student/profile'} className="cursor-pointer">
+                    <User className="h-4 w-4 mr-2" />
+                    Perfil
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => signOut()} className="cursor-pointer text-red-600">
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sair
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Button
+              size="sm"
+              className="hidden md:flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white border-2 border-red-600 shadow-lg transition-all duration-300"
+              asChild
+            >
+              <Link to="/login">
+                <UserX className="h-4 w-4" />
+                <span className="font-medium">Deslogado</span>
+                <div className="w-2 h-2 rounded-full bg-white" />
+              </Link>
+            </Button>
+          )}
 
           {/* Mobile Menu */}
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
@@ -338,13 +390,63 @@ export function Header({ showSearch = true, showNotifications = true }: HeaderPr
                   )}
                 </nav>
 
+                {/* Authentication Status Button - Mobile */}
                 <div className="pt-4 border-t border-border space-y-2">
-                  <Button size="sm" className="w-full btn-hero" asChild>
-                    <Link to="/login" onClick={() => setIsOpen(false)}>
-                      <LogIn className="h-4 w-4 mr-2" />
-                      Entrar
-                    </Link>
-                  </Button>
+                  {user ? (
+                    <>
+                      <div className="px-3 py-2 bg-green-50 dark:bg-green-900/20 rounded-lg border-2 border-green-500">
+                        <div className="flex items-center gap-2 mb-2">
+                          <UserCheck className="h-5 w-5 text-green-600 dark:text-green-400" />
+                          <span className="font-semibold text-green-700 dark:text-green-300">Logado</span>
+                          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse ml-auto" />
+                        </div>
+                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{user.name}</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-400">{user.email}</p>
+                      </div>
+                      <Button
+                        size="sm"
+                        className="w-full bg-green-500 hover:bg-green-600 text-white"
+                        asChild
+                      >
+                        <Link to={user.role === 'ADMIN' ? '/admin' : '/dashboard'} onClick={() => setIsOpen(false)}>
+                          <LayoutDashboard className="h-4 w-4 mr-2" />
+                          Dashboard
+                        </Link>
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => {
+                          setIsOpen(false);
+                          signOut();
+                        }}
+                      >
+                        <LogOut className="h-4 w-4 mr-2" />
+                        Sair
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <div className="px-3 py-2 bg-red-50 dark:bg-red-900/20 rounded-lg border-2 border-red-500 mb-2">
+                        <div className="flex items-center gap-2">
+                          <UserX className="h-5 w-5 text-red-600 dark:text-red-400" />
+                          <span className="font-semibold text-red-700 dark:text-red-300">Deslogado</span>
+                          <div className="w-2 h-2 rounded-full bg-red-500 ml-auto" />
+                        </div>
+                      </div>
+                      <Button
+                        size="sm"
+                        className="w-full bg-red-500 hover:bg-red-600 text-white"
+                        asChild
+                      >
+                        <Link to="/login" onClick={() => setIsOpen(false)}>
+                          <LogIn className="h-4 w-4 mr-2" />
+                          Entrar
+                        </Link>
+                      </Button>
+                    </>
+                  )}
                 </div>
               </div>
             </SheetContent>
