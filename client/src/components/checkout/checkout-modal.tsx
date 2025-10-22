@@ -8,6 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { CreditCard, QrCode, Receipt, Check, Loader2, Eye, EyeOff } from 'lucide-react';
 import { useCheckout, type CheckoutData } from '@/hooks/use-checkout';
 import { useAuth } from '@/context/auth-context';
+import { useToast } from '@/hooks/use-toast';
 import { formatPrice } from '@/utils/course-formatters';
 import CreditCardForm from './credit-card-form';
 import PixPayment from './pix-payment';
@@ -42,6 +43,8 @@ export default function CheckoutModal({
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const { toast } = useToast();
 
   // Step 1: Customer data
   const [customerData, setCustomerData] = useState({
@@ -64,24 +67,53 @@ export default function CheckoutModal({
 
   const handleNext = () => {
     if (step === 1) {
+      const errors: Record<string, string> = {};
+
       // Validar dados do cliente
-      if (!customerData.name || !customerData.email || !customerData.cpfCnpj) {
-        return;
+      if (!customerData.name) {
+        errors.name = 'Nome completo é obrigatório';
+      }
+      if (!customerData.email) {
+        errors.email = 'Email é obrigatório';
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerData.email)) {
+        errors.email = 'Email inválido';
+      }
+      if (!customerData.cpfCnpj) {
+        errors.cpfCnpj = 'CPF/CNPJ é obrigatório';
+      } else if (customerData.cpfCnpj.length < 11) {
+        errors.cpfCnpj = 'CPF/CNPJ inválido';
       }
 
       // Se não estiver logado, validar campos de registro
       if (!user) {
-        if (!registrationData.password || registrationData.password.length < 8) {
-          return;
+        if (!registrationData.password) {
+          errors.password = 'Senha é obrigatória';
+        } else if (registrationData.password.length < 8) {
+          errors.password = 'Senha deve ter pelo menos 8 caracteres';
         }
-        if (registrationData.password !== registrationData.confirmPassword) {
-          return;
+        if (!registrationData.confirmPassword) {
+          errors.confirmPassword = 'Confirme sua senha';
+        } else if (registrationData.password !== registrationData.confirmPassword) {
+          errors.confirmPassword = 'Senhas não coincidem';
         }
         if (!registrationData.acceptTerms) {
-          return;
+          errors.acceptTerms = 'Você deve aceitar os termos';
         }
       }
 
+      // Se houver erros, mostrar e não avançar
+      if (Object.keys(errors).length > 0) {
+        setValidationErrors(errors);
+        toast({
+          title: 'Campos obrigatórios',
+          description: 'Preencha todos os campos obrigatórios para continuar.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      // Limpar erros e avançar
+      setValidationErrors({});
       setStep(2);
     }
   };
@@ -173,35 +205,47 @@ export default function CheckoutModal({
             <h3 className="font-semibold text-lg mb-4">Seus Dados</h3>
 
             <div>
-              <Label htmlFor="name">Nome Completo</Label>
+              <Label htmlFor="name">Nome Completo *</Label>
               <Input
                 id="name"
                 value={customerData.name}
                 onChange={(e) => setCustomerData({ ...customerData, name: e.target.value })}
                 placeholder="João da Silva"
+                className={validationErrors.name ? 'border-destructive' : ''}
               />
+              {validationErrors.name && (
+                <p className="text-xs text-destructive mt-1">{validationErrors.name}</p>
+              )}
             </div>
 
             <div>
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">Email *</Label>
               <Input
                 id="email"
                 type="email"
                 value={customerData.email}
                 onChange={(e) => setCustomerData({ ...customerData, email: e.target.value })}
                 placeholder="joao@email.com"
+                className={validationErrors.email ? 'border-destructive' : ''}
               />
+              {validationErrors.email && (
+                <p className="text-xs text-destructive mt-1">{validationErrors.email}</p>
+              )}
             </div>
 
             <div>
-              <Label htmlFor="cpfCnpj">CPF/CNPJ</Label>
+              <Label htmlFor="cpfCnpj">CPF/CNPJ *</Label>
               <Input
                 id="cpfCnpj"
                 value={customerData.cpfCnpj}
                 onChange={(e) => setCustomerData({ ...customerData, cpfCnpj: e.target.value.replace(/\D/g, '') })}
                 placeholder="000.000.000-00"
                 maxLength={14}
+                className={validationErrors.cpfCnpj ? 'border-destructive' : ''}
               />
+              {validationErrors.cpfCnpj && (
+                <p className="text-xs text-destructive mt-1">{validationErrors.cpfCnpj}</p>
+              )}
             </div>
 
             <div>
@@ -234,19 +278,22 @@ export default function CheckoutModal({
                       value={registrationData.password}
                       onChange={(e) => setRegistrationData({ ...registrationData, password: e.target.value })}
                       placeholder="Mínimo 8 caracteres"
+                      autoComplete="new-password"
+                      className={validationErrors.password ? 'border-destructive pr-10' : 'pr-10'}
                     />
                     <Button
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="absolute right-0 top-0 h-full"
+                      className="absolute right-0 top-0 h-full px-3"
                       onClick={() => setShowPassword(!showPassword)}
+                      tabIndex={-1}
                     >
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </Button>
                   </div>
-                  {registrationData.password && registrationData.password.length < 8 && (
-                    <p className="text-xs text-destructive mt-1">Senha deve ter pelo menos 8 caracteres</p>
+                  {validationErrors.password && (
+                    <p className="text-xs text-destructive mt-1">{validationErrors.password}</p>
                   )}
                 </div>
 
@@ -259,38 +306,47 @@ export default function CheckoutModal({
                       value={registrationData.confirmPassword}
                       onChange={(e) => setRegistrationData({ ...registrationData, confirmPassword: e.target.value })}
                       placeholder="Digite a senha novamente"
+                      autoComplete="new-password"
+                      className={validationErrors.confirmPassword ? 'border-destructive pr-10' : 'pr-10'}
                     />
                     <Button
                       type="button"
                       variant="ghost"
                       size="icon"
-                      className="absolute right-0 top-0 h-full"
+                      className="absolute right-0 top-0 h-full px-3"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      tabIndex={-1}
                     >
                       {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </Button>
                   </div>
-                  {registrationData.confirmPassword && registrationData.password !== registrationData.confirmPassword && (
-                    <p className="text-xs text-destructive mt-1">Senhas não coincidem</p>
+                  {validationErrors.confirmPassword && (
+                    <p className="text-xs text-destructive mt-1">{validationErrors.confirmPassword}</p>
                   )}
                 </div>
 
-                <div className="flex items-start space-x-2">
-                  <Checkbox
-                    id="terms"
-                    checked={registrationData.acceptTerms}
-                    onCheckedChange={(checked) => setRegistrationData({ ...registrationData, acceptTerms: !!checked })}
-                  />
-                  <Label htmlFor="terms" className="text-sm leading-tight">
-                    Aceito os{' '}
-                    <a href="/terms" target="_blank" className="text-primary hover:underline">
-                      Termos de Uso
-                    </a>{' '}
-                    e a{' '}
-                    <a href="/privacy" target="_blank" className="text-primary hover:underline">
-                      Política de Privacidade
-                    </a>
-                  </Label>
+                <div>
+                  <div className="flex items-start space-x-2">
+                    <Checkbox
+                      id="terms"
+                      checked={registrationData.acceptTerms}
+                      onCheckedChange={(checked) => setRegistrationData({ ...registrationData, acceptTerms: !!checked })}
+                      className={validationErrors.acceptTerms ? 'border-destructive' : ''}
+                    />
+                    <Label htmlFor="terms" className="text-sm leading-tight">
+                      Aceito os{' '}
+                      <a href="/terms" target="_blank" className="text-primary hover:underline">
+                        Termos de Uso
+                      </a>{' '}
+                      e a{' '}
+                      <a href="/privacy" target="_blank" className="text-primary hover:underline">
+                        Política de Privacidade
+                      </a>
+                    </Label>
+                  </div>
+                  {validationErrors.acceptTerms && (
+                    <p className="text-xs text-destructive mt-1">{validationErrors.acceptTerms}</p>
+                  )}
                 </div>
               </>
             )}
