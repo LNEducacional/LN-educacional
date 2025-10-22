@@ -284,11 +284,13 @@ export function Header({ showSearch = true, showNotifications = true }: HeaderPr
               <DropdownMenuTrigger asChild>
                 <Button
                   size="sm"
-                  className="hidden md:flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white border-2 border-green-600 shadow-lg transition-all duration-300"
+                  className="hidden md:flex items-center gap-2 bg-gradient-to-r from-primary to-primary-hover text-primary-foreground border border-primary/20 shadow-soft hover:shadow-lg transition-all duration-300 hover:scale-105"
                 >
-                  <UserCheck className="h-4 w-4" />
+                  <div className="relative">
+                    <User className="h-4 w-4 text-green-500" />
+                    <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-green-500 animate-pulse ring-2 ring-background" />
+                  </div>
                   <span className="font-medium">{user.name.split(' ')[0]}</span>
-                  <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
@@ -319,13 +321,15 @@ export function Header({ showSearch = true, showNotifications = true }: HeaderPr
           ) : (
             <Button
               size="sm"
-              className="hidden md:flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white border-2 border-red-600 shadow-lg transition-all duration-300"
+              className="hidden md:flex items-center gap-2 bg-gradient-to-r from-primary to-primary-hover text-primary-foreground border border-primary/20 shadow-soft hover:shadow-lg transition-all duration-300 hover:scale-105"
               asChild
             >
               <Link to="/login">
-                <UserX className="h-4 w-4" />
-                <span className="font-medium">Deslogado</span>
-                <div className="w-2 h-2 rounded-full bg-white" />
+                <div className="relative">
+                  <User className="h-4 w-4 text-red-500" />
+                  <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-red-500 ring-2 ring-background" />
+                </div>
+                <span className="font-medium">Entrar</span>
               </Link>
             </Button>
           )}
@@ -394,18 +398,20 @@ export function Header({ showSearch = true, showNotifications = true }: HeaderPr
                 <div className="pt-4 border-t border-border space-y-2">
                   {user ? (
                     <>
-                      <div className="px-3 py-2 bg-green-50 dark:bg-green-900/20 rounded-lg border-2 border-green-500">
+                      <div className="px-4 py-3 bg-gradient-to-r from-primary to-primary-hover rounded-lg border border-primary/20 shadow-soft">
                         <div className="flex items-center gap-2 mb-2">
-                          <UserCheck className="h-5 w-5 text-green-600 dark:text-green-400" />
-                          <span className="font-semibold text-green-700 dark:text-green-300">Logado</span>
-                          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse ml-auto" />
+                          <div className="relative">
+                            <User className="h-5 w-5 text-green-500" />
+                            <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-green-500 animate-pulse ring-2 ring-primary" />
+                          </div>
+                          <span className="font-semibold text-primary-foreground">Conta Ativa</span>
                         </div>
-                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{user.name}</p>
-                        <p className="text-xs text-gray-600 dark:text-gray-400">{user.email}</p>
+                        <p className="text-sm font-medium text-primary-foreground">{user.name}</p>
+                        <p className="text-xs text-primary-foreground/80">{user.email}</p>
                       </div>
                       <Button
                         size="sm"
-                        className="w-full bg-green-500 hover:bg-green-600 text-white"
+                        className="w-full btn-accent"
                         asChild
                       >
                         <Link to={user.role === 'ADMIN' ? '/admin' : '/dashboard'} onClick={() => setIsOpen(false)}>
@@ -428,21 +434,23 @@ export function Header({ showSearch = true, showNotifications = true }: HeaderPr
                     </>
                   ) : (
                     <>
-                      <div className="px-3 py-2 bg-red-50 dark:bg-red-900/20 rounded-lg border-2 border-red-500 mb-2">
+                      <div className="px-4 py-3 bg-gradient-to-r from-primary to-primary-hover rounded-lg border border-primary/20 shadow-soft mb-2">
                         <div className="flex items-center gap-2">
-                          <UserX className="h-5 w-5 text-red-600 dark:text-red-400" />
-                          <span className="font-semibold text-red-700 dark:text-red-300">Deslogado</span>
-                          <div className="w-2 h-2 rounded-full bg-red-500 ml-auto" />
+                          <div className="relative">
+                            <User className="h-5 w-5 text-red-500" />
+                            <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-red-500 ring-2 ring-primary" />
+                          </div>
+                          <span className="font-semibold text-primary-foreground">Sem Login</span>
                         </div>
                       </div>
                       <Button
                         size="sm"
-                        className="w-full bg-red-500 hover:bg-red-600 text-white"
+                        className="w-full btn-accent"
                         asChild
                       >
                         <Link to="/login" onClick={() => setIsOpen(false)}>
                           <LogIn className="h-4 w-4 mr-2" />
-                          Entrar
+                          Entrar na Conta
                         </Link>
                       </Button>
                     </>
