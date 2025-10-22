@@ -10,9 +10,15 @@ export const coursesApi = {
     limit?: number;
   }) => api.get<{ courses: Course[]; total: number }>('/courses', { params }),
 
-  getCourse: (id: string) => api.get<Course & { isEnrolled: boolean }>(`/courses/${id}`),
+  getCourse: async (id: string) => {
+    const response = await api.get<Course & { isEnrolled: boolean }>(`/courses/${id}`);
+    return response.data;
+  },
 
-  getCourseModules: (courseId: string) => api.get<CourseModule[]>(`/courses/${courseId}/modules`),
+  getCourseModules: async (courseId: string) => {
+    const response = await api.get<CourseModule[]>(`/courses/${courseId}/modules`);
+    return response.data;
+  },
 
   // Student APIs
   enrollInCourse: (courseId: string) => api.post(`/courses/${courseId}/enroll`),

@@ -113,9 +113,11 @@ export default function CourseDetailPage() {
   };
 
   const formatPrice = (price: number | undefined | null) => {
-    if (price === undefined || price === null || isNaN(price)) {
-      return 'R$ 0,00';
+    // Se o preço é undefined, null ou NaN, mostrar como "Gratuito"
+    if (price === undefined || price === null || isNaN(price) || price === 0) {
+      return 'Gratuito';
     }
+    // Preço em centavos - dividir por 100
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL',
@@ -298,7 +300,7 @@ export default function CourseDetailPage() {
                       <ShoppingCart className="h-5 w-5 mr-2" />
                       {enrollMutation.isPending
                         ? 'Processando...'
-                        : course.price > 0
+                        : course.price && course.price > 0
                           ? 'Comprar Agora'
                           : 'Inscrever-se Gratuitamente'}
                     </Button>
