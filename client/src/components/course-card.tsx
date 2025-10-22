@@ -14,7 +14,7 @@ import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import CheckoutModal from './checkout/checkout-modal';
-import { useCart } from '@/hooks/use-cart';
+import { useCart } from '@/context/cart-context';
 import { useToast } from '@/hooks/use-toast';
 
 interface CourseCardProps {

@@ -16,7 +16,7 @@ import { Award, BookOpen, CheckCircle, Clock, PlayCircle, ShoppingCart, Users, V
 import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import CheckoutModal from '@/components/checkout/checkout-modal';
-import { useCart } from '@/hooks/use-cart';
+import { useCart } from '@/context/cart-context';
 import { formatAcademicArea } from '@/utils/course-formatters';
 
 export default function CourseDetailPage() {
