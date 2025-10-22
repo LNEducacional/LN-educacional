@@ -252,7 +252,7 @@ export default function AppRoutes() {
           />
           <Route
             path="/admin/cursos/editar/:id"
-            element={<LazyWrapper component={EditCoursePage} fallback={<LoadingSpinner />} />}
+            element={<LazyWrapper component={AddCoursePage} fallback={<LoadingSpinner />} />}
           />
           <Route
             path="/admin/cursos/detalhes/:id"

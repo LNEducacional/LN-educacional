@@ -3,6 +3,7 @@ import * as courseService from '../prisma';
 import { deleteCachePattern, getCache, setCache } from '../redis';
 import * as contentService from '../services/course-content.service';
 import { uploadFile } from '../services/upload.service';
+import { processYouTubeUrl } from '../utils/youtube';
 
 const coursesRoutes: FastifyPluginAsync = async (app) => {
   // Public routes
@@ -161,6 +162,37 @@ const coursesRoutes: FastifyPluginAsync = async (app) => {
     }
   );
 
+  app.get(
+    '/admin/courses/:id',
+    {
+      preHandler: [app.authenticate, app.requireAdmin],
+    },
+    async (request, reply) => {
+      const { id } = request.params as { id: string };
+
+      // Get course with all modules and lessons for editing
+      const course = await courseService.prisma.course.findUnique({
+        where: { id },
+        include: {
+          modules: {
+            include: {
+              lessons: {
+                orderBy: { order: 'asc' },
+              },
+            },
+            orderBy: { order: 'asc' },
+          },
+        },
+      });
+
+      if (!course) {
+        return reply.status(404).send({ error: 'Course not found' });
+      }
+
+      return reply.send(course);
+    }
+  );
+
   app.post(
     '/admin/courses/:id/thumbnail',
     {
@@ -258,6 +290,19 @@ const coursesRoutes: FastifyPluginAsync = async (app) => {
       const { moduleId } = request.params as { moduleId: string };
       const data = request.body as any;
 
+      // Validate YouTube URL if provided
+      if (data.videoUrl) {
+        try {
+          const youtubeData = processYouTubeUrl(data.videoUrl);
+          // Replace with embed URL for consistent storage
+          data.videoUrl = youtubeData.embedUrl;
+        } catch (error: any) {
+          return reply.status(400).send({
+            error: error.message || 'URL do YouTube inválida'
+          });
+        }
+      }
+
       // Get courseId to invalidate cache
       const module = await courseService.prisma.courseModule.findUnique({
         where: { id: moduleId },
@@ -306,6 +351,66 @@ const coursesRoutes: FastifyPluginAsync = async (app) => {
       }
 
       return reply.send({ videoUrl: uploaded.url });
+    }
+  );
+
+  app.put(
+    '/admin/lessons/:id',
+    { preHandler: [app.authenticate, app.requireAdmin] },
+    async (request, reply) => {
+      const { id } = request.params as { id: string };
+      const data = request.body as any;
+
+      // Validate YouTube URL if provided
+      if (data.videoUrl) {
+        try {
+          const youtubeData = processYouTubeUrl(data.videoUrl);
+          // Replace with embed URL for consistent storage
+          data.videoUrl = youtubeData.embedUrl;
+        } catch (error: any) {
+          return reply.status(400).send({
+            error: error.message || 'URL do YouTube inválida'
+          });
+        }
+      }
+
+      // Get courseId to invalidate cache
+      const lesson = await courseService.prisma.courseLesson.findUnique({
+        where: { id },
+        include: { module: { select: { courseId: true } } },
+      });
+
+      const updatedLesson = await contentService.updateLesson(id, data);
+
+      if (lesson?.module) {
+        // Invalidate cache for course modules
+        await deleteCachePattern(`course:${lesson.module.courseId}:modules`);
+      }
+
+      return reply.send(updatedLesson);
+    }
+  );
+
+  app.delete(
+    '/admin/lessons/:id',
+    { preHandler: [app.authenticate, app.requireAdmin] },
+    async (request, reply) => {
+      const { id } = request.params as { id: string };
+
+      // Get courseId before deleting to invalidate cache
+      const lesson = await courseService.prisma.courseLesson.findUnique({
+        where: { id },
+        include: { module: { select: { courseId: true } } },
+      });
+
+      await contentService.deleteLesson(id);
+
+      if (lesson?.module) {
+        // Invalidate cache for course modules
+        await deleteCachePattern(`course:${lesson.module.courseId}:modules`);
+      }
+
+      return reply.status(204).send();
     }
   );
 

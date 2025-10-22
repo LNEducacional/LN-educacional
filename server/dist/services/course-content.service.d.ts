@@ -11,6 +11,8 @@ export declare function getCourseModules(courseId: string): Promise<({
         updatedAt: Date;
         moduleId: string;
         content: string | null;
+        isEnabled: boolean;
+        attachments: string[];
     }[];
 } & {
     title: string;
@@ -38,6 +40,8 @@ export declare function createModule(data: {
         updatedAt: Date;
         moduleId: string;
         content: string | null;
+        isEnabled: boolean;
+        attachments: string[];
     }[];
 } & {
     title: string;
@@ -60,6 +64,8 @@ export declare function updateModule(id: string, data: Partial<CourseModule>): P
         updatedAt: Date;
         moduleId: string;
         content: string | null;
+        isEnabled: boolean;
+        attachments: string[];
     }[];
 } & {
     title: string;
@@ -98,6 +104,8 @@ export declare function createLesson(data: {
     updatedAt: Date;
     moduleId: string;
     content: string | null;
+    isEnabled: boolean;
+    attachments: string[];
 }>;
 export declare function updateLesson(id: string, data: Partial<CourseLesson>): Promise<{
     title: string;
@@ -110,6 +118,8 @@ export declare function updateLesson(id: string, data: Partial<CourseLesson>): P
     updatedAt: Date;
     moduleId: string;
     content: string | null;
+    isEnabled: boolean;
+    attachments: string[];
 }>;
 export declare function deleteLesson(id: string): Promise<{
     title: string;
@@ -122,6 +132,8 @@ export declare function deleteLesson(id: string): Promise<{
     updatedAt: Date;
     moduleId: string;
     content: string | null;
+    isEnabled: boolean;
+    attachments: string[];
 }>;
 export declare function getUserCourseProgress(userId: string, courseId: string): Promise<{
     modules: ({
@@ -147,6 +159,8 @@ export declare function getUserCourseProgress(userId: string, courseId: string):
             updatedAt: Date;
             moduleId: string;
             content: string | null;
+            isEnabled: boolean;
+            attachments: string[];
         })[];
     } & {
         title: string;

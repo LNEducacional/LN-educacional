@@ -1,6 +1,6 @@
 import { AboutSection } from '@/components/about-section';
 import { BenefitsSection } from '@/components/benefits-section';
-import { CoursesSection } from '@/components/courses-section';
+import CoursesCarousel from '@/components/islands/courses-carousel';
 import { Footer } from '@/components/footer';
 import { Header } from '@/components/header';
 import { HeroSection } from '@/components/hero-section';
@@ -16,7 +16,7 @@ const Index = () => {
         <AboutSection />
         <ServicesSection />
         <TestimonialsSection />
-        <CoursesSection />
+        <CoursesCarousel />
         <BenefitsSection />
       </main>
       <Footer />

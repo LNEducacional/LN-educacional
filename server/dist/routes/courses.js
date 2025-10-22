@@ -37,6 +37,7 @@ const courseService = __importStar(require("../prisma"));
 const redis_1 = require("../redis");
 const contentService = __importStar(require("../services/course-content.service"));
 const upload_service_1 = require("../services/upload.service");
+const youtube_1 = require("../utils/youtube");
 const coursesRoutes = async (app) => {
     // Public routes
     app.get('/courses', async (request, reply) => {
@@ -153,6 +154,29 @@ const coursesRoutes = async (app) => {
         await (0, redis_1.deleteCachePattern)('courses:list:*');
         return reply.status(201).send(course);
     });
+    app.get('/admin/courses/:id', {
+        preHandler: [app.authenticate, app.requireAdmin],
+    }, async (request, reply) => {
+        const { id } = request.params;
+        // Get course with all modules and lessons for editing
+        const course = await courseService.prisma.course.findUnique({
+            where: { id },
+            include: {
+                modules: {
+                    include: {
+                        lessons: {
+                            orderBy: { order: 'asc' },
+                        },
+                    },
+                    orderBy: { order: 'asc' },
+                },
+            },
+        });
+        if (!course) {
+            return reply.status(404).send({ error: 'Course not found' });
+        }
+        return reply.send(course);
+    });
     app.post('/admin/courses/:id/thumbnail', {
         preHandler: [app.authenticate, app.requireAdmin],
     }, async (request, reply) => {
@@ -211,6 +235,19 @@ const coursesRoutes = async (app) => {
     app.post('/admin/modules/:moduleId/lessons', { preHandler: [app.authenticate, app.requireAdmin] }, async (request, reply) => {
         const { moduleId } = request.params;
         const data = request.body;
+        // Validate YouTube URL if provided
+        if (data.videoUrl) {
+            try {
+                const youtubeData = (0, youtube_1.processYouTubeUrl)(data.videoUrl);
+                // Replace with embed URL for consistent storage
+                data.videoUrl = youtubeData.embedUrl;
+            }
+            catch (error) {
+                return reply.status(400).send({
+                    error: error.message || 'URL do YouTube inválida'
+                });
+            }
+        }
         // Get courseId to invalidate cache
         const module = await courseService.prisma.courseModule.findUnique({
             where: { id: moduleId },
@@ -246,6 +283,48 @@ const coursesRoutes = async (app) => {
             await (0, redis_1.deleteCachePattern)(`course:${lesson.module.courseId}:modules`);
         }
         return reply.send({ videoUrl: uploaded.url });
+    });
+    app.put('/admin/lessons/:id', { preHandler: [app.authenticate, app.requireAdmin] }, async (request, reply) => {
+        const { id } = request.params;
+        const data = request.body;
+        // Validate YouTube URL if provided
+        if (data.videoUrl) {
+            try {
+                const youtubeData = (0, youtube_1.processYouTubeUrl)(data.videoUrl);
+                // Replace with embed URL for consistent storage
+                data.videoUrl = youtubeData.embedUrl;
+            }
+            catch (error) {
+                return reply.status(400).send({
+                    error: error.message || 'URL do YouTube inválida'
+                });
+            }
+        }
+        // Get courseId to invalidate cache
+        const lesson = await courseService.prisma.courseLesson.findUnique({
+            where: { id },
+            include: { module: { select: { courseId: true } } },
+        });
+        const updatedLesson = await contentService.updateLesson(id, data);
+        if (lesson?.module) {
+            // Invalidate cache for course modules
+            await (0, redis_1.deleteCachePattern)(`course:${lesson.module.courseId}:modules`);
+        }
+        return reply.send(updatedLesson);
+    });
+    app.delete('/admin/lessons/:id', { preHandler: [app.authenticate, app.requireAdmin] }, async (request, reply) => {
+        const { id } = request.params;
+        // Get courseId before deleting to invalidate cache
+        const lesson = await courseService.prisma.courseLesson.findUnique({
+            where: { id },
+            include: { module: { select: { courseId: true } } },
+        });
+        await contentService.deleteLesson(id);
+        if (lesson?.module) {
+            // Invalidate cache for course modules
+            await (0, redis_1.deleteCachePattern)(`course:${lesson.module.courseId}:modules`);
+        }
+        return reply.status(204).send();
     });
     app.put('/admin/courses/:id', { preHandler: [app.authenticate, app.requireAdmin] }, async (request, reply) => {
         const { id } = request.params;

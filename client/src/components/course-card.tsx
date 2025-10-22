@@ -16,6 +16,7 @@ import { useState } from 'react';
 import CheckoutModal from './checkout/checkout-modal';
 import { useCart } from '@/context/cart-context';
 import { useToast } from '@/hooks/use-toast';
+import { FlyToCartAnimation } from './cart/fly-to-cart-animation';
 
 interface CourseCardProps {
   course: Course;
@@ -48,10 +49,11 @@ export function CourseCard({
   const isCompact = variant === 'compact';
   const isFeatured = variant === 'featured' || course.isFeatured;
   const [checkoutOpen, setCheckoutOpen] = useState(false);
-  const { addItem } = useCart();
+  const [flyingItem, setFlyingItem] = useState<{ x: number; y: number } | null>(null);
+  const { addItem, setCartOpen } = useCart();
   const { toast } = useToast();
 
-  const handleAddToCart = (e: React.MouseEvent) => {
+  const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -64,6 +66,15 @@ export function CourseCard({
     }
 
     try {
+      // Capturar posição do botão para animação
+      const button = e.currentTarget;
+      const rect = button.getBoundingClientRect();
+      setFlyingItem({
+        x: rect.left + rect.width / 2,
+        y: rect.top + rect.height / 2,
+      });
+
+      // Adicionar ao carrinho
       addItem({
         id: course.id,
         title: course.title,
@@ -72,6 +83,11 @@ export function CourseCard({
         type: 'course',
         thumbnailUrl: course.thumbnailUrl || '',
       });
+
+      // Abrir drawer do carrinho após animação
+      setTimeout(() => {
+        setCartOpen(true);
+      }, 800);
 
       toast({
         title: 'Adicionado ao carrinho!',
@@ -300,6 +316,14 @@ export function CourseCard({
       courseTitle={course.title}
       coursePrice={course.price}
     />
+
+    {/* Animação de item voando para o carrinho */}
+    {flyingItem && (
+      <FlyToCartAnimation
+        startPosition={flyingItem}
+        onComplete={() => setFlyingItem(null)}
+      />
+    )}
     </>
   );
 }

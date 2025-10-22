@@ -23,7 +23,7 @@ export const uploadConfig: FastifyMultipartOptions = {
 
 export async function uploadFile(
   file: any,
-  folder: 'thumbnails' | 'videos' | 'materials' | 'blog-images' | 'collaborator-docs' | 'avatars'
+  folder: 'thumbnails' | 'videos' | 'materials' | 'blog-images' | 'collaborator-docs' | 'avatars' | 'lesson-attachments'
 ): Promise<UploadResult> {
   const uploadDir = path.join(process.cwd(), 'uploads', folder);
 

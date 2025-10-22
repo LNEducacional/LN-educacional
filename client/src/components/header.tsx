@@ -268,7 +268,7 @@ export function Header({ showSearch = true, showNotifications = true }: HeaderPr
 
           {/* Cart Icon */}
           <CartDrawer>
-            <Button variant="ghost" size="icon" className="relative">
+            <Button variant="ghost" size="icon" className="relative" data-cart-icon>
               <ShoppingCart className="h-5 w-5" />
               {cartCount > 0 && (
                 <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-accent text-accent-foreground text-xs font-medium flex items-center justify-center">

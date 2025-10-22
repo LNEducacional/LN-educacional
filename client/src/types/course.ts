@@ -33,6 +33,8 @@ export interface CourseLesson {
   content?: string;
   duration?: number;
   order: number;
+  isEnabled?: boolean;
+  attachments?: string[];
   progress?: CourseProgress[];
   createdAt: string;
   updatedAt: string;

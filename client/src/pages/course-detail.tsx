@@ -18,12 +18,16 @@ import { useNavigate, useParams } from 'react-router-dom';
 import CheckoutModal from '@/components/checkout/checkout-modal';
 import { useCart } from '@/context/cart-context';
 import { formatAcademicArea } from '@/utils/course-formatters';
+import { FlyToCartAnimation } from '@/components/cart/fly-to-cart-animation';
 
 export default function CourseDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { addItem } = useCart();
+  const { addItem, setCartOpen } = useCart();
+
+  // Estado para animação de adicionar ao carrinho
+  const [flyingItem, setFlyingItem] = React.useState<{ x: number; y: number } | null>(null);
 
   const { data: course, isLoading } = useQuery({
     queryKey: ['course', id],
@@ -119,7 +123,7 @@ export default function CourseDetailPage() {
     navigate(`/student/courses/${id}`);
   };
 
-  const handleAddToCart = () => {
+  const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
     if (!course) {
       toast({
         title: 'Erro',
@@ -139,6 +143,15 @@ export default function CourseDetailPage() {
     }
 
     try {
+      // Capturar posição do botão para animação
+      const button = e.currentTarget;
+      const rect = button.getBoundingClientRect();
+      setFlyingItem({
+        x: rect.left + rect.width / 2,
+        y: rect.top + rect.height / 2,
+      });
+
+      // Adicionar ao carrinho
       addItem({
         id: course.id,
         title: course.title,
@@ -147,6 +160,11 @@ export default function CourseDetailPage() {
         type: 'course',
         thumbnailUrl: course.thumbnailUrl || '',
       });
+
+      // Abrir drawer do carrinho após animação
+      setTimeout(() => {
+        setCartOpen(true);
+      }, 800);
 
       toast({
         title: 'Adicionado ao carrinho!',
@@ -586,6 +604,14 @@ export default function CourseDetailPage() {
           courseId={course.id}
           courseTitle={course.title}
           coursePrice={course.price}
+        />
+      )}
+
+      {/* Animação de item voando para o carrinho */}
+      {flyingItem && (
+        <FlyToCartAnimation
+          startPosition={flyingItem}
+          onComplete={() => setFlyingItem(null)}
         />
       )}
     </div>
