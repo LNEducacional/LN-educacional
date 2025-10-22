@@ -120,21 +120,46 @@ export default function CourseDetailPage() {
   };
 
   const handleAddToCart = () => {
-    if (!course) return;
+    if (!course) {
+      toast({
+        title: 'Erro',
+        description: 'Curso não encontrado',
+        variant: 'destructive',
+      });
+      return;
+    }
 
-    addItem({
-      id: course.id,
-      title: course.title,
-      description: course.description,
-      price: course.price,
-      type: 'course',
-      thumbnailUrl: course.thumbnailUrl,
-    });
+    if (!course.price || course.price === 0) {
+      toast({
+        title: 'Curso gratuito',
+        description: 'Este curso é gratuito. Clique em "Inscrever-se Gratuitamente".',
+        variant: 'destructive',
+      });
+      return;
+    }
 
-    toast({
-      title: 'Adicionado ao carrinho!',
-      description: `${course.title} foi adicionado ao seu carrinho.`,
-    });
+    try {
+      addItem({
+        id: course.id,
+        title: course.title,
+        description: course.description || '',
+        price: course.price,
+        type: 'course',
+        thumbnailUrl: course.thumbnailUrl || '',
+      });
+
+      toast({
+        title: 'Adicionado ao carrinho!',
+        description: `${course.title} foi adicionado ao seu carrinho.`,
+      });
+    } catch (error) {
+      console.error('Erro ao adicionar ao carrinho:', error);
+      toast({
+        title: 'Erro',
+        description: 'Não foi possível adicionar o curso ao carrinho.',
+        variant: 'destructive',
+      });
+    }
   };
 
   const formatPrice = (price: number | undefined | null) => {
