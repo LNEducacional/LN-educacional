@@ -51,7 +51,8 @@ export default function CourseDetailPage() {
   }, [course]);
 
   React.useEffect(() => {
-    if (modules) {
+    console.log('📖 Raw Modules Data:', { modules, type: typeof modules, isArray: Array.isArray(modules) });
+    if (modules && Array.isArray(modules)) {
       console.log('📖 Modules Data:', {
         count: modules.length,
         modules: modules.map(m => ({
@@ -139,14 +140,31 @@ export default function CourseDetailPage() {
     return <div>Curso não encontrado</div>;
   }
 
-  const modulesArray = Array.isArray(modules) ? modules : [];
-  const totalLessons = modulesArray.reduce((acc, mod) => acc + (mod.lessons?.length || 0), 0);
-  const totalDuration = modulesArray.reduce(
-    (acc, mod) =>
-      acc +
-      (mod.lessons?.reduce((lessonAcc, lesson) => lessonAcc + (lesson.duration || 0), 0) || 0),
-    0
-  );
+  // Ensure modules is always an array
+  const modulesArray = React.useMemo(() => {
+    if (!modules) return [];
+    if (Array.isArray(modules)) return modules;
+    // If modules is an object with a data property (some APIs return this)
+    if (typeof modules === 'object' && 'data' in modules && Array.isArray(modules.data)) {
+      return modules.data;
+    }
+    return [];
+  }, [modules]);
+
+  const totalLessons = React.useMemo(() => {
+    return modulesArray.reduce((acc, mod) => {
+      const lessons = mod?.lessons;
+      return acc + (Array.isArray(lessons) ? lessons.length : 0);
+    }, 0);
+  }, [modulesArray]);
+
+  const totalDuration = React.useMemo(() => {
+    return modulesArray.reduce((acc, mod) => {
+      const lessons = mod?.lessons;
+      if (!Array.isArray(lessons)) return acc;
+      return acc + lessons.reduce((lessonAcc, lesson) => lessonAcc + (lesson?.duration || 0), 0);
+    }, 0);
+  }, [modulesArray]);
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
@@ -350,10 +368,10 @@ export default function CourseDetailPage() {
                 {modulesArray.length > 0 ? (
                   <Accordion type="single" collapsible className="w-full space-y-3">
                     {modulesArray.map((module, index) => {
-                      const moduleDuration = module.lessons?.reduce(
-                        (acc, lesson) => acc + (lesson.duration || 0),
-                        0
-                      ) || 0;
+                      const lessons = module?.lessons || [];
+                      const moduleDuration = Array.isArray(lessons)
+                        ? lessons.reduce((acc, lesson) => acc + (lesson?.duration || 0), 0)
+                        : 0;
 
                       return (
                         <AccordionItem
@@ -377,14 +395,14 @@ export default function CourseDetailPage() {
                                 </div>
                               </div>
                               <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                                <span>{module.lessons.length} aulas</span>
+                                <span>{lessons.length} aulas</span>
                                 <span>{formatDuration(moduleDuration)}</span>
                               </div>
                             </div>
                           </AccordionTrigger>
                           <AccordionContent className="pb-4">
                             <div className="space-y-1 mt-2 pl-13">
-                              {module.lessons.map((lesson, lessonIndex) => (
+                              {lessons.map((lesson, lessonIndex) => (
                                 <div
                                   key={lesson.id}
                                   className="flex items-center justify-between p-3 rounded-md hover:bg-background transition-colors group"
@@ -405,12 +423,12 @@ export default function CourseDetailPage() {
                                     </div>
                                   </div>
                                   <div className="flex items-center gap-3 flex-shrink-0 ml-4">
-                                    {lesson.attachments && lesson.attachments.length > 0 && (
+                                    {lesson?.attachments && Array.isArray(lesson.attachments) && lesson.attachments.length > 0 && (
                                       <Badge variant="outline" className="text-xs">
                                         {lesson.attachments.length} arquivo{lesson.attachments.length > 1 ? 's' : ''}
                                       </Badge>
                                     )}
-                                    {lesson.duration && (
+                                    {lesson?.duration && (
                                       <span className="text-xs text-muted-foreground font-medium">
                                         {lesson.duration} min
                                       </span>
