@@ -33,6 +33,41 @@ export default function CourseDetailPage() {
     enabled: !!id,
   });
 
+  // Debug: Log course data
+  React.useEffect(() => {
+    if (course) {
+      console.log('📚 Course Data:', {
+        id: course.id,
+        title: course.title,
+        price: course.price,
+        priceType: typeof course.price,
+        description: course.description,
+        thumbnailUrl: course.thumbnailUrl,
+        instructorName: course.instructorName,
+        instructorBio: course.instructorBio,
+        isEnrolled: course.isEnrolled,
+      });
+    }
+  }, [course]);
+
+  React.useEffect(() => {
+    if (modules) {
+      console.log('📖 Modules Data:', {
+        count: modules.length,
+        modules: modules.map(m => ({
+          id: m.id,
+          title: m.title,
+          lessonsCount: m.lessons?.length || 0,
+          lessons: m.lessons?.map(l => ({
+            title: l.title,
+            duration: l.duration,
+            attachments: l.attachments?.length || 0,
+          })),
+        })),
+      });
+    }
+  }, [modules]);
+
   const enrollMutation = useMutation({
     mutationFn: () => coursesApi.enrollInCourse(id!),
     onSuccess: () => {
@@ -49,6 +84,8 @@ export default function CourseDetailPage() {
   });
 
   const handleEnroll = () => {
+    console.log('🛒 Enroll clicked:', { user, coursePrice: course?.price });
+
     if (!user) {
       toast({
         title: 'Login necessário',
@@ -60,9 +97,11 @@ export default function CourseDetailPage() {
     }
 
     if (course?.price && course.price > 0) {
+      console.log('💳 Redirecting to checkout');
       // Redirect to checkout for paid courses
       navigate(`/checkout?type=course&id=${id}`);
     } else {
+      console.log('🎁 Free enrollment');
       // Direct enrollment for free courses
       enrollMutation.mutate();
     }
