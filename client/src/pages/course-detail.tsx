@@ -132,15 +132,7 @@ export default function CourseDetailPage() {
     return `${mins}min`;
   };
 
-  if (isLoading) {
-    return <div>Carregando curso...</div>;
-  }
-
-  if (!course) {
-    return <div>Curso não encontrado</div>;
-  }
-
-  // Ensure modules is always an array
+  // Ensure modules is always an array - MUST be before any conditional returns
   const modulesArray = React.useMemo(() => {
     if (!modules) return [];
     if (Array.isArray(modules)) return modules;
@@ -165,6 +157,14 @@ export default function CourseDetailPage() {
       return acc + lessons.reduce((lessonAcc, lesson) => lessonAcc + (lesson?.duration || 0), 0);
     }, 0);
   }, [modulesArray]);
+
+  if (isLoading) {
+    return <div>Carregando curso...</div>;
+  }
+
+  if (!course) {
+    return <div>Curso não encontrado</div>;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
