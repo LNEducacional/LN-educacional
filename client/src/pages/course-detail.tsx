@@ -17,6 +17,7 @@ import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import CheckoutModal from '@/components/checkout/checkout-modal';
 import { useCart } from '@/hooks/use-cart';
+import { formatAcademicArea } from '@/utils/course-formatters';
 
 export default function CourseDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -199,8 +200,8 @@ export default function CourseDetailPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
           <div className="lg:col-span-2 space-y-6">
             {/* Course Header */}
-            <div className="space-y-4">
-              <Badge className="bg-accent text-accent-foreground">{course.academicArea}</Badge>
+            <div className="space-y-6">
+              <Badge className="bg-accent text-accent-foreground">{formatAcademicArea(course.academicArea)}</Badge>
               <h1 className="text-4xl lg:text-5xl font-bold text-gradient-primary leading-tight break-words">
                 {course.title}
               </h1>
