@@ -19,7 +19,11 @@
       "Bash(redis-cli:*)",
       "Bash(pkill:*)",
       "Bash(npx prisma migrate:*)",
-      "Bash(npx prisma db push)"
+      "Bash(npx prisma db push)",
+      "Bash(npm run seed:*)",
+      "Bash(npx tsx:*)",
+      "Bash(curl:*)",
+      "Bash(git log:*)"
     ],
     "deny": [],
     "ask": []

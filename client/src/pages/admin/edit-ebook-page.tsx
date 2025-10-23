@@ -25,14 +25,17 @@ import {
   X,
   FileCheck,
   ImagePlus,
+  Image as ImageIcon,
 } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import api from '@/services/api';
 
 export default function EditEbookPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { id } = useParams<{ id: string }>();
   const [loading, setLoading] = useState(false);
   const [ebook, setEbook] = useState<Ebook | null>(null);
@@ -228,6 +231,9 @@ export default function EditEbookPage() {
 
       // Atualizar e-book
       await api.put(`/admin/ebooks/${id}`, updateData);
+
+      // Invalidar cache para atualizar a lista
+      queryClient.invalidateQueries({ queryKey: ['admin', 'ebooks'] });
 
       toast({
         title: 'E-book atualizado com sucesso',

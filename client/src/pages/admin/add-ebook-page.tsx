@@ -19,10 +19,12 @@ import { BookOpen, FileText, GraduationCap, DollarSign, Upload, User, ArrowLeft,
 import type React from 'react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import api from '@/services/api';
 
 export default function AddEbookPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
   const [_activeSection, setActiveSection] = useState<
     | 'dashboard'
@@ -222,6 +224,9 @@ export default function AddEbookPage() {
       };
 
       await api.post('/admin/ebooks', ebookData);
+
+      // Invalidar cache para atualizar a lista
+      queryClient.invalidateQueries({ queryKey: ['admin', 'ebooks'] });
 
       toast({
         title: 'E-book criado com sucesso!',
