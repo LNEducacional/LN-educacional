@@ -221,7 +221,8 @@ async function processPayment(checkoutData: any): Promise<CheckoutResponse> {
   // Mapear dados do PIX
   if (response.data.pix) {
     adaptedResponse.pixCode = response.data.pix.payload;
-    adaptedResponse.pixQRCode = response.data.pix.qrCodeImage;
+    // Adicionar prefixo data:image para o base64 do QR Code
+    adaptedResponse.pixQRCode = `data:image/png;base64,${response.data.pix.qrCodeImage}`;
     adaptedResponse.pix = response.data.pix;
   }
 
