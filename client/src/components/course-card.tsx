@@ -119,7 +119,7 @@ export function CourseCard({
       >
 
         {/* Thumbnail Section */}
-        <div className="relative aspect-[16/9] overflow-hidden bg-muted/20">
+        <div className="relative aspect-[4/3] overflow-hidden bg-muted/20">
           {course.thumbnailUrl ? (
             <img
               src={course.thumbnailUrl}

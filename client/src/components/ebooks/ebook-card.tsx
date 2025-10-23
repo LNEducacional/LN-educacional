@@ -104,7 +104,7 @@ export function EbookCard({
       >
 
         {/* Thumbnail Section */}
-        <div className="relative aspect-[2/3] overflow-hidden bg-muted/20">
+        <div className="relative aspect-[4/3] overflow-hidden bg-muted/20">
           {ebook.coverUrl ? (
             <img
               src={ebook.coverUrl}
