@@ -67,6 +67,41 @@ export async function deleteLesson(id: string) {
 }
 
 export async function getUserCourseProgress(userId: string, courseId: string) {
+  // Verificar se o usuário está matriculado no curso
+  const enrollment = await prisma.courseEnrollment.findUnique({
+    where: {
+      userId_courseId: {
+        userId,
+        courseId,
+      },
+    },
+  });
+
+  if (!enrollment) {
+    throw new Error('Você não está matriculado neste curso');
+  }
+
+  // Buscar dados do curso
+  const course = await prisma.course.findUnique({
+    where: { id: courseId },
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      instructorName: true,
+      instructorBio: true,
+      thumbnailUrl: true,
+      academicArea: true,
+      level: true,
+      duration: true,
+    },
+  });
+
+  if (!course) {
+    throw new Error('Curso não encontrado');
+  }
+
+  // Buscar módulos e lições com progresso
   const modules = await prisma.courseModule.findMany({
     where: { courseId },
     include: {
@@ -76,6 +111,7 @@ export async function getUserCourseProgress(userId: string, courseId: string) {
             where: { userId },
           },
         },
+        orderBy: { order: 'asc' },
       },
     },
     orderBy: { order: 'asc' },
@@ -92,10 +128,12 @@ export async function getUserCourseProgress(userId: string, courseId: string) {
     totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
 
   return {
+    ...course,
     modules,
     totalLessons,
     completedLessons,
     progressPercentage,
+    enrolledAt: enrollment.enrolledAt,
   };
 }
 
