@@ -134,8 +134,8 @@ export function AdminProfile() {
               </div>
 
               {user?.emailVerified && (
-                <p className="text-sm text-green-600 flex items-center gap-2">
-                  <span className="h-2 w-2 bg-green-600 rounded-full" />
+                <p className="text-sm text-accent flex items-center gap-2">
+                  <span className="h-2 w-2 bg-accent rounded-full" />
                   E-mail verificado
                 </p>
               )}

@@ -226,7 +226,7 @@ export default function EbookDetailsPage() {
                     <div className="flex items-center gap-2">
                       <span className="font-medium text-foreground">Tipo:</span>
                       {ebook.price === 0 ? (
-                        <Badge className={cn('font-medium', 'bg-green-500 hover:bg-green-600 text-white')}>
+                        <Badge className={cn('font-medium', 'bg-accent hover:bg-accent/90 text-accent-foreground')}>
                           Gratuito
                         </Badge>
                       ) : (

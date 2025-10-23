@@ -63,7 +63,7 @@ const areaLabels: Record<string, string> = {
 };
 
 const levelColors = {
-  BEGINNER: 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100',
+  BEGINNER: 'bg-accent-subtle text-accent-foreground dark:bg-accent/20 dark:text-accent',
   INTERMEDIATE: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100',
   ADVANCED: 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100',
 };
@@ -278,7 +278,7 @@ const OnlineCourses: React.FC = () => {
                               </div>
                               <Progress value={course.progress} className="h-2" />
                               {course.progress === 100 && (
-                                <Badge className="mt-2 text-xs bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100">
+                                <Badge className="mt-2 text-xs bg-accent-subtle text-accent-foreground dark:bg-accent/20 dark:text-accent">
                                   <CheckCircle className="h-3 w-3 mr-1" />
                                   Concluído
                                 </Badge>

@@ -16,7 +16,10 @@
       "Bash(npm install:*)",
       "Bash(cat:*)",
       "Bash(pm2 reload:*)",
-      "Bash(redis-cli:*)"
+      "Bash(redis-cli:*)",
+      "Bash(pkill:*)",
+      "Bash(npx prisma migrate:*)",
+      "Bash(npx prisma db push)"
     ],
     "deny": [],
     "ask": []

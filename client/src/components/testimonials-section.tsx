@@ -62,9 +62,9 @@ export function TestimonialsSection() {
                     key={`star-${testimonial.id}-${i}`}
                     className={`h-4 w-4 ${
                       i < Math.floor(testimonial.rating)
-                        ? 'fill-green-500 text-green-500'
+                        ? 'fill-accent text-accent'
                         : i === Math.floor(testimonial.rating) && testimonial.rating % 1 !== 0
-                          ? 'fill-green-500/50 text-green-500'
+                          ? 'fill-accent/50 text-accent'
                           : 'text-muted-foreground'
                     }`}
                   />

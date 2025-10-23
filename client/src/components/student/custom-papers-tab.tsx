@@ -39,7 +39,7 @@ import { Link } from 'react-router-dom';
 const statusColors: Record<string, string> = {
   REQUESTED: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-500/20 dark:text-yellow-400',
   QUOTED: 'bg-blue-100 text-blue-800 dark:bg-blue-500/20 dark:text-blue-400',
-  APPROVED: 'bg-green-100 text-green-800 dark:bg-green-500/20 dark:text-green-400',
+  APPROVED: 'bg-accent-subtle text-accent-foreground dark:bg-accent/20 dark:text-accent',
   IN_PROGRESS: 'bg-purple-100 text-purple-800 dark:bg-purple-500/20 dark:text-purple-400',
   REVIEW: 'bg-orange-100 text-orange-800 dark:bg-orange-500/20 dark:text-orange-400',
   COMPLETED: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-400',
@@ -617,9 +617,9 @@ export function CustomPapersTab() {
 
                 {/* Success Message for Completed */}
                 {selectedPaper.status === 'COMPLETED' && (
-                  <Alert className="border-green-200 bg-green-50">
-                    <CheckCircle2 className="h-4 w-4 text-green-600" />
-                    <AlertDescription className="text-green-800">
+                  <Alert className="border-accent/20 bg-accent-subtle">
+                    <CheckCircle2 className="h-4 w-4 text-accent" />
+                    <AlertDescription className="text-accent-foreground">
                       Seu trabalho foi concluído com sucesso! Você pode baixar os arquivos acima.
                     </AlertDescription>
                   </Alert>

@@ -258,7 +258,7 @@ export function CourseCard({
               <div className="flex gap-2">
                 <Button
                   size={isCompact ? 'sm' : 'default'}
-                  className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold"
+                  className="flex-1 bg-primary hover:bg-primary-hover text-primary-foreground font-semibold"
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();

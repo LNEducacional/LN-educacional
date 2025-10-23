@@ -397,7 +397,7 @@ export function AdminFreePapers({ onAddPaper, onEditPaper, onViewPaper }: AdminF
                       </TableCell>
                       <TableCell className="text-foreground">{paper.pageCount}</TableCell>
                       <TableCell>
-                        <Badge className="bg-green-500 hover:bg-green-600 text-white">
+                        <Badge className="bg-accent hover:bg-accent/90 text-accent-foreground">
                           Gratuito
                         </Badge>
                       </TableCell>

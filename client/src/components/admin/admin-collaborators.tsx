@@ -682,7 +682,7 @@ export function AdminCollaborators() {
                               onClick={() => handleStatusUpdate(application.id, 'approved')}
                               disabled={isUpdatingStatus}
                               title="Aprovar"
-                              className="text-green-600 hover:text-green-700"
+                              className="text-accent hover:text-accent/80"
                             >
                               <CheckCircle className="h-4 w-4" />
                             </Button>

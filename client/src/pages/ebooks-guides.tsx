@@ -218,7 +218,7 @@ const EbooksGuides: React.FC = () => {
     <div className="animate-slide-up" style={{ animationDelay: `${index * 0.1}s` }}>
       <Card className="hover:shadow-lg transition-all duration-300 relative">
         {isNewEbook(ebook.publishedAt) && (
-          <Badge className="absolute top-2 right-2 z-10 bg-green-500 text-white">Novo</Badge>
+          <Badge className="absolute top-2 right-2 z-10 bg-accent text-accent-foreground">Novo</Badge>
         )}
         <CardContent className="p-0">
           {/* Thumbnail */}
@@ -236,7 +236,7 @@ const EbooksGuides: React.FC = () => {
               </div>
             )}
             {ebook.isPurchased && (
-              <Badge className="absolute top-2 left-2 bg-green-600 text-white">Adquirido</Badge>
+              <Badge className="absolute top-2 left-2 bg-primary text-primary-foreground">Adquirido</Badge>
             )}
           </div>
 

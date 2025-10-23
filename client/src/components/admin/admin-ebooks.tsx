@@ -425,7 +425,7 @@ export function AdminEbooks({ onAddEbook, onEditEbook, onViewEbook }: AdminEbook
                       <TableCell className="text-foreground">{ebook.pageCount}</TableCell>
                       <TableCell>
                         {ebook.price === 0 ? (
-                          <Badge className="bg-green-500 hover:bg-green-600 text-white">
+                          <Badge className="bg-accent text-accent-foreground hover:bg-accent/90">
                             Gratuito
                           </Badge>
                         ) : (
@@ -436,7 +436,7 @@ export function AdminEbooks({ onAddEbook, onEditEbook, onViewEbook }: AdminEbook
                       </TableCell>
                       <TableCell>
                         {ebook.price === 0 ? (
-                          <Badge className="bg-green-500 hover:bg-green-600 text-white">
+                          <Badge className="bg-accent text-accent-foreground hover:bg-accent/90">
                             Gratuito
                           </Badge>
                         ) : (

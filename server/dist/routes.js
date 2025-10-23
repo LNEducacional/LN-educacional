@@ -438,6 +438,11 @@ async function registerProductRoutes(app) {
     app.get('/admin/ebooks/:id', { preHandler: [app.authenticate, app.requireAdmin] }, async (request, reply) => {
         const ebook = await prisma_1.prisma.ebook.findUnique({
             where: { id: request.params.id },
+            include: {
+                files: {
+                    orderBy: { createdAt: 'asc' },
+                },
+            },
         });
         if (!ebook) {
             return reply.status(404).send({ error: 'Ebook not found' });
@@ -531,6 +536,33 @@ async function registerProductRoutes(app) {
             reply.status(400).send({ error: error.message });
         }
     });
+    // Delete a specific file from an ebook
+    app.delete('/admin/ebooks/:id/files/:fileId', { preHandler: [app.authenticate, app.requireAdmin] }, async (request, reply) => {
+        try {
+            const { id: ebookId, fileId } = request.params;
+            // Verify the file belongs to this ebook
+            const file = await prisma_1.prisma.ebookFile.findFirst({
+                where: {
+                    id: fileId,
+                    ebookId: ebookId,
+                },
+            });
+            if (!file) {
+                return reply.status(404).send({ error: 'File not found' });
+            }
+            // Delete the file record
+            await prisma_1.prisma.ebookFile.delete({
+                where: { id: fileId },
+            });
+            // Invalidar cache
+            const { deleteCache } = await Promise.resolve().then(() => __importStar(require('./redis')));
+            await deleteCache(`ebook:${ebookId}`);
+            reply.send({ success: true });
+        }
+        catch (error) {
+            reply.status(400).send({ error: error.message });
+        }
+    });
     // Upload ebook file
     app.post('/admin/ebooks/upload-file', { preHandler: [app.authenticate, app.requireAdmin] }, async (request, reply) => {
         try {
@@ -562,6 +594,58 @@ async function registerProductRoutes(app) {
                 size: uploaded.size,
                 mimetype: uploaded.mimetype,
             });
+        }
+        catch (error) {
+            reply.status(500).send({ error: error.message });
+        }
+    });
+    // Add file to existing ebook
+    app.post('/admin/ebooks/:id/files', { preHandler: [app.authenticate, app.requireAdmin] }, async (request, reply) => {
+        try {
+            const ebookId = request.params.id;
+            // Verify ebook exists
+            const ebook = await prisma_1.prisma.ebook.findUnique({
+                where: { id: ebookId },
+            });
+            if (!ebook) {
+                return reply.status(404).send({ error: 'Ebook not found' });
+            }
+            const data = await request.file();
+            if (!data) {
+                return reply.status(400).send({ error: 'No file uploaded' });
+            }
+            // Validate file type (PDF, EPUB, MOBI)
+            const allowedTypes = [
+                'application/pdf',
+                'application/epub+zip',
+                'application/x-mobipocket-ebook',
+            ];
+            if (!allowedTypes.includes(data.mimetype)) {
+                return reply.status(400).send({
+                    error: 'Invalid file type. Only PDF, EPUB, and MOBI files are allowed.',
+                });
+            }
+            // Validate file size (50MB max)
+            const buffer = await data.toBuffer();
+            if (buffer.length > 50 * 1024 * 1024) {
+                return reply.status(400).send({
+                    error: 'File too large. Maximum size is 50MB.',
+                });
+            }
+            const uploaded = await (0, upload_service_1.uploadFile)(data, 'materials');
+            // Create EbookFile record
+            const ebookFile = await prisma_1.prisma.ebookFile.create({
+                data: {
+                    ebookId: ebookId,
+                    fileUrl: uploaded.url,
+                    fileName: data.filename,
+                    fileSize: uploaded.size,
+                },
+            });
+            // Invalidar cache
+            const { deleteCache } = await Promise.resolve().then(() => __importStar(require('./redis')));
+            await deleteCache(`ebook:${ebookId}`);
+            reply.send(ebookFile);
         }
         catch (error) {
             reply.status(500).send({ error: error.message });
@@ -804,7 +888,7 @@ async function registerStudentRoutes(app) {
     app.get('/student/courses', { preHandler: [app.authenticate] }, async (request, reply) => {
         try {
             const courses = await getStudentCourses(request.currentUser.id);
-            reply.send({ courses });
+            reply.send(courses);
         }
         catch (error) {
             reply.status(400).send({ error: error.message });

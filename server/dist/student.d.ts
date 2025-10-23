@@ -50,24 +50,18 @@ export declare function getStudentDashboard(userId: string): Promise<{
     })[];
 }>;
 export declare function getStudentCourses(userId: string): Promise<{
-    completed: boolean;
-    enrolledAt: Date;
+    id: string;
+    title: string;
+    description: string;
+    instructor: string;
+    category: import(".prisma/client").$Enums.AcademicArea;
     progress: number;
-    lastAccessedAt: null;
-    title?: string | undefined;
-    description?: string | undefined;
-    academicArea?: import(".prisma/client").$Enums.AcademicArea | undefined;
-    price?: number | undefined;
-    status?: import(".prisma/client").$Enums.CourseStatus | undefined;
-    id?: string | undefined;
-    thumbnailUrl?: string | null | undefined;
-    createdAt?: Date | undefined;
-    instructorName?: string | undefined;
-    instructorBio?: string | null | undefined;
-    duration?: number | undefined;
-    level?: import(".prisma/client").$Enums.CourseLevel | undefined;
-    videoUrl?: string | null | undefined;
-    isFeatured?: boolean | undefined;
+    totalLessons: number;
+    completedLessons: number;
+    duration: string;
+    rating: number;
+    status: "COMPLETED" | "IN_PROGRESS" | "NOT_STARTED";
+    thumbnailUrl: string | null;
 }[]>;
 export declare function getStudentLibrary(userId: string): Promise<{
     id: string;

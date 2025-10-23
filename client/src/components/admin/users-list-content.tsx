@@ -57,7 +57,7 @@ const getStatusBadge = (status: string) => {
   switch (status) {
     case 'ACTIVE':
       return (
-        <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+        <Badge className="bg-accent-subtle text-accent-foreground dark:bg-accent/20 dark:text-accent">
           Ativo
         </Badge>
       );

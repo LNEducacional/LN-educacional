@@ -89,12 +89,12 @@ export function YouTubeVideoInput({
             placeholder={placeholder}
             className={`pl-10 pr-10 ${
               inputValue && !isValid ? 'border-destructive focus-visible:ring-destructive' : ''
-            } ${inputValue && isValid ? 'border-green-500 focus-visible:ring-green-500' : ''}`}
+            } ${inputValue && isValid ? 'border-accent focus-visible:ring-accent' : ''}`}
           />
           {inputValue && (
             <div className="absolute right-3 top-1/2 -translate-y-1/2">
               {isValid ? (
-                <Check className="h-4 w-4 text-green-500" />
+                <Check className="h-4 w-4 text-accent" />
               ) : (
                 <AlertCircle className="h-4 w-4 text-destructive" />
               )}
@@ -146,7 +146,7 @@ export function YouTubeVideoInput({
           </div>
           <div className="p-3 bg-muted/50 flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Check className="h-4 w-4 text-green-500" />
+              <Check className="h-4 w-4 text-accent" />
               <span>Vídeo válido e pronto para usar</span>
             </div>
             <Button

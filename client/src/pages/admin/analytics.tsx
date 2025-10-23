@@ -237,7 +237,7 @@ export default function Analytics() {
             <div className="text-2xl font-bold">{formatCurrency(analytics.kpis.totalRevenue)}</div>
             <p className="text-xs text-muted-foreground">
               <span
-                className={analytics.kpis.revenueGrowth > 0 ? 'text-green-500' : 'text-red-500'}
+                className={analytics.kpis.revenueGrowth > 0 ? 'text-accent' : 'text-destructive'}
               >
                 {formatPercentage(analytics.kpis.revenueGrowth)}
               </span>
@@ -256,7 +256,7 @@ export default function Analytics() {
               {analytics.kpis.totalOrders.toLocaleString('pt-BR')}
             </div>
             <p className="text-xs text-muted-foreground">
-              <span className={analytics.kpis.ordersGrowth > 0 ? 'text-green-500' : 'text-red-500'}>
+              <span className={analytics.kpis.ordersGrowth > 0 ? 'text-accent' : 'text-destructive'}>
                 {formatPercentage(analytics.kpis.ordersGrowth)}
               </span>
               {' vs período anterior'}
@@ -274,7 +274,7 @@ export default function Analytics() {
               {analytics.kpis.totalUsers.toLocaleString('pt-BR')}
             </div>
             <p className="text-xs text-muted-foreground">
-              <span className={analytics.kpis.usersGrowth > 0 ? 'text-green-500' : 'text-red-500'}>
+              <span className={analytics.kpis.usersGrowth > 0 ? 'text-accent' : 'text-destructive'}>
                 {formatPercentage(analytics.kpis.usersGrowth)}
               </span>
               {' vs período anterior'}

@@ -437,8 +437,8 @@ export default function CheckoutModal({
             {checkoutResponse.boleto && <BoletoPayment data={checkoutResponse.boleto} />}
             {checkoutResponse.paymentMethod === 'CREDIT_CARD' && checkoutResponse.status === 'CONFIRMED' && (
               <div className="text-center py-8">
-                <div className="h-16 w-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Check className="h-8 w-8 text-green-600 dark:text-green-400" />
+                <div className="h-16 w-16 bg-accent-subtle dark:bg-accent/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Check className="h-8 w-8 text-accent dark:text-accent" />
                 </div>
                 <h3 className="text-xl font-bold mb-2">Pagamento Aprovado!</h3>
                 <p className="text-muted-foreground mb-6">

@@ -483,7 +483,7 @@ export function AdminOrders() {
                   {selectedOrder.discount > 0 && (
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Desconto</span>
-                      <span className="text-green-600">-{formatPrice(selectedOrder.discount)}</span>
+                      <span className="text-accent">-{formatPrice(selectedOrder.discount)}</span>
                     </div>
                   )}
                   <div className="flex justify-between font-semibold text-lg pt-2 border-t">

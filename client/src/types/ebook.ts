@@ -19,6 +19,15 @@ export type AcademicArea =
   | 'AGRICULTURAL_SCIENCES'
   | 'MULTIDISCIPLINARY';
 
+export interface EbookFile {
+  id: string;
+  ebookId: string;
+  fileUrl: string;
+  fileName: string;
+  fileSize: number | null;
+  createdAt: string;
+}
+
 export interface Ebook {
   id: string;
   title: string;
@@ -29,6 +38,7 @@ export interface Ebook {
   price: number; // centavos BRL, 0 = gratuito
   fileUrl: string;
   coverUrl: string | null;
+  files?: EbookFile[];
   createdAt: string;
   updatedAt?: string;
   // Campos adicionais para funcionalidades

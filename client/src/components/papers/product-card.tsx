@@ -95,7 +95,7 @@ export function ProductCard({ paper, isFree = false, onPurchase }: ProductCardPr
           {isFree && (
             <Badge
               variant="default"
-              className="text-xs bg-green-600 hover:bg-green-700 text-white font-semibold"
+              className="text-xs bg-primary hover:bg-primary-hover text-primary-foreground font-semibold"
             >
               GRÁTIS
             </Badge>
@@ -128,7 +128,7 @@ export function ProductCard({ paper, isFree = false, onPurchase }: ProductCardPr
         {isFree ? (
           <Button
             onClick={handlePurchase}
-            className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold"
+            className="flex-1 bg-primary hover:bg-primary-hover text-primary-foreground font-semibold"
           >
             <Download className="w-4 h-4 mr-2" />
             Download Gratuito

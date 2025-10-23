@@ -112,43 +112,79 @@ async function getStudentDashboard(userId) {
     };
 }
 async function getStudentCourses(userId) {
-    const enrolledCourses = await prisma_1.prisma.order.findMany({
-        where: {
-            userId,
-            status: 'COMPLETED',
-            items: {
-                some: {
-                    courseId: { not: null },
-                },
-            },
-        },
-        select: {
-            createdAt: true,
-            items: {
-                where: {
-                    courseId: { not: null },
-                },
+    // Buscar enrollments do usuário
+    const enrollments = await prisma_1.prisma.courseEnrollment.findMany({
+        where: { userId },
+        include: {
+            course: {
                 include: {
-                    course: true,
+                    modules: {
+                        include: {
+                            lessons: true,
+                        },
+                    },
                 },
             },
         },
     });
-    const courses = enrolledCourses.flatMap((order) => order.items.map((item) => ({
-        ...item.course,
-        enrolledAt: order.createdAt,
-        progress: 0,
-        lastAccessedAt: null,
-    })));
+    // Buscar progresso de lições do usuário
+    const courseProgress = await prisma_1.prisma.courseProgress.findMany({
+        where: { userId },
+        select: {
+            lessonId: true,
+            completed: true,
+        },
+    });
+    const completedLessonsSet = new Set(courseProgress.filter(p => p.completed).map(p => p.lessonId));
+    // Buscar certificados para identificar cursos concluídos
     const certificates = await prisma_1.prisma.certificate.findMany({
         where: { userId },
         select: { courseId: true },
     });
-    const completedCourseIds = new Set(certificates.map((cert) => cert.courseId));
-    return courses.map((course) => ({
-        ...course,
-        completed: course?.id ? completedCourseIds.has(course.id) : false,
-    }));
+    const completedCourseIds = new Set(certificates.map(cert => cert.courseId));
+    // Formatar cursos no formato esperado pelo frontend
+    const courses = enrollments.map(enrollment => {
+        const course = enrollment.course;
+        // Calcular total de lições
+        const totalLessons = course.modules.reduce((sum, module) => sum + module.lessons.length, 0);
+        // Calcular lições completadas deste curso
+        const courseLessonIds = course.modules.flatMap(module => module.lessons.map(lesson => lesson.id));
+        const completedLessons = courseLessonIds.filter(lessonId => completedLessonsSet.has(lessonId)).length;
+        // Calcular progresso em porcentagem
+        const progress = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+        // Determinar status
+        let status;
+        if (completedCourseIds.has(course.id)) {
+            status = 'COMPLETED';
+        }
+        else if (progress > 0) {
+            status = 'IN_PROGRESS';
+        }
+        else {
+            status = 'NOT_STARTED';
+        }
+        // Converter duração de minutos para string formatada
+        const hours = Math.floor(course.duration / 60);
+        const minutes = course.duration % 60;
+        const durationStr = hours > 0
+            ? `${hours}h${minutes > 0 ? ` ${minutes}min` : ''}`
+            : `${minutes}min`;
+        return {
+            id: course.id,
+            title: course.title,
+            description: course.description,
+            instructor: course.instructorName,
+            category: course.academicArea,
+            progress,
+            totalLessons,
+            completedLessons,
+            duration: durationStr,
+            rating: 4.5, // Valor fixo por enquanto
+            status,
+            thumbnailUrl: course.thumbnailUrl,
+        };
+    });
+    return courses;
 }
 async function getStudentLibrary(userId) {
     const library = await prisma_1.prisma.library.findMany({

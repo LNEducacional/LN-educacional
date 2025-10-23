@@ -1011,8 +1011,8 @@ export default function Collaborator() {
           <div className="max-w-2xl mx-auto text-center">
             <Card className="p-8 shadow-medium animate-scale-in">
               <div className="flex justify-center mb-6">
-                <div className="p-4 bg-green-100 dark:bg-green-900/20 rounded-full">
-                  <CheckCircle2 className="h-12 w-12 text-green-600 dark:text-green-400" />
+                <div className="p-4 bg-accent-subtle dark:bg-accent/20 rounded-full">
+                  <CheckCircle2 className="h-12 w-12 text-accent dark:text-accent" />
                 </div>
               </div>
 
@@ -1073,7 +1073,7 @@ export default function Collaborator() {
                 {/* Auto-save indicator */}
                 <div className="mb-4 text-center">
                   <p className="text-xs text-muted-foreground flex items-center justify-center gap-2">
-                    <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse"></div>
+                    <div className="h-2 w-2 bg-accent rounded-full animate-pulse"></div>
                     Rascunho salvo automaticamente
                   </p>
                 </div>
@@ -1242,7 +1242,7 @@ export default function Collaborator() {
                     'Destaque Profissional',
                   ].map((benefit) => (
                     <li key={benefit} className="flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400 flex-shrink-0" />
+                      <CheckCircle2 className="h-4 w-4 text-accent dark:text-accent flex-shrink-0" />
                       <span className="text-sm text-foreground">{benefit}</span>
                     </li>
                   ))}

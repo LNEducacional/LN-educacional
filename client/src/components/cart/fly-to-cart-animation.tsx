@@ -50,12 +50,12 @@ export function FlyToCartAnimation({ startPosition, onComplete }: FlyToCartAnima
     >
       <div className="relative">
         {/* Ícone do carrinho animado */}
-        <div className="bg-green-500 text-white rounded-full p-3 shadow-lg animate-pulse">
+        <div className="bg-accent text-accent-foreground rounded-full p-3 shadow-lg animate-pulse">
           <ShoppingCart className="h-6 w-6" />
         </div>
         {/* Partículas ao redor */}
         <div className="absolute inset-0 animate-ping opacity-75">
-          <div className="bg-green-400 rounded-full w-full h-full" />
+          <div className="bg-accent rounded-full w-full h-full" />
         </div>
       </div>
 

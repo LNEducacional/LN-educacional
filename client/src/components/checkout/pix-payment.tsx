@@ -77,15 +77,15 @@ export default function PixPayment({ data, orderId, onPaymentConfirmed }: PixPay
         <div className="flex justify-center">
           <div className="relative">
             {/* Círculo com animação de pulso */}
-            <div className="absolute inset-0 bg-green-100 dark:bg-green-900 rounded-full animate-ping opacity-20"></div>
-            <div className="relative h-24 w-24 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
-              <CheckCircle className="h-16 w-16 text-green-600 dark:text-green-400" />
+            <div className="absolute inset-0 bg-accent-subtle dark:bg-accent/20 rounded-full animate-ping opacity-20"></div>
+            <div className="relative h-24 w-24 bg-accent-subtle dark:bg-accent/20 rounded-full flex items-center justify-center">
+              <CheckCircle className="h-16 w-16 text-accent dark:text-accent" />
             </div>
           </div>
         </div>
 
         <div className="space-y-3">
-          <h3 className="text-3xl font-bold text-green-600 dark:text-green-400">
+          <h3 className="text-3xl font-bold text-accent dark:text-accent">
             Pagamento Confirmado!
           </h3>
           <p className="text-lg text-foreground">
@@ -139,7 +139,7 @@ export default function PixPayment({ data, orderId, onPaymentConfirmed }: PixPay
           className="font-mono text-xs"
         />
         <Button onClick={handleCopy} size="icon" variant="outline">
-          {copied ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
+          {copied ? <Check className="h-4 w-4 text-accent" /> : <Copy className="h-4 w-4" />}
         </Button>
       </div>
 

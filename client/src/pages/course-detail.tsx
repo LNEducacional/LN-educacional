@@ -394,23 +394,23 @@ export default function CourseDetailPage() {
                     <p className="font-semibold text-sm">Este curso inclui:</p>
                     <div className="space-y-2">
                       <div className="flex items-start gap-2 text-sm">
-                        <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                        <CheckCircle className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
                         <span>Acesso vitalício ao conteúdo</span>
                       </div>
                       <div className="flex items-start gap-2 text-sm">
-                        <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                        <CheckCircle className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
                         <span>Certificado de conclusão</span>
                       </div>
                       <div className="flex items-start gap-2 text-sm">
-                        <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                        <CheckCircle className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
                         <span>{totalLessons} aulas em vídeo</span>
                       </div>
                       <div className="flex items-start gap-2 text-sm">
-                        <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                        <CheckCircle className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
                         <span>Materiais complementares para download</span>
                       </div>
                       <div className="flex items-start gap-2 text-sm">
-                        <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                        <CheckCircle className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
                         <span>Suporte com instrutor especializado</span>
                       </div>
                     </div>

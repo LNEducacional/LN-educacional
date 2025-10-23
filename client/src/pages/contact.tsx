@@ -348,14 +348,14 @@ export default function Contact() {
                 <Card className="shadow-soft">
                   <CardContent className="p-6">
                     <div className="flex items-start gap-3">
-                      <div className="p-2 bg-green-100 dark:bg-green-900/20 rounded-lg">
-                        <Phone className="h-5 w-5 text-green-600 dark:text-green-400" />
+                      <div className="p-2 bg-accent-subtle dark:bg-accent/20 rounded-lg">
+                        <Phone className="h-5 w-5 text-accent dark:text-accent" />
                       </div>
                       <div>
                         <h3 className="font-semibold text-foreground mb-1">Atendimento rápido:</h3>
                         <Button
                           variant="link"
-                          className="p-0 h-auto text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300"
+                          className="p-0 h-auto text-accent dark:text-accent hover:text-accent/80 dark:hover:text-accent/80"
                           onClick={handleWhatsAppClick}
                         >
                           (94) 98421-1357
@@ -630,8 +630,8 @@ export default function Contact() {
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
               <div className="flex items-center justify-center mb-4">
-                <div className="rounded-full bg-green-100 dark:bg-green-900/20 p-3">
-                  <CheckCircle2 className="h-10 w-10 text-green-600 dark:text-green-400" />
+                <div className="rounded-full bg-accent-subtle dark:bg-accent/20 p-3">
+                  <CheckCircle2 className="h-10 w-10 text-accent dark:text-accent" />
                 </div>
               </div>
               <DialogTitle className="text-center text-2xl">

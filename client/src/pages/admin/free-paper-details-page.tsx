@@ -398,7 +398,7 @@ export default function FreePaperDetailsPage() {
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="text-center p-6 border rounded-lg bg-muted/50">
-                    <div className="text-2xl font-bold text-green-600 dark:text-green-400 mb-2">
+                    <div className="text-2xl font-bold text-accent dark:text-accent mb-2">
                       R$ 0,00
                     </div>
                     <p className="text-sm text-muted-foreground">Preço (Gratuito)</p>

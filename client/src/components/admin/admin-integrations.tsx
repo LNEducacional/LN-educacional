@@ -434,7 +434,7 @@ export function AdminIntegrations() {
                         <CardTitle className="text-lg">{integration.displayName}</CardTitle>
                         <CardDescription className="mt-1">
                           {integration.isActive ? (
-                            <Badge variant="default" className="bg-green-600">
+                            <Badge variant="default" className="bg-accent">
                               <CheckCircle className="h-3 w-3 mr-1" />
                               Ativo
                             </Badge>
@@ -466,7 +466,7 @@ export function AdminIntegrations() {
                           variant={copiedStates[`card-${integration.id}`] ? "default" : "outline"}
                           size="icon"
                           type="button"
-                          className={copiedStates[`card-${integration.id}`] ? "bg-green-600 hover:bg-green-700 border-green-600" : ""}
+                          className={copiedStates[`card-${integration.id}`] ? "bg-accent hover:bg-accent/90 border-accent" : ""}
                           onClick={async (e) => {
                             e.preventDefault();
                             e.stopPropagation();
@@ -716,7 +716,7 @@ export function AdminIntegrations() {
                             type="button"
                             variant="ghost"
                             size="icon"
-                            className={`absolute right-0 top-0 ${copiedStates[`form-${field.name}`] ? 'text-green-600' : ''}`}
+                            className={`absolute right-0 top-0 ${copiedStates[`form-${field.name}`] ? 'text-accent' : ''}`}
                             onClick={async (e) => {
                               e.preventDefault();
                               e.stopPropagation();

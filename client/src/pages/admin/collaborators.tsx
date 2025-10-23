@@ -191,7 +191,7 @@ export default function AdminCollaborators() {
             <CardTitle className="text-sm font-medium">Aprovados</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">
+            <div className="text-2xl font-bold text-accent">
               {applications.filter((a) => a.status === 'APPROVED').length}
             </div>
           </CardContent>
@@ -396,7 +396,7 @@ export default function AdminCollaborators() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="text-green-600"
+                    className="text-accent"
                     onClick={() => handleStatusUpdate(selectedApplication.id, 'APPROVED')}
                     disabled={updatingStatus || selectedApplication.status === 'APPROVED'}
                   >

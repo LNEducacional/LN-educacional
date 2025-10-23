@@ -175,6 +175,38 @@ export default function EditEbookPage() {
     return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
   };
 
+  // Deletar arquivo individual
+  const handleDeleteFile = async (fileId: string) => {
+    if (!confirm('Deseja realmente excluir este arquivo?')) {
+      return;
+    }
+
+    try {
+      await api.delete(`/admin/ebooks/${id}/files/${fileId}`);
+
+      // Atualizar estado local
+      setEbook((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          files: prev.files?.filter((f) => f.id !== fileId) || [],
+        };
+      });
+
+      toast({
+        title: 'Arquivo excluído',
+        description: 'O arquivo foi removido com sucesso.',
+      });
+    } catch (error: any) {
+      console.error('Erro ao deletar arquivo:', error);
+      toast({
+        title: 'Erro ao excluir',
+        description: error.response?.data?.error || 'Não foi possível excluir o arquivo.',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -209,14 +241,15 @@ export default function EditEbookPage() {
         price: formData.isFree ? 0 : Math.round(Number.parseFloat(formData.price) * 100),
       };
 
-      // Upload de novo arquivo se fornecido (usa o primeiro arquivo selecionado)
+      // Upload de novos arquivos se fornecidos
       if (formData.files.length > 0) {
-        const fileFormData = new FormData();
-        fileFormData.append('file', formData.files[0]);
-        const fileUploadResponse = await api.post('/admin/ebooks/upload-file', fileFormData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
-        updateData.fileUrl = fileUploadResponse.data.url;
+        for (const file of formData.files) {
+          const fileFormData = new FormData();
+          fileFormData.append('file', file);
+          await api.post(`/admin/ebooks/${id}/files`, fileFormData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+          });
+        }
       }
 
       // Upload de nova capa se fornecida
@@ -466,24 +499,49 @@ export default function EditEbookPage() {
                       </div>
                     ) : (
                       <div className="mt-2 space-y-3">
-                        {/* Arquivo atual salvo no banco */}
-                        {ebook.fileUrl && (
-                          <div className="p-3 border-2 border-blue-200 rounded-lg bg-blue-50">
-                            <div className="flex items-center gap-3">
-                              <div className="flex-shrink-0 h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                                <FileText className="h-5 w-5 text-blue-600" />
+                        {/* Arquivos salvos no banco */}
+                        {ebook.files && ebook.files.length > 0 && (
+                          <div className="space-y-2">
+                            <p className="text-xs text-blue-600 font-medium mb-2">
+                              Arquivos atuais ({ebook.files.length}):
+                            </p>
+                            {ebook.files.map((file) => (
+                              <div
+                                key={file.id}
+                                className="p-3 border-2 border-blue-200 rounded-lg bg-blue-50"
+                              >
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                                    <div className="flex-shrink-0 h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                                      <FileText className="h-5 w-5 text-blue-600" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm font-medium truncate text-blue-900">
+                                        {file.fileName}
+                                      </p>
+                                      {file.fileSize && (
+                                        <p className="text-xs text-blue-600">
+                                          {formatFileSize(file.fileSize)}
+                                        </p>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleDeleteFile(file.id)}
+                                    className="flex-shrink-0 h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
+                                  >
+                                    <X className="h-4 w-4" />
+                                  </Button>
+                                </div>
                               </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-xs text-blue-600 font-medium mb-1">Arquivo atual salvo:</p>
-                                <p className="text-sm font-medium truncate text-blue-900">
-                                  {ebook.fileUrl.split('/').pop()}
-                                </p>
-                              </div>
-                            </div>
+                            ))}
                           </div>
                         )}
 
-                        {/* Zona de upload para novo arquivo */}
+                        {/* Zona de upload para novos arquivos */}
                         <label
                           htmlFor="file"
                           className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-muted-foreground/25 rounded-lg cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors"
@@ -491,11 +549,9 @@ export default function EditEbookPage() {
                           <div className="flex flex-col items-center justify-center pt-5 pb-6">
                             <Upload className="h-8 w-8 text-muted-foreground mb-2" />
                             <p className="text-sm text-muted-foreground">
-                              <span className="font-semibold">Clique para fazer upload</span> de novos arquivos
+                              <span className="font-semibold">Clique para adicionar</span> mais arquivos
                             </p>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              PDF, EPUB, MOBI (deixe vazio para manter o atual)
-                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">PDF, EPUB, MOBI</p>
                           </div>
                           <Input
                             id="file"

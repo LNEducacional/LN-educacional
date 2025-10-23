@@ -287,8 +287,8 @@ export function Header({ showSearch = true, showNotifications = true }: HeaderPr
                   className="hidden md:flex items-center gap-2 bg-gradient-to-r from-primary to-primary-hover text-primary-foreground border border-primary/20 shadow-soft hover:shadow-lg transition-all duration-300 hover:scale-105"
                 >
                   <div className="relative">
-                    <User className="h-4 w-4 text-green-500" />
-                    <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-green-500 animate-pulse ring-2 ring-background" />
+                    <User className="h-4 w-4 text-accent" />
+                    <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-accent animate-pulse ring-2 ring-background" />
                   </div>
                   <span className="font-medium">{user.name.split(' ')[0]}</span>
                 </Button>
@@ -401,8 +401,8 @@ export function Header({ showSearch = true, showNotifications = true }: HeaderPr
                       <div className="px-4 py-3 bg-gradient-to-r from-primary to-primary-hover rounded-lg border border-primary/20 shadow-soft">
                         <div className="flex items-center gap-2 mb-2">
                           <div className="relative">
-                            <User className="h-5 w-5 text-green-500" />
-                            <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-green-500 animate-pulse ring-2 ring-primary" />
+                            <User className="h-5 w-5 text-accent" />
+                            <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-accent animate-pulse ring-2 ring-primary" />
                           </div>
                           <span className="font-semibold text-primary-foreground">Conta Ativa</span>
                         </div>

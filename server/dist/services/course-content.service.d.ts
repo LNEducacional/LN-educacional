@@ -174,6 +174,16 @@ export declare function getUserCourseProgress(userId: string, courseId: string):
     totalLessons: number;
     completedLessons: number;
     progressPercentage: number;
+    enrolledAt: Date;
+    title: string;
+    description: string;
+    academicArea: import(".prisma/client").$Enums.AcademicArea;
+    id: string;
+    thumbnailUrl: string | null;
+    instructorName: string;
+    instructorBio: string | null;
+    duration: number;
+    level: import(".prisma/client").$Enums.CourseLevel;
 }>;
 export declare function updateLessonProgress(data: {
     userId: string;

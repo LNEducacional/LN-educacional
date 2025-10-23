@@ -511,7 +511,7 @@ export default function CustomPapersPage() {
                           className="flex items-center justify-between p-2 bg-muted/50 rounded-md group hover:bg-muted transition-colors"
                         >
                           <div className="flex items-center gap-2 flex-1 min-w-0">
-                            <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0" />
+                            <CheckCircle2 className="h-4 w-4 text-accent flex-shrink-0" />
                             <span className="text-sm truncate">{file.split('/').pop()}</span>
                           </div>
                           <Button

@@ -65,7 +65,7 @@ export function StudentDownloads() {
       PDF: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
       DOC: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
       EBOOK: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
-      MATERIAL: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+      MATERIAL: 'bg-accent-subtle text-accent-foreground dark:bg-accent/20 dark:text-accent',
     };
 
     return (

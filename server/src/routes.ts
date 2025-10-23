@@ -491,6 +491,11 @@ export async function registerProductRoutes(app: FastifyInstance) {
     async (request, reply) => {
       const ebook = await prisma.ebook.findUnique({
         where: { id: request.params.id },
+        include: {
+          files: {
+            orderBy: { createdAt: 'asc' },
+          },
+        },
       });
 
       if (!ebook) {
@@ -612,6 +617,42 @@ export async function registerProductRoutes(app: FastifyInstance) {
     }
   );
 
+  // Delete a specific file from an ebook
+  app.delete<{ Params: { id: string; fileId: string } }>(
+    '/admin/ebooks/:id/files/:fileId',
+    { preHandler: [app.authenticate, app.requireAdmin] },
+    async (request, reply) => {
+      try {
+        const { id: ebookId, fileId } = request.params;
+
+        // Verify the file belongs to this ebook
+        const file = await prisma.ebookFile.findFirst({
+          where: {
+            id: fileId,
+            ebookId: ebookId,
+          },
+        });
+
+        if (!file) {
+          return reply.status(404).send({ error: 'File not found' });
+        }
+
+        // Delete the file record
+        await prisma.ebookFile.delete({
+          where: { id: fileId },
+        });
+
+        // Invalidar cache
+        const { deleteCache } = await import('./redis');
+        await deleteCache(`ebook:${ebookId}`);
+
+        reply.send({ success: true });
+      } catch (error: unknown) {
+        reply.status(400).send({ error: (error as Error).message });
+      }
+    }
+  );
+
   // Upload ebook file
   app.post(
     '/admin/ebooks/upload-file',
@@ -650,6 +691,72 @@ export async function registerProductRoutes(app: FastifyInstance) {
           size: uploaded.size,
           mimetype: uploaded.mimetype,
         });
+      } catch (error: unknown) {
+        reply.status(500).send({ error: (error as Error).message });
+      }
+    }
+  );
+
+  // Add file to existing ebook
+  app.post<{ Params: IdParams }>(
+    '/admin/ebooks/:id/files',
+    { preHandler: [app.authenticate, app.requireAdmin] },
+    async (request, reply) => {
+      try {
+        const ebookId = request.params.id;
+
+        // Verify ebook exists
+        const ebook = await prisma.ebook.findUnique({
+          where: { id: ebookId },
+        });
+
+        if (!ebook) {
+          return reply.status(404).send({ error: 'Ebook not found' });
+        }
+
+        const data = await request.file();
+
+        if (!data) {
+          return reply.status(400).send({ error: 'No file uploaded' });
+        }
+
+        // Validate file type (PDF, EPUB, MOBI)
+        const allowedTypes = [
+          'application/pdf',
+          'application/epub+zip',
+          'application/x-mobipocket-ebook',
+        ];
+        if (!allowedTypes.includes(data.mimetype)) {
+          return reply.status(400).send({
+            error: 'Invalid file type. Only PDF, EPUB, and MOBI files are allowed.',
+          });
+        }
+
+        // Validate file size (50MB max)
+        const buffer = await data.toBuffer();
+        if (buffer.length > 50 * 1024 * 1024) {
+          return reply.status(400).send({
+            error: 'File too large. Maximum size is 50MB.',
+          });
+        }
+
+        const uploaded = await uploadFile(data, 'materials');
+
+        // Create EbookFile record
+        const ebookFile = await prisma.ebookFile.create({
+          data: {
+            ebookId: ebookId,
+            fileUrl: uploaded.url,
+            fileName: data.filename,
+            fileSize: uploaded.size,
+          },
+        });
+
+        // Invalidar cache
+        const { deleteCache } = await import('./redis');
+        await deleteCache(`ebook:${ebookId}`);
+
+        reply.send(ebookFile);
       } catch (error: unknown) {
         reply.status(500).send({ error: (error as Error).message });
       }
