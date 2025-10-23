@@ -910,7 +910,20 @@ export async function registerOrderRoutes(app: FastifyInstance) {
           return;
         }
 
-        reply.send(order);
+        // Mapear paymentStatus do banco para o formato esperado pelo cliente
+        const paymentStatusMap: Record<string, string> = {
+          'CONFIRMED': 'APPROVED',
+          'FAILED': 'REFUSED',
+          'CANCELED': 'REFUSED',
+          'PENDING': 'PENDING',
+        };
+
+        const mappedOrder = {
+          ...order,
+          paymentStatus: paymentStatusMap[order.paymentStatus] || order.paymentStatus,
+        };
+
+        reply.send(mappedOrder);
       } catch (error: unknown) {
         reply.status(400).send({ error: (error as Error).message });
       }
