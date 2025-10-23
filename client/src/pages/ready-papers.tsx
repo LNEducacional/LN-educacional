@@ -10,9 +10,11 @@ import { useApi } from '@/hooks/use-api';
 import { useToast } from '@/hooks/use-toast';
 import api from '@/services/api';
 import type { PaperFilters, ReadyPaper } from '@/types/paper';
-import { ArrowLeft, Filter, Loader2, ShoppingCart } from 'lucide-react';
+import { ArrowLeft, Filter, Loader2, ShoppingCart, ShoppingBag, CheckCircle, FileText, Download } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import CheckoutModal from '@/components/checkout/checkout-modal';
+import { FlyToCartAnimation } from '@/components/cart/fly-to-cart-animation';
 
 // Helper functions
 const createFiltersFromSearchParams = (searchParams: URLSearchParams): PaperFilters => ({
@@ -205,88 +207,185 @@ const PaperNotFound = () => (
 // Paper detail page component
 const PaperDetailPage = ({
   paperDetail,
-  handlePurchase,
-}: { paperDetail: ReadyPaper; handlePurchase: (paper: ReadyPaper) => void }) => (
-  <div className="container mx-auto px-4 py-8">
-    <Button variant="ghost" asChild className="mb-6">
-      <Link to="/ready-papers">
-        <ArrowLeft className="w-4 h-4 mr-2" />
-        Voltar para Trabalhos Prontos
-      </Link>
-    </Button>
+  onBuyClick,
+  onAddToCart,
+  flyingItem,
+}: {
+  paperDetail: ReadyPaper;
+  onBuyClick: () => void;
+  onAddToCart: (e: React.MouseEvent<HTMLButtonElement>) => void;
+  flyingItem: { x: number; y: number } | null;
+}) => (
+  <div className="min-h-screen bg-gradient-subtle">
+    <div className="container mx-auto px-4 py-8">
+      <Button variant="ghost" asChild className="mb-6">
+        <Link to="/ready-papers">
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Voltar para Trabalhos Prontos
+        </Link>
+      </Button>
 
-    <div className="grid lg:grid-cols-3 gap-8">
-      <div className="lg:col-span-2">
-        <div className="space-y-6">
-          <div className="aspect-[16/9] rounded-lg overflow-hidden bg-muted">
-            <img
-              src={paperDetail.thumbnailUrl || '/placeholder.svg'}
-              alt={paperDetail.title}
-              className="w-full h-full object-cover"
-            />
+      {/* Hero Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+        <div className="lg:col-span-2 space-y-6">
+          {/* Paper Header */}
+          <div className="space-y-6">
+            <Badge className="bg-accent text-accent-foreground">
+              {academicAreaLabels[paperDetail.academicArea]}
+            </Badge>
+            <h1 className="text-4xl lg:text-5xl font-bold text-gradient-primary leading-tight break-words">
+              {paperDetail.title}
+            </h1>
+            <p className="text-lg text-muted-foreground leading-relaxed">{paperDetail.description}</p>
           </div>
 
-          <div>
-            <h1 className="text-3xl font-bold text-foreground mb-4">{paperDetail.title}</h1>
-            <div className="flex flex-wrap gap-2 mb-4">
-              <Badge variant="default">{paperTypeLabels[paperDetail.paperType]}</Badge>
-              <Badge variant="secondary">{paperDetail.pageCount} páginas</Badge>
-              <Badge variant="outline">{academicAreaLabels[paperDetail.academicArea]}</Badge>
-            </div>
+          {/* Paper Stats */}
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <Card className="border-primary/20 hover:border-primary/40 transition-colors">
+              <CardContent className="p-4 flex items-center gap-3">
+                <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <FileText className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{paperDetail.pageCount}</p>
+                  <p className="text-xs text-muted-foreground">Páginas</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-accent/20 hover:border-accent/40 transition-colors">
+              <CardContent className="p-4 flex items-center gap-3">
+                <div className="h-12 w-12 rounded-lg bg-accent/10 flex items-center justify-center">
+                  <FileText className="h-6 w-6 text-accent-foreground" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{paperTypeLabels[paperDetail.paperType]}</p>
+                  <p className="text-xs text-muted-foreground">Tipo</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-primary/20 hover:border-primary/40 transition-colors">
+              <CardContent className="p-4 flex items-center gap-3">
+                <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Download className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{paperDetail.downloadCount || 0}</p>
+                  <p className="text-xs text-muted-foreground">Downloads</p>
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
-          <div>
-            <h2 className="text-xl font-semibold text-foreground mb-3">Descrição</h2>
-            <p className="text-muted-foreground leading-relaxed">{paperDetail.description}</p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <h3 className="font-medium text-foreground mb-2">Autor</h3>
-              <p className="text-muted-foreground">{paperDetail.authorName}</p>
-            </div>
-            <div>
-              <h3 className="font-medium text-foreground mb-2">Idioma</h3>
-              <p className="text-muted-foreground">{paperDetail.language}</p>
-            </div>
-            {paperDetail.keywords && (
-              <div className="md:col-span-2">
-                <h3 className="font-medium text-foreground mb-2">Palavras-chave</h3>
-                <p className="text-muted-foreground">{paperDetail.keywords}</p>
-              </div>
-            )}
-          </div>
+          {/* Author Info */}
+          {paperDetail.authorName && (
+            <Card className="border-l-4 border-l-accent">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5 text-accent-foreground" />
+                  Autor
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <h3 className="text-lg font-semibold">{paperDetail.authorName}</h3>
+                  {paperDetail.keywords && (
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground mb-1">Palavras-chave:</p>
+                      <p className="text-sm text-muted-foreground leading-relaxed">
+                        {paperDetail.keywords}
+                      </p>
+                    </div>
+                  )}
+                  {paperDetail.language && (
+                    <p className="text-sm text-muted-foreground">
+                      <span className="font-medium">Idioma:</span> {paperDetail.language}
+                    </p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
-      </div>
 
-      <div className="lg:col-span-1">
-        <Card className="sticky top-8 bg-card border-border">
-          <CardHeader>
-            <CardTitle className="text-2xl text-center text-foreground">
-              {formatPrice(paperDetail.price)}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Button
-              size="lg"
-              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
-              onClick={() => handlePurchase(paperDetail)}
-            >
-              <ShoppingCart className="w-4 h-4 mr-2" />
-              Comprar e Baixar
-            </Button>
+        {/* Purchase Card */}
+        <div>
+          <Card className="sticky top-4 border-2 border-primary/20 shadow-lg">
+            <CardContent className="p-0">
+              {paperDetail.thumbnailUrl && (
+                <div className="relative">
+                  <img
+                    src={paperDetail.thumbnailUrl}
+                    alt={paperDetail.title}
+                    className="w-full aspect-video object-cover rounded-t-lg"
+                  />
+                </div>
+              )}
 
-            <div className="text-center text-sm text-muted-foreground">
-              <p>Acesso imediato após o pagamento</p>
-              <p className="mt-2">
-                Já possui este trabalho?
-                <Button variant="link" className="p-0 ml-1 h-auto text-primary">
-                  Baixar aqui
-                </Button>
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+              <div className="p-6 space-y-4">
+                {/* Price */}
+                <div className="flex items-baseline gap-2">
+                  <span className="text-4xl font-bold text-gradient-primary">
+                    {formatPrice(paperDetail.price)}
+                  </span>
+                </div>
+
+                {/* CTA Button */}
+                <div className="space-y-2">
+                  <Button
+                    onClick={onBuyClick}
+                    className="w-full btn-accent text-lg py-6"
+                    size="lg"
+                  >
+                    <ShoppingCart className="h-5 w-5 mr-2" />
+                    Comprar Agora
+                  </Button>
+
+                  {/* Botão Adicionar ao Carrinho - só para papers pagos */}
+                  {paperDetail.price && paperDetail.price > 0 && (
+                    <Button
+                      onClick={onAddToCart}
+                      variant="outline"
+                      className="w-full text-lg py-6 border-2"
+                      size="lg"
+                    >
+                      <ShoppingBag className="h-5 w-5 mr-2" />
+                      Adicionar ao Carrinho
+                    </Button>
+                  )}
+                </div>
+
+                {/* Benefits */}
+                <div className="space-y-3 pt-4 border-t">
+                  <p className="font-semibold text-sm">Este trabalho inclui:</p>
+                  <div className="space-y-2">
+                    <div className="flex items-start gap-2 text-sm">
+                      <CheckCircle className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
+                      <span>Download imediato após o pagamento</span>
+                    </div>
+                    <div className="flex items-start gap-2 text-sm">
+                      <CheckCircle className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
+                      <span>Trabalho completo em formato PDF</span>
+                    </div>
+                    <div className="flex items-start gap-2 text-sm">
+                      <CheckCircle className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
+                      <span>{paperDetail.pageCount} páginas de conteúdo</span>
+                    </div>
+                    <div className="flex items-start gap-2 text-sm">
+                      <CheckCircle className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
+                      <span>Elaborado por especialista na área</span>
+                    </div>
+                    <div className="flex items-start gap-2 text-sm">
+                      <CheckCircle className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
+                      <span>Acesso vitalício ao arquivo</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   </div>
@@ -394,6 +493,10 @@ export default function ReadyPapers() {
     createFiltersFromSearchParams(searchParams)
   );
 
+  // Estado para controlar o modal de checkout e animação
+  const [checkoutModalOpen, setCheckoutModalOpen] = useState(false);
+  const [flyingItem, setFlyingItem] = useState<{ x: number; y: number } | null>(null);
+
   const {
     data: papersResponse,
     loading,
@@ -406,34 +509,106 @@ export default function ReadyPapers() {
 
   // Criar handlePurchase aqui com acesso ao navigate
   const { toast } = useToast();
-  const { addItem } = useCart();
+  const { addItem, setCartOpen } = useCart();
 
+  // Handler para abrir modal de checkout (página de detalhes)
+  const handleBuyClick = () => {
+    if (!paperDetail) return;
+
+    if (paperDetail.price === 0) {
+      // Download grátis
+      handleFreePaperDownload(paperDetail);
+    } else {
+      // Abrir modal de checkout
+      setCheckoutModalOpen(true);
+    }
+  };
+
+  // Handler para adicionar ao carrinho (página de detalhes)
+  const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (!paperDetail) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (paperDetail.price === 0) {
+      toast({
+        title: 'Trabalho gratuito',
+        description: 'Este trabalho é gratuito. Clique em "Comprar Agora" para fazer o download.',
+      });
+      return;
+    }
+
+    try {
+      // Capturar posição do botão para animação
+      const button = e.currentTarget;
+      const rect = button.getBoundingClientRect();
+      setFlyingItem({
+        x: rect.left + rect.width / 2,
+        y: rect.top + rect.height / 2,
+      });
+
+      // Adicionar ao carrinho
+      addItem({
+        id: paperDetail.id.toString(),
+        title: paperDetail.title,
+        description: `${paperTypeLabels[paperDetail.paperType]} - ${paperDetail.pageCount} páginas`,
+        price: paperDetail.price,
+        type: 'paper',
+        thumbnailUrl: paperDetail.thumbnailUrl || undefined,
+      });
+
+      // Abrir drawer do carrinho após animação
+      setTimeout(() => {
+        setCartOpen(true);
+      }, 800);
+
+      toast({
+        title: 'Adicionado ao carrinho!',
+        description: `${paperDetail.title} foi adicionado ao seu carrinho.`,
+      });
+    } catch (error) {
+      console.error('Erro ao adicionar ao carrinho:', error);
+      toast({
+        title: 'Erro',
+        description: 'Não foi possível adicionar o trabalho ao carrinho.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  // Download de paper gratuito
+  const handleFreePaperDownload = async (paper: ReadyPaper) => {
+    try {
+      const response = await api.get(`/papers/${paper.id}/download`, {
+        responseType: 'blob',
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `${paper.title}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      toast({
+        title: 'Download iniciado!',
+        description: 'Seu arquivo está sendo baixado.',
+      });
+    } catch (_error) {
+      toast({
+        title: 'Erro',
+        description: 'Não foi possível baixar o arquivo.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  // Handler para compra na listagem (mantém comportamento antigo para ProductCard)
   const handlePurchase = async (paper: ReadyPaper) => {
     if (paper.price === 0) {
       // Download grátis
-      try {
-        const response = await api.get(`/papers/${paper.id}/download`, {
-          responseType: 'blob',
-        });
-        const url = window.URL.createObjectURL(new Blob([response.data]));
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', `${paper.title}.pdf`);
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-
-        toast({
-          title: 'Download iniciado!',
-          description: 'Seu arquivo está sendo baixado.',
-        });
-      } catch (_error) {
-        toast({
-          title: 'Erro',
-          description: 'Não foi possível baixar o arquivo.',
-          variant: 'destructive',
-        });
-      }
+      await handleFreePaperDownload(paper);
     } else {
       // Adicionar ao carrinho e redirecionar
       addItem({
@@ -484,7 +659,33 @@ export default function ReadyPapers() {
     if (!paperDetail) {
       return <PaperNotFound />;
     }
-    return <PaperDetailPage paperDetail={paperDetail} handlePurchase={handlePurchase} />;
+    return (
+      <>
+        <PaperDetailPage
+          paperDetail={paperDetail}
+          onBuyClick={handleBuyClick}
+          onAddToCart={handleAddToCart}
+          flyingItem={flyingItem}
+        />
+
+        {/* Checkout Modal */}
+        <CheckoutModal
+          open={checkoutModalOpen}
+          onOpenChange={setCheckoutModalOpen}
+          paperId={paperDetail.id.toString()}
+          courseTitle={paperDetail.title}
+          coursePrice={paperDetail.price}
+        />
+
+        {/* Animação de item voando para o carrinho */}
+        {flyingItem && (
+          <FlyToCartAnimation
+            startPosition={flyingItem}
+            onComplete={() => setFlyingItem(null)}
+          />
+        )}
+      </>
+    );
   }
 
   return (
