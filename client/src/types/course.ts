@@ -61,6 +61,8 @@ export interface CourseEnrollment {
   course?: Course;
 }
 
+export type CourseLevel = 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED';
+
 export interface Course {
   id: string;
   title: string;
@@ -70,6 +72,7 @@ export interface Course {
   instructorBio?: string;
   price: number;
   duration: number;
+  level: CourseLevel;
   thumbnailUrl?: string;
   videoUrl?: string;
   status: 'ACTIVE' | 'INACTIVE';
