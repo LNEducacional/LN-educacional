@@ -61,6 +61,13 @@ export function useCheckout() {
   const processCheckout = async (data: CheckoutData): Promise<CheckoutResponse | null> => {
     setIsLoading(true);
     try {
+      // Se há dados de registro (novo usuário), não enviar token de autenticação
+      const config = data.registration ? {
+        headers: {
+          'Authorization': undefined, // Remove o token para novos usuários
+        }
+      } : {};
+
       const response = await api.post<any>('/checkout/create', {
         courseId: data.courseId,
         paymentMethod: data.paymentMethod,
@@ -68,7 +75,7 @@ export function useCheckout() {
         creditCard: data.creditCard,
         installments: data.installments,
         registration: data.registration,
-      });
+      }, config);
 
       // Se retornou token (novo usuário), fazer login automático
       if (response.data.token && response.data.user) {
