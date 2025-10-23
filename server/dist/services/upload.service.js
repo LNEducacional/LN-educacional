@@ -18,7 +18,7 @@ exports.uploadConfig = {
         fieldSize: 100,
         fields: 10,
         fileSize: 50 * 1024 * 1024, // 50MB for videos
-        files: 1,
+        files: 5, // Permite múltiplos arquivos (work file + thumbnail + preview + extras)
         headerPairs: 2000,
     },
 };
