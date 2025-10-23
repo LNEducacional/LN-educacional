@@ -14,7 +14,7 @@ import {
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { Textarea } from '@/components/ui/textarea';
 import { FileUploadField } from '@/components/admin/file-upload-field';
-import { useApi, useApiMutation } from '@/hooks/use-api';
+import api from '@/services/api';
 import { toast } from '@/hooks/use-toast';
 import type { AcademicArea, PaperType, ReadyPaper } from '@/types/paper';
 import { formatKeywords } from '@/utils/paper-formatters';
@@ -26,18 +26,19 @@ import {
   GraduationCap,
   Hash,
   Globe,
-  Eye,
+  Loader2,
   Plus,
   X,
 } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 export default function EditFreePaperPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const [submitting, setSubmitting] = useState(false);
+  const queryClient = useQueryClient();
   const [keywords, setKeywords] = useState<string[]>([]);
   const [keywordInput, setKeywordInput] = useState('');
   const [activeSection, setActiveSection] = useState<
@@ -51,13 +52,38 @@ export default function EditFreePaperPage() {
     | 'free-papers'
   >('free-papers');
 
-  const {
-    data: paper,
-    loading,
-    error,
-  } = useApi<ReadyPaper>(`/admin/free-papers/${id}`, { dependencies: [id] });
+  // Buscar paper da API
+  const { data: paper, isLoading, error } = useQuery({
+    queryKey: ['paper', id],
+    queryFn: async () => {
+      const response = await api.get<ReadyPaper>(`/admin/papers/${id}`);
+      return response.data;
+    },
+    enabled: !!id,
+  });
 
-  const updatePaper = useApiMutation<ReadyPaper, Partial<ReadyPaper>>('put');
+  // Mutation para atualizar paper
+  const updateMutation = useMutation({
+    mutationFn: async (data: FormData) => {
+      await api.put(`/admin/papers/${id}`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['paper', id] });
+      queryClient.invalidateQueries({ queryKey: ['papers'] });
+      toast({
+        title: 'Trabalho gratuito atualizado',
+        description: 'As alterações foram salvas com sucesso.',
+      });
+      navigate('/admin/free-papers');
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Erro ao atualizar',
+        description: error.response?.data?.error || 'Não foi possível salvar as alterações. Tente novamente.',
+        variant: 'destructive',
+      });
+    },
+  });
 
   const [formData, setFormData] = useState({
     title: '',
@@ -164,40 +190,34 @@ export default function EditFreePaperPage() {
       return;
     }
 
-    if (!id) return;
+    // Criar FormData
+    const formDataToSend = new FormData();
+    formDataToSend.append('title', formData.title);
+    formDataToSend.append('authorName', formData.authorName);
+    formDataToSend.append('paperType', formData.paperType);
+    formDataToSend.append('academicArea', formData.academicArea);
+    formDataToSend.append('pageCount', formData.pageCount);
+    formDataToSend.append('price', '0'); // Free papers sempre têm preço 0
+    formDataToSend.append('description', formData.description);
+    formDataToSend.append('language', formData.language);
+    formDataToSend.append('keywords', keywords.join(','));
+    formDataToSend.append('isFree', 'true');
 
-    setSubmitting(true);
-
-    try {
-      await updatePaper.mutate(`/admin/free-papers/${id}`, {
-        title: formData.title,
-        authorName: formData.authorName,
-        paperType: formData.paperType,
-        academicArea: formData.academicArea,
-        pageCount: Number.parseInt(formData.pageCount, 10),
-        description: formData.description,
-        language: formData.language,
-        keywords: keywords.join(', '),
-      });
-
-      toast({
-        title: 'Trabalho gratuito atualizado com sucesso!',
-        description: 'As alterações foram salvas.',
-      });
-
-      navigate('/admin/free-papers');
-    } catch (_error) {
-      toast({
-        title: 'Erro ao atualizar',
-        description: 'Não foi possível salvar as alterações. Tente novamente.',
-        variant: 'destructive',
-      });
-    } finally {
-      setSubmitting(false);
+    // Adicionar arquivos se houver
+    if (formData.file) {
+      formDataToSend.append('file', formData.file);
     }
+    if (formData.thumbnail) {
+      formDataToSend.append('thumbnail', formData.thumbnail);
+    }
+    if (formData.preview) {
+      formDataToSend.append('preview', formData.preview);
+    }
+
+    updateMutation.mutate(formDataToSend);
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <SidebarProvider>
         <div className="min-h-screen flex w-full bg-background">
@@ -205,8 +225,7 @@ export default function EditFreePaperPage() {
           <main className="flex-1 p-6 overflow-auto">
             <div className="flex items-center justify-center h-full">
               <div className="text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4" />
-                <h2 className="text-xl font-semibold text-foreground mb-2">Carregando...</h2>
+                <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
                 <p className="text-muted-foreground">Buscando informações do trabalho</p>
               </div>
             </div>
@@ -500,18 +519,19 @@ export default function EditFreePaperPage() {
               </Card>
 
               {/* Ações */}
-              <div className="flex items-center gap-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleBack}
-                  disabled={submitting}
-                  className="w-full"
-                >
-                  Cancelar
+              <div className="flex gap-4 pt-6">
+                <Button type="submit" disabled={updateMutation.isPending} className='w-full'>
+                  {updateMutation.isPending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Salvando...
+                    </>
+                  ) : (
+                    'Salvar Alterações'
+                  )}
                 </Button>
-                <Button type="submit" disabled={submitting} className="w-full">
-                  {submitting ? 'Salvando...' : 'Salvar Alterações'}
+                <Button type="button" variant="outline" onClick={handleBack} className='w-full'>
+                  Cancelar
                 </Button>
               </div>
             </form>
