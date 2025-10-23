@@ -952,7 +952,7 @@ export async function registerStudentRoutes(app: FastifyInstance) {
   app.get('/student/courses', { preHandler: [app.authenticate] }, async (request, reply) => {
     try {
       const courses = await getStudentCourses(request.currentUser!.id);
-      reply.send({ courses });
+      reply.send(courses);
     } catch (error: unknown) {
       reply.status(400).send({ error: (error as Error).message });
     }
