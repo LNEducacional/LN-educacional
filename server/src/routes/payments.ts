@@ -10,6 +10,7 @@ const paymentRoutes: FastifyPluginAsync = async (app) => {
   const createCheckoutSchema = z.object({
     courseId: z.string().optional(),
     ebookId: z.string().optional(),
+    paperId: z.string().optional(),
     paymentMethod: z.enum(['CREDIT_CARD', 'BOLETO', 'PIX']),
     customer: z.object({
       name: z.string().min(1),
@@ -34,11 +35,14 @@ const paymentRoutes: FastifyPluginAsync = async (app) => {
       password: z.string().min(8),
     }).optional(),
   }).refine(
-    (data) => data.courseId || data.ebookId,
-    { message: 'courseId ou ebookId é obrigatório' }
+    (data) => data.courseId || data.ebookId || data.paperId,
+    { message: 'courseId, ebookId ou paperId é obrigatório' }
   ).refine(
-    (data) => !(data.courseId && data.ebookId),
-    { message: 'Apenas um de courseId ou ebookId deve ser fornecido' }
+    (data) => {
+      const count = [data.courseId, data.ebookId, data.paperId].filter(Boolean).length;
+      return count === 1;
+    },
+    { message: 'Apenas um de courseId, ebookId ou paperId deve ser fornecido' }
   );
 
   app.post(
@@ -86,10 +90,11 @@ const paymentRoutes: FastifyPluginAsync = async (app) => {
           }
         }
 
-        // Buscar curso ou ebook
+        // Buscar curso, ebook ou paper
         let course: any = null;
         let ebook: any = null;
-        let itemType: 'course' | 'ebook';
+        let paper: any = null;
+        let itemType: 'course' | 'ebook' | 'paper';
         let itemTitle: string;
         let itemPrice: number;
         let itemDescription: string | null;
@@ -148,8 +153,37 @@ const paymentRoutes: FastifyPluginAsync = async (app) => {
           itemTitle = ebook.title;
           itemPrice = ebook.price;
           itemDescription = ebook.description;
+        } else if (body.paperId) {
+          paper = await prisma.paper.findUnique({
+            where: { id: body.paperId },
+          });
+
+          if (!paper) {
+            return reply.status(404).send({ error: 'Trabalho não encontrado' });
+          }
+
+          // Verificar se já comprou o paper
+          const existingPurchase = await prisma.orderItem.findFirst({
+            where: {
+              paperId: body.paperId,
+              order: {
+                userId,
+                status: 'COMPLETED',
+                paymentStatus: 'CONFIRMED',
+              },
+            },
+          });
+
+          if (existingPurchase) {
+            return reply.status(400).send({ error: 'Você já adquiriu este trabalho' });
+          }
+
+          itemType = 'paper';
+          itemTitle = paper.title;
+          itemPrice = paper.price;
+          itemDescription = paper.description;
         } else {
-          return reply.status(400).send({ error: 'courseId ou ebookId é obrigatório' });
+          return reply.status(400).send({ error: 'courseId, ebookId ou paperId é obrigatório' });
         }
 
         // Inicializar Asaas
@@ -180,8 +214,10 @@ const paymentRoutes: FastifyPluginAsync = async (app) => {
 
         if (itemType === 'course') {
           orderItemData.courseId = body.courseId;
-        } else {
+        } else if (itemType === 'ebook') {
           orderItemData.ebookId = body.ebookId;
+        } else if (itemType === 'paper') {
+          orderItemData.paperId = body.paperId;
         }
 
         const order = await prisma.order.create({
@@ -215,12 +251,22 @@ const paymentRoutes: FastifyPluginAsync = async (app) => {
 
         // Criar cobrança no Asaas
         const installmentCount = body.installments || 1;
+
+        let chargeDescription = '';
+        if (itemType === 'course') {
+          chargeDescription = `Curso: ${itemTitle}`;
+        } else if (itemType === 'ebook') {
+          chargeDescription = `E-book: ${itemTitle}`;
+        } else if (itemType === 'paper') {
+          chargeDescription = `Trabalho: ${itemTitle}`;
+        }
+
         const chargeData: any = {
           customer: asaasCustomer.id,
           billingType: body.paymentMethod === 'CREDIT_CARD' ? 'CREDIT_CARD' : body.paymentMethod,
           value: itemPrice / 100, // Converter centavos para reais
           dueDate: dueDateStr,
-          description: itemType === 'course' ? `Curso: ${itemTitle}` : `E-book: ${itemTitle}`,
+          description: chargeDescription,
           externalReference: order.id,
         };
 
@@ -457,10 +503,11 @@ const paymentRoutes: FastifyPluginAsync = async (app) => {
         });
 
         // Se pagamento confirmado, criar matrícula no curso
-        // Para ebooks, a compra é rastreada via OrderItem automaticamente
+        // Para ebooks e papers, a compra é rastreada via OrderItem automaticamente
         if (paymentStatus === 'CONFIRMED' && order.userId) {
           const courseItem = order.items.find(item => item.courseId);
           const ebookItem = order.items.find(item => item.ebookId);
+          const paperItem = order.items.find(item => item.paperId);
 
           // Criar matrícula de curso
           if (courseItem && courseItem.courseId) {
@@ -487,6 +534,11 @@ const paymentRoutes: FastifyPluginAsync = async (app) => {
           // Ebooks: compra já rastreada via OrderItem, apenas log
           if (ebookItem && ebookItem.ebookId) {
             console.log('[ASAAS WEBHOOK] Ebook purchase confirmed for user:', order.userId, 'ebook:', ebookItem.ebookId);
+          }
+
+          // Papers: compra já rastreada via OrderItem, apenas log
+          if (paperItem && paperItem.paperId) {
+            console.log('[ASAAS WEBHOOK] Paper purchase confirmed for user:', order.userId, 'paper:', paperItem.paperId);
           }
         }
 
