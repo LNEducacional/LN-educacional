@@ -27,6 +27,7 @@ import {
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import api from '@/services/api';
 
 export default function EditEbookPage() {
   const navigate = useNavigate();
@@ -58,34 +59,41 @@ export default function EditEbookPage() {
   });
 
   useEffect(() => {
-    if (id) {
-      // TODO: Implementar busca real do e-book da API
-      // Simulação temporária
-      setEbook({
-        id: id,
-        title: 'E-book de Exemplo',
-        description: 'Descrição do e-book de exemplo',
-        academicArea: 'ADMINISTRATION',
-        authorName: 'Autor Exemplo',
-        pageCount: 120,
-        price: 2990, // 29.90 em centavos
-        fileUrl: '/exemplo.pdf',
-        coverUrl: '/exemplo-capa.jpg',
-        createdAt: new Date().toISOString(),
-      });
-      setFormData({
-        title: 'E-book de Exemplo',
-        description: 'Descrição do e-book de exemplo',
-        authorName: 'Autor Exemplo',
-        area: 'ADMINISTRATION',
-        pageCount: '120',
-        isFree: false,
-        price: '29.90',
-        file: null,
-        cover: null,
-      });
-    }
-  }, [id]);
+    const fetchEbook = async () => {
+      if (!id) return;
+
+      try {
+        setLoading(true);
+        const response = await api.get(`/admin/ebooks/${id}`);
+        const ebookData = response.data;
+
+        setEbook(ebookData);
+        setFormData({
+          title: ebookData.title,
+          description: ebookData.description || '',
+          authorName: ebookData.authorName,
+          area: ebookData.academicArea,
+          pageCount: ebookData.pageCount.toString(),
+          isFree: ebookData.price === 0,
+          price: ebookData.price > 0 ? (ebookData.price / 100).toFixed(2) : '',
+          file: null,
+          cover: null,
+        });
+      } catch (error: any) {
+        console.error('Erro ao buscar e-book:', error);
+        toast({
+          title: 'Erro ao carregar e-book',
+          description: error.response?.data?.error || 'Não foi possível carregar os dados do e-book.',
+          variant: 'destructive',
+        });
+        navigate('/admin/ebooks');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEbook();
+  }, [id, navigate]);
 
   const handleSectionChange = (
     section:
