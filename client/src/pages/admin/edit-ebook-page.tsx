@@ -390,7 +390,8 @@ export default function EditEbookPage() {
                       <input
                         type="file"
                         id="file"
-                        accept=".pdf,.doc,.docx"
+                        accept=".pdf,.epub,.mobi"
+                        multiple
                         onChange={(e) => handleFileChange('file', e.target.files?.[0] || null)}
                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                       />
@@ -405,7 +406,7 @@ export default function EditEbookPage() {
                             <p className="text-sm text-muted-foreground">
                               Clique para fazer upload do arquivo principal
                             </p>
-                            <p className="text-xs text-muted-foreground mt-1">PDF, DOC, DOCX</p>
+                            <p className="text-xs text-muted-foreground mt-1">PDF, EPUB, MOBI (pode selecionar vários)</p>
                             {ebook.fileUrl && (
                               <p className="text-xs text-muted-foreground mt-2">
                                 Arquivo atual: {ebook.fileUrl.split('/').pop()}
