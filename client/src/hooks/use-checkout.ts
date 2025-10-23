@@ -5,9 +5,10 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/context/auth-context';
 
 export interface CheckoutData {
-  courseId: string;
-  courseTitle: string;
-  coursePrice: number;
+  courseId?: string;
+  ebookId?: string;
+  itemTitle: string;
+  itemPrice: number;
   paymentMethod: 'CREDIT_CARD' | 'PIX' | 'BOLETO';
   customer: {
     name: string;
@@ -66,14 +67,21 @@ export function useCheckout() {
         skipAuth: true, // Flag para interceptor não adicionar token
       } : {};
 
-      const response = await api.post<any>('/checkout/create', {
-        courseId: data.courseId,
+      const payload: any = {
         paymentMethod: data.paymentMethod,
         customer: data.customer,
         creditCard: data.creditCard,
         installments: data.installments,
         registration: data.registration,
-      }, config);
+      };
+
+      if (data.courseId) {
+        payload.courseId = data.courseId;
+      } else if (data.ebookId) {
+        payload.ebookId = data.ebookId;
+      }
+
+      const response = await api.post<any>('/checkout/create', payload, config);
 
       // Se retornou token (novo usuário), fazer login automático
       if (response.data.token && response.data.user) {
@@ -95,9 +103,10 @@ export function useCheckout() {
           description: 'Você já pode acessar o curso.',
         });
 
-        // Invalidar cache de cursos do usuário
+        // Invalidar cache de cursos e ebooks do usuário
         queryClient.invalidateQueries({ queryKey: ['student', 'enrollments'] });
         queryClient.invalidateQueries({ queryKey: ['student', 'courses'] });
+        queryClient.invalidateQueries({ queryKey: ['student', 'purchases', 'ebooks'] });
 
         return response.data;
       }

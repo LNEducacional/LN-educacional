@@ -8,7 +8,8 @@ const paymentRoutes: FastifyPluginAsync = async (app) => {
   // CREATE CHECKOUT SESSION
   // ===================================================================
   const createCheckoutSchema = z.object({
-    courseId: z.string(),
+    courseId: z.string().optional(),
+    ebookId: z.string().optional(),
     paymentMethod: z.enum(['CREDIT_CARD', 'BOLETO', 'PIX']),
     customer: z.object({
       name: z.string().min(1),
@@ -32,7 +33,13 @@ const paymentRoutes: FastifyPluginAsync = async (app) => {
     registration: z.object({
       password: z.string().min(8),
     }).optional(),
-  });
+  }).refine(
+    (data) => data.courseId || data.ebookId,
+    { message: 'courseId ou ebookId é obrigatório' }
+  ).refine(
+    (data) => !(data.courseId && data.ebookId),
+    { message: 'Apenas um de courseId ou ebookId deve ser fornecido' }
+  );
 
   app.post(
     '/checkout/create',
@@ -79,25 +86,70 @@ const paymentRoutes: FastifyPluginAsync = async (app) => {
           }
         }
 
-        // Buscar curso
-        const course = await prisma.course.findUnique({
-          where: { id: body.courseId },
-        });
+        // Buscar curso ou ebook
+        let course: any = null;
+        let ebook: any = null;
+        let itemType: 'course' | 'ebook';
+        let itemTitle: string;
+        let itemPrice: number;
+        let itemDescription: string | null;
 
-        if (!course) {
-          return reply.status(404).send({ error: 'Curso não encontrado' });
-        }
+        if (body.courseId) {
+          course = await prisma.course.findUnique({
+            where: { id: body.courseId },
+          });
 
-        // Verificar se já está matriculado
-        const existingEnrollment = await prisma.courseEnrollment.findFirst({
-          where: {
-            userId,
-            courseId: body.courseId,
-          },
-        });
+          if (!course) {
+            return reply.status(404).send({ error: 'Curso não encontrado' });
+          }
 
-        if (existingEnrollment) {
-          return reply.status(400).send({ error: 'Você já está matriculado neste curso' });
+          // Verificar se já está matriculado
+          const existingEnrollment = await prisma.courseEnrollment.findFirst({
+            where: {
+              userId,
+              courseId: body.courseId,
+            },
+          });
+
+          if (existingEnrollment) {
+            return reply.status(400).send({ error: 'Você já está matriculado neste curso' });
+          }
+
+          itemType = 'course';
+          itemTitle = course.title;
+          itemPrice = course.price;
+          itemDescription = course.description;
+        } else if (body.ebookId) {
+          ebook = await prisma.ebook.findUnique({
+            where: { id: body.ebookId },
+          });
+
+          if (!ebook) {
+            return reply.status(404).send({ error: 'E-book não encontrado' });
+          }
+
+          // Verificar se já comprou o ebook
+          const existingPurchase = await prisma.orderItem.findFirst({
+            where: {
+              ebookId: body.ebookId,
+              order: {
+                userId,
+                status: 'COMPLETED',
+                paymentStatus: 'CONFIRMED',
+              },
+            },
+          });
+
+          if (existingPurchase) {
+            return reply.status(400).send({ error: 'Você já adquiriu este e-book' });
+          }
+
+          itemType = 'ebook';
+          itemTitle = ebook.title;
+          itemPrice = ebook.price;
+          itemDescription = ebook.description;
+        } else {
+          return reply.status(400).send({ error: 'courseId ou ebookId é obrigatório' });
         }
 
         // Inicializar Asaas
@@ -120,10 +172,22 @@ const paymentRoutes: FastifyPluginAsync = async (app) => {
         });
 
         // Criar Order no banco
+        const orderItemData: any = {
+          title: itemTitle,
+          description: itemDescription,
+          price: itemPrice,
+        };
+
+        if (itemType === 'course') {
+          orderItemData.courseId = body.courseId;
+        } else {
+          orderItemData.ebookId = body.ebookId;
+        }
+
         const order = await prisma.order.create({
           data: {
             userId,
-            totalAmount: course.price,
+            totalAmount: itemPrice,
             status: 'PENDING',
             paymentStatus: 'PENDING',
             paymentMethod: body.paymentMethod,
@@ -132,12 +196,7 @@ const paymentRoutes: FastifyPluginAsync = async (app) => {
             customerCpfCnpj: body.customer.cpfCnpj,
             customerPhone: body.customer.phone || body.customer.mobilePhone,
             items: {
-              create: {
-                courseId: course.id,
-                title: course.title,
-                description: course.description,
-                price: course.price,
-              },
+              create: orderItemData,
             },
           },
           include: {
@@ -159,9 +218,9 @@ const paymentRoutes: FastifyPluginAsync = async (app) => {
         const chargeData: any = {
           customer: asaasCustomer.id,
           billingType: body.paymentMethod === 'CREDIT_CARD' ? 'CREDIT_CARD' : body.paymentMethod,
-          value: course.price / 100, // Converter centavos para reais
+          value: itemPrice / 100, // Converter centavos para reais
           dueDate: dueDateStr,
-          description: `Curso: ${course.title}`,
+          description: itemType === 'course' ? `Curso: ${itemTitle}` : `E-book: ${itemTitle}`,
           externalReference: order.id,
         };
 
@@ -169,7 +228,7 @@ const paymentRoutes: FastifyPluginAsync = async (app) => {
         // Para pagamento à vista (PIX, Boleto, Cartão 1x), NÃO enviar esses campos
         if (installmentCount > 1) {
           chargeData.installmentCount = installmentCount;
-          chargeData.installmentValue = (course.price / 100) / installmentCount;
+          chargeData.installmentValue = (itemPrice / 100) / installmentCount;
         }
 
         const charge = await asaas.createCharge(chargeData);
@@ -204,15 +263,19 @@ const paymentRoutes: FastifyPluginAsync = async (app) => {
             },
           });
 
-          // Se pagamento confirmado, criar matrícula
+          // Se pagamento confirmado, criar matrícula (para cursos)
+          // Para ebooks, a compra é rastreada via OrderItem automaticamente
           if (creditCardPayment.status === 'CONFIRMED' || creditCardPayment.status === 'RECEIVED') {
-            await prisma.courseEnrollment.create({
-              data: {
-                userId,
-                courseId: body.courseId,
-                progress: 0,
-              },
-            });
+            if (itemType === 'course' && body.courseId) {
+              await prisma.courseEnrollment.create({
+                data: {
+                  userId,
+                  courseId: body.courseId,
+                  progress: 0,
+                },
+              });
+            }
+            // Ebooks não precisam de registro separado, OrderItem já rastreia a compra
           }
 
           return reply.send({
@@ -394,8 +457,12 @@ const paymentRoutes: FastifyPluginAsync = async (app) => {
         });
 
         // Se pagamento confirmado, criar matrícula no curso
+        // Para ebooks, a compra é rastreada via OrderItem automaticamente
         if (paymentStatus === 'CONFIRMED' && order.userId) {
           const courseItem = order.items.find(item => item.courseId);
+          const ebookItem = order.items.find(item => item.ebookId);
+
+          // Criar matrícula de curso
           if (courseItem && courseItem.courseId) {
             // Verificar se já existe matrícula
             const existingEnrollment = await prisma.courseEnrollment.findFirst({
@@ -415,6 +482,11 @@ const paymentRoutes: FastifyPluginAsync = async (app) => {
               });
               console.log('[ASAAS WEBHOOK] Enrollment created for user:', order.userId, 'course:', courseItem.courseId);
             }
+          }
+
+          // Ebooks: compra já rastreada via OrderItem, apenas log
+          if (ebookItem && ebookItem.ebookId) {
+            console.log('[ASAAS WEBHOOK] Ebook purchase confirmed for user:', order.userId, 'ebook:', ebookItem.ebookId);
           }
         }
 

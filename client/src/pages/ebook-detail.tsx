@@ -394,7 +394,7 @@ export default function EbookDetailPage() {
         <CheckoutModal
           open={checkoutModalOpen}
           onOpenChange={setCheckoutModalOpen}
-          courseId={ebook.id}
+          ebookId={ebook.id}
           courseTitle={ebook.title}
           coursePrice={ebook.price}
         />

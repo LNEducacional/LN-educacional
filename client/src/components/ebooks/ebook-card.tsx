@@ -264,7 +264,7 @@ export function EbookCard({
     <CheckoutModal
       open={checkoutOpen}
       onOpenChange={setCheckoutOpen}
-      courseId={ebook.id}
+      ebookId={ebook.id}
       courseTitle={ebook.title}
       coursePrice={ebook.price}
     />

@@ -17,7 +17,8 @@ import BoletoPayment from './boleto-payment';
 interface CheckoutModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  courseId: string;
+  courseId?: string;
+  ebookId?: string;
   courseTitle: string;
   coursePrice: number;
 }
@@ -26,6 +27,7 @@ export default function CheckoutModal({
   open,
   onOpenChange,
   courseId,
+  ebookId,
   courseTitle,
   coursePrice,
 }: CheckoutModalProps) {
@@ -126,9 +128,10 @@ export default function CheckoutModal({
 
   const handlePayment = async () => {
     const checkoutData: CheckoutData = {
-      courseId,
-      courseTitle,
-      coursePrice,
+      ...(courseId && { courseId }),
+      ...(ebookId && { ebookId }),
+      itemTitle: courseTitle,
+      itemPrice: coursePrice,
       paymentMethod,
       customer: customerData,
       ...(paymentMethod === 'CREDIT_CARD' && {
