@@ -330,6 +330,7 @@ export default function EditFreePaperPage() {
                       <div className="relative">
                         <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
                         <Select
+                          key={formData.paperType || 'paperType-select'}
                           value={formData.paperType}
                           onValueChange={(value) => handleInputChange('paperType', value)}
                         >
@@ -355,6 +356,7 @@ export default function EditFreePaperPage() {
                       <div className="relative">
                         <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
                         <Select
+                          key={formData.academicArea || 'academicArea-select'}
                           value={formData.academicArea}
                           onValueChange={(value) => handleInputChange('academicArea', value)}
                         >
@@ -403,6 +405,7 @@ export default function EditFreePaperPage() {
                       <div className="relative">
                         <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
                         <Select
+                          key={formData.language || 'language-select'}
                           value={formData.language}
                           onValueChange={(value) => handleInputChange('language', value)}
                         >
