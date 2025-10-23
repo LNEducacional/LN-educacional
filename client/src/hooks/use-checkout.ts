@@ -63,9 +63,7 @@ export function useCheckout() {
     try {
       // Se há dados de registro (novo usuário), não enviar token de autenticação
       const config = data.registration ? {
-        headers: {
-          'Authorization': undefined, // Remove o token para novos usuários
-        }
+        skipAuth: true, // Flag para interceptor não adicionar token
       } : {};
 
       const response = await api.post<any>('/checkout/create', {

@@ -6,10 +6,10 @@ const api = axios.create({
 });
 
 api.interceptors.request.use(
-  (config) => {
-    // Adicionar token de autenticação se existir
+  (config: any) => {
+    // Adicionar token de autenticação se existir, exceto se skipAuth for true
     const token = localStorage.getItem('token');
-    if (token) {
+    if (token && !config.skipAuth) {
       config.headers['Authorization'] = `Bearer ${token}`;
     }
 
