@@ -104,7 +104,7 @@ export function EbookCard({
       >
 
         {/* Thumbnail Section */}
-        <div className="relative aspect-[3/4] overflow-hidden bg-muted/20">
+        <div className="relative aspect-[2/3] overflow-hidden bg-muted/20">
           {ebook.coverUrl ? (
             <img
               src={ebook.coverUrl}
@@ -114,14 +114,14 @@ export function EbookCard({
             />
           ) : (
             <div className="flex h-full items-center justify-center bg-muted/20">
-              <FileText className="h-16 w-16 text-muted-foreground/40" />
+              <FileText className="h-12 w-12 text-muted-foreground/40" />
             </div>
           )}
 
           {/* Purchased Badge */}
           {isPurchased && (
-            <div className="absolute top-3 left-3 z-10">
-              <Badge className="bg-primary text-primary-foreground border-0 shadow-sm px-2.5 py-0.5 text-xs font-medium">
+            <div className="absolute top-2 left-2 z-10">
+              <Badge className="bg-primary text-primary-foreground border-0 shadow-sm px-2 py-0 text-[10px] font-medium">
                 ADQUIRIDO
               </Badge>
             </div>
@@ -129,10 +129,10 @@ export function EbookCard({
 
           {/* Free Badge */}
           {ebook.price === 0 && (
-            <div className="absolute top-3 right-3 z-10">
+            <div className="absolute top-2 right-2 z-10">
               <Badge
                 variant="outline"
-                className="backdrop-blur-sm bg-background/90 border text-xs bg-emerald-500/10 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300 border-emerald-500/30"
+                className="backdrop-blur-sm bg-background/90 border text-[10px] bg-emerald-500/10 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300 border-emerald-500/30"
               >
                 GRATUITO
               </Badge>
@@ -141,12 +141,12 @@ export function EbookCard({
         </div>
 
         {/* Content Section */}
-        <div className="flex-1 flex flex-col p-5 space-y-3">
+        <div className="flex-1 flex flex-col p-3 space-y-2">
           {/* Academic Area Badge */}
           <div className="flex items-center gap-2">
             <Badge
               variant="secondary"
-              className="text-xs font-normal bg-muted/50"
+              className="text-[10px] font-normal bg-muted/50 px-2 py-0"
             >
               {formatEbookAcademicArea(ebook.academicArea)}
             </Badge>
@@ -154,76 +154,76 @@ export function EbookCard({
 
           {/* Title */}
           <h3 className={cn(
-            'font-semibold leading-tight line-clamp-2 min-h-[3rem]',
+            'font-semibold leading-tight line-clamp-2 min-h-[2.5rem]',
             'text-foreground',
-            isCompact ? 'text-base' : 'text-lg'
+            isCompact ? 'text-sm' : 'text-base'
           )}>
             {ebook.title}
           </h3>
 
           {/* Description */}
           {!isCompact && (
-            <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed flex-grow">
+            <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed flex-grow">
               {ebook.description}
             </p>
           )}
 
           {/* Author */}
-          <div className="flex items-center gap-2.5 pt-2 border-t">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
-              <User className="h-4 w-4 text-muted-foreground" />
+          <div className="flex items-center gap-2 pt-1.5 border-t">
+            <div className="flex h-6 w-6 items-center justify-center rounded-full bg-muted">
+              <User className="h-3 w-3 text-muted-foreground" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs text-muted-foreground">Autor</p>
-              <p className="font-medium text-sm text-foreground truncate">
+              <p className="text-[10px] text-muted-foreground">Autor</p>
+              <p className="font-medium text-xs text-foreground truncate">
                 {ebook.authorName}
               </p>
             </div>
           </div>
 
           {/* Stats */}
-          <div className="flex items-center gap-3 text-sm text-muted-foreground">
-            <div className="flex items-center gap-1.5">
-              <BookOpen className="h-3.5 w-3.5" />
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <div className="flex items-center gap-1">
+              <BookOpen className="h-3 w-3" />
               <span>{ebook.pageCount} páginas</span>
             </div>
           </div>
         </div>
 
         {/* Footer with Price and CTA */}
-        <div className="p-5 pt-3 mt-auto border-t">
+        <div className="p-3 pt-2 mt-auto border-t">
           {/* Price */}
-          <div className="flex flex-col mb-3">
-            <span className="text-xs text-muted-foreground mb-0.5">
+          <div className="flex flex-col mb-2">
+            <span className="text-[10px] text-muted-foreground mb-0.5">
               {ebook.price === 0 ? 'Disponível' : 'Investimento'}
             </span>
             <div className="flex items-baseline gap-1">
-              <span className="text-2xl font-bold text-primary">
+              <span className="text-xl font-bold text-primary">
                 {formatEbookPrice(ebook.price)}
               </span>
             </div>
           </div>
 
           {/* Action Buttons */}
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             {!isPurchased && (
-              <div className="flex gap-2">
+              <div className="flex gap-1.5">
                 <Button
-                  size={isCompact ? 'sm' : 'default'}
-                  className="flex-1 bg-primary hover:bg-primary-hover text-primary-foreground font-semibold"
+                  size="sm"
+                  className="flex-1 bg-primary hover:bg-primary-hover text-primary-foreground font-semibold text-xs h-8"
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
                     setCheckoutOpen(true);
                   }}
                 >
-                  <ShoppingCart className="h-4 w-4 mr-2" />
-                  {ebook.price === 0 ? 'Baixar Grátis' : 'Comprar'}
+                  <ShoppingCart className="h-3 w-3 mr-1.5" />
+                  {ebook.price === 0 ? 'Baixar' : 'Comprar'}
                 </Button>
                 <Button
-                  size={isCompact ? 'sm' : 'default'}
+                  size="sm"
                   variant="outline"
-                  className="font-medium"
+                  className="font-medium text-xs h-8"
                   onClick={(e) => e.stopPropagation()}
                 >
                   Detalhes
@@ -236,10 +236,10 @@ export function EbookCard({
               <Button
                 size="sm"
                 variant="ghost"
-                className="w-full text-xs text-muted-foreground hover:text-foreground"
+                className="w-full text-[10px] text-muted-foreground hover:text-foreground h-7"
                 onClick={handleAddToCart}
               >
-                <ShoppingBag className="h-3 w-3 mr-1.5" />
+                <ShoppingBag className="h-3 w-3 mr-1" />
                 Adicionar ao Carrinho
               </Button>
             )}
@@ -247,9 +247,9 @@ export function EbookCard({
             {/* Botão para ebooks adquiridos */}
             {isPurchased && (
               <Button
-                size={isCompact ? 'sm' : 'default'}
+                size="sm"
                 variant="default"
-                className="w-full font-medium"
+                className="w-full font-medium text-xs h-8"
                 onClick={(e) => e.stopPropagation()}
               >
                 Baixar PDF
