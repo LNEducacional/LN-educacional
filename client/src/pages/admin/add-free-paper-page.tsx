@@ -13,11 +13,12 @@ import {
 } from '@/components/ui/select';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { Textarea } from '@/components/ui/textarea';
+import { FileUploadField } from '@/components/admin/file-upload-field';
 import { useApiMutation } from '@/hooks/use-api';
 import { toast } from '@/hooks/use-toast';
 import { type FreePaperInput, freePaperSchema } from '@/lib/validations';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ArrowLeft, Plus, X, FileText, User, BookOpen, Upload } from 'lucide-react';
+import { ArrowLeft, Plus, X, FileText, User, BookOpen } from 'lucide-react';
 import type React from 'react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -390,61 +391,39 @@ export default function AddFreePaperPage() {
               {/* Arquivos */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Arquivos</CardTitle>
-                  <CardDescription>Upload dos arquivos do trabalho</CardDescription>
+                  <CardTitle>Arquivos do Trabalho</CardTitle>
+                  <CardDescription>Upload dos arquivos necessários</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <Label htmlFor="file">Arquivo Principal *</Label>
-                    <div className="relative">
-                      <Upload className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="file"
-                        type="file"
-                        accept=".pdf,.doc,.docx"
-                        onChange={(e) => handleFileChange('file', e.target.files?.[0] || null)}
-                        className="pl-10"
-                        required
-                      />
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Formatos aceitos: PDF, DOC, DOCX
-                    </p>
-                  </div>
+                <CardContent className="space-y-6">
+                  <FileUploadField
+                    label="Arquivo do Trabalho"
+                    accept=".pdf,.doc,.docx"
+                    file={files.file}
+                    onChange={(file) => handleFileChange('file', file)}
+                    required
+                    maxSize="50MB"
+                    fileTypes="PDF, DOC, DOCX"
+                  />
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="thumbnail">Thumbnail</Label>
-                      <div className="relative">
-                        <Upload className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          id="thumbnail"
-                          type="file"
-                          accept="image/*"
-                          className="pl-10"
-                          onChange={(e) => handleFileChange('thumbnail', e.target.files?.[0] || null)}
-                        />
-                      </div>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Imagem de capa (opcional)
-                      </p>
-                    </div>
-                    <div>
-                      <Label htmlFor="preview">Preview</Label>
-                      <div className="relative">
-                        <Upload className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input
-                          id="preview"
-                          type="file"
-                          accept=".pdf,.doc,.docx"
-                          className="pl-10"
-                          onChange={(e) => handleFileChange('preview', e.target.files?.[0] || null)}
-                        />
-                      </div>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Arquivo de preview (opcional)
-                      </p>
-                    </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FileUploadField
+                      label="Thumbnail"
+                      accept="image/*"
+                      file={files.thumbnail}
+                      onChange={(file) => handleFileChange('thumbnail', file)}
+                      isImage
+                      maxSize="10MB"
+                      fileTypes="PNG, JPG"
+                    />
+
+                    <FileUploadField
+                      label="Preview"
+                      accept=".pdf,.doc,.docx"
+                      file={files.preview}
+                      onChange={(file) => handleFileChange('preview', file)}
+                      maxSize="10MB"
+                      fileTypes="PDF, DOC, DOCX"
+                    />
                   </div>
                 </CardContent>
               </Card>

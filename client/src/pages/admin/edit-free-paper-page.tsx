@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/select';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { Textarea } from '@/components/ui/textarea';
+import { FileUploadField } from '@/components/admin/file-upload-field';
 import { useApi, useApiMutation } from '@/hooks/use-api';
 import { toast } from '@/hooks/use-toast';
 import type { AcademicArea, PaperType, ReadyPaper } from '@/types/paper';
@@ -28,8 +29,6 @@ import {
   Eye,
   Plus,
   X,
-  Upload,
-  Image as ImageIcon,
 } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useState } from 'react';
@@ -449,100 +448,40 @@ export default function EditFreePaperPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>Arquivos do Trabalho</CardTitle>
-                  <CardDescription>Upload do arquivo principal, thumbnail e preview</CardDescription>
+                  <CardDescription>Upload dos arquivos necessários</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="file">Arquivo Principal</Label>
-                    <div className="relative">
-                      <input
-                        type="file"
-                        id="file"
-                        accept=".pdf,.doc,.docx"
-                        onChange={(e) => handleFileChange('file', e.target.files?.[0] || null)}
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                      />
-                      <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center hover:border-primary/50 hover:bg-accent/5 transition-colors">
-                        <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                        {formData.file ? (
-                          <p className="text-sm text-primary font-medium">
-                            {formData.file.name}
-                          </p>
-                        ) : (
-                          <>
-                            <p className="text-sm text-muted-foreground">
-                              Clique para fazer upload do arquivo principal
-                            </p>
-                            <p className="text-xs text-muted-foreground mt-1">PDF, DOC, DOCX</p>
-                            {paper.fileUrl && (
-                              <p className="text-xs text-muted-foreground mt-2">
-                                Arquivo atual: {paper.fileUrl.split('/').pop()}
-                              </p>
-                            )}
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </div>
+                  <FileUploadField
+                    label="Arquivo do Trabalho"
+                    accept=".pdf,.doc,.docx"
+                    file={formData.file}
+                    onChange={(file) => handleFileChange('file', file)}
+                    maxSize="50MB"
+                    fileTypes="PDF, DOC, DOCX"
+                    currentFileUrl={paper.fileUrl}
+                  />
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <Label htmlFor="thumbnail">Thumbnail</Label>
-                      <div className="relative">
-                        <input
-                          type="file"
-                          id="thumbnail"
-                          accept="image/*"
-                          onChange={(e) =>
-                            handleFileChange('thumbnail', e.target.files?.[0] || null)
-                          }
-                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                        />
-                        <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center hover:border-primary/50 hover:bg-accent/5 transition-colors">
-                          <ImageIcon className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                          {formData.thumbnail ? (
-                            <p className="text-sm text-primary font-medium">
-                              {formData.thumbnail.name}
-                            </p>
-                          ) : (
-                            <>
-                              <p className="text-sm text-muted-foreground">
-                                Clique para upload
-                              </p>
-                              <p className="text-xs text-muted-foreground mt-1">PNG, JPG</p>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </div>
+                    <FileUploadField
+                      label="Thumbnail"
+                      accept="image/*"
+                      file={formData.thumbnail}
+                      onChange={(file) => handleFileChange('thumbnail', file)}
+                      isImage
+                      maxSize="10MB"
+                      fileTypes="PNG, JPG"
+                      currentFileUrl={paper.thumbnailUrl}
+                    />
 
-                    <div className="space-y-2">
-                      <Label htmlFor="preview">Preview</Label>
-                      <div className="relative">
-                        <input
-                          type="file"
-                          id="preview"
-                          accept=".pdf,.doc,.docx"
-                          onChange={(e) => handleFileChange('preview', e.target.files?.[0] || null)}
-                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                        />
-                        <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center hover:border-primary/50 hover:bg-accent/5 transition-colors">
-                          <Eye className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                          {formData.preview ? (
-                            <p className="text-sm text-primary font-medium">
-                              {formData.preview.name}
-                            </p>
-                          ) : (
-                            <>
-                              <p className="text-sm text-muted-foreground">
-                                Clique para upload
-                              </p>
-                              <p className="text-xs text-muted-foreground mt-1">PDF, DOC</p>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </div>
+                    <FileUploadField
+                      label="Preview"
+                      accept=".pdf,.doc,.docx"
+                      file={formData.preview}
+                      onChange={(file) => handleFileChange('preview', file)}
+                      maxSize="10MB"
+                      fileTypes="PDF, DOC, DOCX"
+                      currentFileUrl={paper.previewUrl}
+                    />
                   </div>
                 </CardContent>
               </Card>
