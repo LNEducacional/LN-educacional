@@ -21,7 +21,6 @@ import {
   GraduationCap,
   Hash,
   Upload,
-  Image as ImageIcon,
   FileText,
   X,
   FileCheck,
@@ -57,7 +56,7 @@ export default function EditEbookPage() {
     pageCount: '',
     isFree: false,
     price: '',
-    files: [] as File[],
+    file: null as File | null,
     cover: null as File | null,
   });
 
@@ -94,7 +93,7 @@ export default function EditEbookPage() {
           pageCount: ebookData.pageCount.toString(),
           isFree: ebookData.price === 0,
           price: ebookData.price > 0 ? (ebookData.price / 100).toFixed(2) : '',
-          files: [],
+          file: null,
           cover: null,
         });
       } catch (error: any) {
@@ -147,17 +146,14 @@ export default function EditEbookPage() {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleFilesChange = (files: FileList | null) => {
-    if (files) {
-      setFormData((prev) => ({ ...prev, files: Array.from(files) }));
-    }
+  const handleFileChange = (file: File | null) => {
+    setFormData((prev) => ({ ...prev, file }));
   };
 
-  const handleRemoveFile = (index: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      files: prev.files.filter((_, i) => i !== index),
-    }));
+  const handleRemoveFile = () => {
+    setFormData((prev) => ({ ...prev, file: null }));
+    const fileInput = document.getElementById('file') as HTMLInputElement;
+    if (fileInput) fileInput.value = '';
   };
 
   const handleRemoveCover = () => {
@@ -175,37 +171,6 @@ export default function EditEbookPage() {
     return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
   };
 
-  // Deletar arquivo individual
-  const handleDeleteFile = async (fileId: string) => {
-    if (!confirm('Deseja realmente excluir este arquivo?')) {
-      return;
-    }
-
-    try {
-      await api.delete(`/admin/ebooks/${id}/files/${fileId}`);
-
-      // Atualizar estado local
-      setEbook((prev) => {
-        if (!prev) return prev;
-        return {
-          ...prev,
-          files: prev.files?.filter((f) => f.id !== fileId) || [],
-        };
-      });
-
-      toast({
-        title: 'Arquivo excluído',
-        description: 'O arquivo foi removido com sucesso.',
-      });
-    } catch (error: any) {
-      console.error('Erro ao deletar arquivo:', error);
-      toast({
-        title: 'Erro ao excluir',
-        description: error.response?.data?.error || 'Não foi possível excluir o arquivo.',
-        variant: 'destructive',
-      });
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -238,18 +203,17 @@ export default function EditEbookPage() {
         authorName: formData.authorName.trim(),
         academicArea: formData.area,
         pageCount: Number.parseInt(formData.pageCount),
-        price: formData.isFree ? 0 : Math.round(Number.parseFloat(formData.price) * 100),
+        price: formData.isFree ? 0 : Math.round(parseFloat(formData.price.replace(',', '.')) * 100),
       };
 
-      // Upload de novos arquivos se fornecidos
-      if (formData.files.length > 0) {
-        for (const file of formData.files) {
-          const fileFormData = new FormData();
-          fileFormData.append('file', file);
-          await api.post(`/admin/ebooks/${id}/files`, fileFormData, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-          });
-        }
+      // Upload de novo arquivo se fornecido
+      if (formData.file) {
+        const fileFormData = new FormData();
+        fileFormData.append('file', formData.file);
+        const fileUploadResponse = await api.post('/admin/ebooks/upload-file', fileFormData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        updateData.fileUrl = fileUploadResponse.data.url;
       }
 
       // Upload de nova capa se fornecida
@@ -460,88 +424,56 @@ export default function EditEbookPage() {
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div>
-                    <Label htmlFor="file">Arquivos dos E-books * (pode selecionar vários)</Label>
+                    <Label htmlFor="file">Arquivo do E-book</Label>
 
-                    {formData.files.length > 0 ? (
-                      <div className="mt-2 space-y-2">
-                        <div className="text-sm text-muted-foreground mb-2">
-                          {formData.files.length} arquivo(s) selecionado(s)
-                        </div>
-                        {formData.files.map((file, index) => (
-                          <div
-                            key={index}
-                            className="p-3 border-2 border-primary/20 rounded-lg bg-primary/5"
-                          >
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3 flex-1 min-w-0">
-                                <div className="flex-shrink-0 h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                                  <FileCheck className="h-5 w-5 text-primary" />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-sm font-medium truncate">{file.name}</p>
-                                  <p className="text-xs text-muted-foreground">
-                                    {formatFileSize(file.size)}
-                                  </p>
-                                </div>
+                    {/* Preview do arquivo novo */}
+                    {formData.file ? (
+                      <div className="mt-2">
+                        <div className="p-3 border-2 border-primary/20 rounded-lg bg-primary/5">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                              <div className="flex-shrink-0 h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                                <FileCheck className="h-5 w-5 text-primary" />
                               </div>
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleRemoveFile(index)}
-                                className="flex-shrink-0 h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
-                              >
-                                <X className="h-4 w-4" />
-                              </Button>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium truncate">{formData.file.name}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {formatFileSize(formData.file.size)}
+                                </p>
+                              </div>
                             </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={handleRemoveFile}
+                              className="flex-shrink-0 h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
                           </div>
-                        ))}
+                        </div>
                       </div>
                     ) : (
                       <div className="mt-2 space-y-3">
-                        {/* Arquivos salvos no banco */}
-                        {ebook.files && ebook.files.length > 0 && (
-                          <div className="space-y-2">
-                            <p className="text-xs text-blue-600 font-medium mb-2">
-                              Arquivos atuais ({ebook.files.length}):
-                            </p>
-                            {ebook.files.map((file) => (
-                              <div
-                                key={file.id}
-                                className="p-3 border-2 border-blue-200 rounded-lg bg-blue-50"
-                              >
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-3 flex-1 min-w-0">
-                                    <div className="flex-shrink-0 h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                                      <FileText className="h-5 w-5 text-blue-600" />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                      <p className="text-sm font-medium truncate text-blue-900">
-                                        {file.fileName}
-                                      </p>
-                                      {file.fileSize && (
-                                        <p className="text-xs text-blue-600">
-                                          {formatFileSize(file.fileSize)}
-                                        </p>
-                                      )}
-                                    </div>
-                                  </div>
-                                  <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => handleDeleteFile(file.id)}
-                                    className="flex-shrink-0 h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
-                                  >
-                                    <X className="h-4 w-4" />
-                                  </Button>
-                                </div>
+                        {/* Arquivo atual salvo no banco */}
+                        {ebook.fileUrl && (
+                          <div className="p-3 border-2 border-blue-200 rounded-lg bg-blue-50">
+                            <div className="flex items-center gap-3">
+                              <div className="flex-shrink-0 h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                                <FileText className="h-5 w-5 text-blue-600" />
                               </div>
-                            ))}
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs text-blue-600 font-medium mb-1">Arquivo atual salvo:</p>
+                                <p className="text-sm font-medium truncate text-blue-900">
+                                  {ebook.fileUrl.split('/').pop()}
+                                </p>
+                              </div>
+                            </div>
                           </div>
                         )}
 
-                        {/* Zona de upload para novos arquivos */}
+                        {/* Zona de upload para novo arquivo */}
                         <label
                           htmlFor="file"
                           className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-muted-foreground/25 rounded-lg cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors"
@@ -549,16 +481,15 @@ export default function EditEbookPage() {
                           <div className="flex flex-col items-center justify-center pt-5 pb-6">
                             <Upload className="h-8 w-8 text-muted-foreground mb-2" />
                             <p className="text-sm text-muted-foreground">
-                              <span className="font-semibold">Clique para adicionar</span> mais arquivos
+                              <span className="font-semibold">Clique para fazer upload</span> de novo arquivo
                             </p>
-                            <p className="text-xs text-muted-foreground mt-1">PDF, EPUB, MOBI</p>
+                            <p className="text-xs text-muted-foreground mt-1">PDF, EPUB, MOBI (deixe vazio para manter o atual)</p>
                           </div>
                           <Input
                             id="file"
                             type="file"
                             accept=".pdf,.epub,.mobi"
-                            multiple
-                            onChange={(e) => handleFilesChange(e.target.files)}
+                            onChange={(e) => handleFileChange(e.target.files?.[0] || null)}
                             className="hidden"
                           />
                         </label>
@@ -628,7 +559,7 @@ export default function EditEbookPage() {
                                   {ebook.coverUrl.split('/').pop()}
                                 </p>
                                 <div className="mt-2 flex items-center gap-1 text-xs text-blue-600">
-                                  <ImageIcon className="h-3 w-3" />
+                                  <ImagePlus className="h-3 w-3" />
                                   <span>Imagem carregada do servidor</span>
                                 </div>
                               </div>
