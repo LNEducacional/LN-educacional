@@ -488,13 +488,13 @@ export default function AddEbookPage() {
                               <span className="font-semibold">Clique para fazer upload</span> de múltiplos arquivos
                             </p>
                             <p className="text-xs text-muted-foreground mt-1">
-                              PDF, DOC, DOCX (pode selecionar vários)
+                              PDF, EPUB, MOBI (pode selecionar vários)
                             </p>
                           </div>
                           <Input
                             id="file"
                             type="file"
-                            accept=".pdf,.doc,.docx"
+                            accept=".pdf,.epub,.mobi"
                             multiple
                             onChange={(e) => handleFilesChange(e.target.files)}
                             className="hidden"
