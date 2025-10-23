@@ -549,6 +549,63 @@ const paymentRoutes: FastifyPluginAsync = async (app) => {
       }
     }
   );
+
+  // ===================================================================
+  // ROTA DE TESTE: Simular pagamento confirmado
+  // ===================================================================
+  app.post(
+    '/test/confirm-payment/:orderId',
+    async (request, reply) => {
+      try {
+        const { orderId } = request.params as { orderId: string };
+
+        // Atualizar order para CONFIRMED
+        const order = await prisma.order.update({
+          where: { id: orderId },
+          data: {
+            paymentStatus: 'CONFIRMED',
+            status: 'COMPLETED',
+          },
+          include: { items: true },
+        });
+
+        // Criar matrícula se for curso
+        if (order.userId) {
+          const courseItem = order.items.find(item => item.courseId);
+
+          if (courseItem && courseItem.courseId) {
+            const existingEnrollment = await prisma.courseEnrollment.findFirst({
+              where: {
+                userId: order.userId,
+                courseId: courseItem.courseId,
+              },
+            });
+
+            if (!existingEnrollment) {
+              await prisma.courseEnrollment.create({
+                data: {
+                  userId: order.userId,
+                  courseId: courseItem.courseId,
+                  progress: 0,
+                },
+              });
+            }
+          }
+        }
+
+        return reply.send({
+          success: true,
+          message: 'Pagamento confirmado com sucesso (teste)',
+          orderId: order.id,
+          paymentStatus: order.paymentStatus,
+          status: order.status,
+        });
+      } catch (error: any) {
+        console.error('[TEST CONFIRM] Error:', error);
+        return reply.status(400).send({ error: error.message });
+      }
+    }
+  );
 };
 
 export default paymentRoutes;
