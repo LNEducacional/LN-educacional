@@ -465,7 +465,25 @@ export default function EditEbookPage() {
                         ))}
                       </div>
                     ) : (
-                      <div className="mt-2">
+                      <div className="mt-2 space-y-3">
+                        {/* Arquivo atual salvo no banco */}
+                        {ebook.fileUrl && (
+                          <div className="p-3 border-2 border-blue-200 rounded-lg bg-blue-50">
+                            <div className="flex items-center gap-3">
+                              <div className="flex-shrink-0 h-10 w-10 rounded-lg bg-blue-100 flex items-center justify-center">
+                                <FileText className="h-5 w-5 text-blue-600" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs text-blue-600 font-medium mb-1">Arquivo atual salvo:</p>
+                                <p className="text-sm font-medium truncate text-blue-900">
+                                  {ebook.fileUrl.split('/').pop()}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Zona de upload para novo arquivo */}
                         <label
                           htmlFor="file"
                           className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-muted-foreground/25 rounded-lg cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors"
@@ -476,13 +494,8 @@ export default function EditEbookPage() {
                               <span className="font-semibold">Clique para fazer upload</span> de novos arquivos
                             </p>
                             <p className="text-xs text-muted-foreground mt-1">
-                              PDF, EPUB, MOBI (pode selecionar vários)
+                              PDF, EPUB, MOBI (deixe vazio para manter o atual)
                             </p>
-                            {ebook.fileUrl && (
-                              <p className="text-xs text-muted-foreground mt-2">
-                                Arquivo atual: {ebook.fileUrl.split('/').pop()}
-                              </p>
-                            )}
                           </div>
                           <Input
                             id="file"
@@ -537,7 +550,37 @@ export default function EditEbookPage() {
                         </div>
                       </div>
                     ) : (
-                      <div className="mt-2">
+                      <div className="mt-2 space-y-3">
+                        {/* Capa atual salva no banco */}
+                        {ebook.coverUrl && (
+                          <div className="p-4 border-2 border-blue-200 rounded-lg bg-blue-50">
+                            <div className="flex items-start gap-4">
+                              <div className="flex-shrink-0">
+                                <img
+                                  src={ebook.coverUrl}
+                                  alt="Capa atual"
+                                  className="h-32 w-24 object-cover rounded-lg border-2 border-blue-300 shadow-md"
+                                  onError={(e) => {
+                                    // Fallback se a imagem não carregar
+                                    e.currentTarget.style.display = 'none';
+                                  }}
+                                />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs text-blue-600 font-medium mb-1">Capa atual salva:</p>
+                                <p className="text-sm font-medium truncate text-blue-900">
+                                  {ebook.coverUrl.split('/').pop()}
+                                </p>
+                                <div className="mt-2 flex items-center gap-1 text-xs text-blue-600">
+                                  <ImageIcon className="h-3 w-3" />
+                                  <span>Imagem carregada do servidor</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Zona de upload para nova capa */}
                         <label
                           htmlFor="cover"
                           className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-muted-foreground/25 rounded-lg cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors"
@@ -545,16 +588,11 @@ export default function EditEbookPage() {
                           <div className="flex flex-col items-center justify-center pt-5 pb-6">
                             <ImageIcon className="h-8 w-8 text-muted-foreground mb-2" />
                             <p className="text-sm text-muted-foreground">
-                              <span className="font-semibold">Clique para fazer upload</span> da capa
+                              <span className="font-semibold">Clique para fazer upload</span> de nova capa
                             </p>
                             <p className="text-xs text-muted-foreground mt-1">
-                              PNG, JPG, WEBP (recomendado: 400x600px)
+                              PNG, JPG, WEBP (deixe vazio para manter a atual)
                             </p>
-                            {ebook.coverUrl && (
-                              <p className="text-xs text-muted-foreground mt-2">
-                                Capa atual: {ebook.coverUrl.split('/').pop()}
-                              </p>
-                            )}
                           </div>
                           <Input
                             id="cover"
