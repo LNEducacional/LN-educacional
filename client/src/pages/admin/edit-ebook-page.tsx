@@ -157,7 +157,38 @@ export default function EditEbookPage() {
     setLoading(true);
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      // Preparar dados para atualização
+      const updateData: any = {
+        title: formData.title.trim(),
+        description: formData.description.trim(),
+        authorName: formData.authorName.trim(),
+        academicArea: formData.area,
+        pageCount: Number.parseInt(formData.pageCount),
+        price: formData.isFree ? 0 : Math.round(Number.parseFloat(formData.price) * 100),
+      };
+
+      // Upload de novo arquivo se fornecido
+      if (formData.file) {
+        const fileFormData = new FormData();
+        fileFormData.append('file', formData.file);
+        const fileUploadResponse = await api.post('/admin/ebooks/upload-file', fileFormData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        updateData.fileUrl = fileUploadResponse.data.url;
+      }
+
+      // Upload de nova capa se fornecida
+      if (formData.cover) {
+        const coverFormData = new FormData();
+        coverFormData.append('file', formData.cover);
+        const coverUploadResponse = await api.post('/admin/ebooks/upload-cover', coverFormData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        updateData.coverUrl = coverUploadResponse.data.url;
+      }
+
+      // Atualizar e-book
+      await api.put(`/admin/ebooks/${id}`, updateData);
 
       toast({
         title: 'E-book atualizado com sucesso',
@@ -165,10 +196,11 @@ export default function EditEbookPage() {
       });
 
       navigate('/admin/ebooks');
-    } catch (_error) {
+    } catch (error: any) {
+      console.error('Erro ao atualizar e-book:', error);
       toast({
         title: 'Erro ao atualizar',
-        description: 'Não foi possível salvar as alterações. Tente novamente.',
+        description: error.response?.data?.error || 'Não foi possível salvar as alterações. Tente novamente.',
         variant: 'destructive',
       });
     } finally {
@@ -261,27 +293,17 @@ export default function EditEbookPage() {
                             <SelectValue placeholder="Selecione a área" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="ADMINISTRATION">Administração</SelectItem>
-                            <SelectItem value="LAW">Direito</SelectItem>
-                            <SelectItem value="EDUCATION">Educação</SelectItem>
-                            <SelectItem value="ENGINEERING">Engenharia</SelectItem>
-                            <SelectItem value="PSYCHOLOGY">Psicologia</SelectItem>
-                            <SelectItem value="HEALTH">Saúde</SelectItem>
-                            <SelectItem value="ACCOUNTING">Contabilidade</SelectItem>
-                            <SelectItem value="ARTS">Artes</SelectItem>
-                            <SelectItem value="ECONOMICS">Economia</SelectItem>
-                            <SelectItem value="SOCIAL_SCIENCES">Ciências Sociais</SelectItem>
                             <SelectItem value="EXACT_SCIENCES">Ciências Exatas</SelectItem>
+                            <SelectItem value="HUMANITIES">Ciências Humanas</SelectItem>
                             <SelectItem value="BIOLOGICAL_SCIENCES">Ciências Biológicas</SelectItem>
-                            <SelectItem value="HEALTH_SCIENCES">Ciências da Saúde</SelectItem>
+                            <SelectItem value="ENGINEERING">Engenharia</SelectItem>
                             <SelectItem value="APPLIED_SOCIAL_SCIENCES">
                               Ciências Sociais Aplicadas
                             </SelectItem>
-                            <SelectItem value="HUMANITIES">Ciências Humanas</SelectItem>
                             <SelectItem value="LANGUAGES">Linguística, Letras e Artes</SelectItem>
                             <SelectItem value="AGRICULTURAL_SCIENCES">Ciências Agrárias</SelectItem>
+                            <SelectItem value="HEALTH_SCIENCES">Ciências da Saúde</SelectItem>
                             <SelectItem value="MULTIDISCIPLINARY">Multidisciplinar</SelectItem>
-                            <SelectItem value="OTHER">Outros</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
