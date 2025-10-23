@@ -15,37 +15,11 @@ import { SidebarProvider } from '@/components/ui/sidebar';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/hooks/use-toast';
 import type { AcademicArea } from '@/types/ebook';
-import { BookOpen, FileText, GraduationCap, DollarSign, Upload, User, ArrowLeft, X, FileCheck, ImagePlus, Edit, Trash2, Plus, Save } from 'lucide-react';
+import { BookOpen, FileText, GraduationCap, DollarSign, Upload, User, ArrowLeft, X, FileCheck, ImagePlus } from 'lucide-react';
 import type React from 'react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '@/services/api';
-
-interface EbookFormData {
-  id?: string;
-  title: string;
-  description: string;
-  authorName: string;
-  area: AcademicArea | '';
-  pageCount: string;
-  isFree: boolean;
-  price: string;
-  file: File | null;
-  cover: File | null;
-  coverPreviewUrl?: string;
-}
-
-const defaultFormData: EbookFormData = {
-  title: '',
-  description: '',
-  authorName: '',
-  area: '' as AcademicArea | '',
-  pageCount: '',
-  isFree: false,
-  price: '',
-  file: null,
-  cover: null,
-};
 
 export default function AddEbookPage() {
   const navigate = useNavigate();
@@ -62,10 +36,19 @@ export default function AddEbookPage() {
     | 'ebooks'
   >('ebooks');
 
-  const [formData, setFormData] = useState<EbookFormData>(defaultFormData);
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    authorName: '',
+    area: '' as AcademicArea | '',
+    pageCount: '',
+    isFree: false,
+    price: '',
+    files: [] as File[],
+    cover: null as File | null,
+  });
+
   const [coverPreviewUrl, setCoverPreviewUrl] = useState<string | null>(null);
-  const [ebooksList, setEbooksList] = useState<EbookFormData[]>([]);
-  const [editingId, setEditingId] = useState<string | null>(null);
 
   // Gerenciar preview da capa
   useEffect(() => {
@@ -116,20 +99,21 @@ export default function AddEbookPage() {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleFileChange = (field: 'file' | 'cover', file: File | null) => {
-    setFormData((prev) => ({ ...prev, [field]: file }));
+  const handleFilesChange = (files: FileList | null) => {
+    if (files) {
+      setFormData((prev) => ({ ...prev, files: Array.from(files) }));
+    }
   };
 
-  const handleRemoveFile = () => {
-    setFormData((prev) => ({ ...prev, file: null }));
-    // Resetar o input
-    const fileInput = document.getElementById('file') as HTMLInputElement;
-    if (fileInput) fileInput.value = '';
+  const handleRemoveFile = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      files: prev.files.filter((_, i) => i !== index),
+    }));
   };
 
   const handleRemoveCover = () => {
     setFormData((prev) => ({ ...prev, cover: null }));
-    // Resetar o input
     const coverInput = document.getElementById('cover') as HTMLInputElement;
     if (coverInput) coverInput.value = '';
   };
@@ -143,53 +127,31 @@ export default function AddEbookPage() {
     return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
   };
 
-  // Validar formulário
-  const validateForm = (): boolean => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Validações básicas
     if (
-      !formData.title ||
-      !formData.description ||
       !formData.authorName ||
       !formData.area ||
       !formData.pageCount ||
-      !formData.file
+      formData.files.length === 0
     ) {
       toast({
         title: 'Campos obrigatórios',
-        description: 'Por favor, preencha todos os campos obrigatórios.',
+        description: 'Por favor, preencha autor, área, páginas e selecione pelo menos um arquivo.',
         variant: 'destructive',
       });
-      return false;
+      return;
     }
 
-    // Validar título (mínimo 2 palavras)
-    const titleWords = formData.title.trim().split(/\s+/);
-    if (titleWords.length < 2) {
-      toast({
-        title: 'Título inválido',
-        description: 'O título deve conter pelo menos 2 palavras.',
-        variant: 'destructive',
-      });
-      return false;
-    }
-
-    // Validar descrição (mínimo 10 caracteres)
-    if (formData.description.trim().length < 10) {
-      toast({
-        title: 'Descrição muito curta',
-        description: 'A descrição deve ter pelo menos 10 caracteres.',
-        variant: 'destructive',
-      });
-      return false;
-    }
-
-    // Validar nome do autor
     if (formData.authorName.trim().length < 2) {
       toast({
         title: 'Nome do autor inválido',
         description: 'O nome do autor deve ter pelo menos 2 caracteres.',
         variant: 'destructive',
       });
-      return false;
+      return;
     }
 
     if (!formData.isFree && (!formData.price || Number.parseFloat(formData.price) <= 0)) {
@@ -198,7 +160,7 @@ export default function AddEbookPage() {
         description: 'Para e-books pagos, é necessário definir um preço válido.',
         variant: 'destructive',
       });
-      return false;
+      return;
     }
 
     const pageCount = Number.parseInt(formData.pageCount);
@@ -208,92 +170,13 @@ export default function AddEbookPage() {
         description: 'E-books gratuitos não devem exceder 100 páginas.',
         variant: 'destructive',
       });
-      return false;
+      return;
     }
 
     if (!formData.isFree && pageCount < 10) {
       toast({
         title: 'Número de páginas inválido',
         description: 'E-books pagos devem ter pelo menos 10 páginas.',
-        variant: 'destructive',
-      });
-      return false;
-    }
-
-    return true;
-  };
-
-  // Adicionar e-book à lista
-  const handleAddToList = () => {
-    if (!validateForm()) return;
-
-    const newEbook: EbookFormData = {
-      ...formData,
-      id: editingId || `temp-${Date.now()}`,
-      coverPreviewUrl: coverPreviewUrl || undefined,
-    };
-
-    if (editingId) {
-      // Atualizar e-book existente
-      setEbooksList(ebooksList.map(ebook => ebook.id === editingId ? newEbook : ebook));
-      toast({
-        title: 'E-book atualizado',
-        description: 'As alterações foram salvas na lista.',
-      });
-      setEditingId(null);
-    } else {
-      // Adicionar novo e-book
-      setEbooksList([...ebooksList, newEbook]);
-      toast({
-        title: 'E-book adicionado à lista',
-        description: `"${formData.title}" foi adicionado. Adicione mais ou salve todos.`,
-      });
-    }
-
-    // Limpar formulário
-    setFormData(defaultFormData);
-    setCoverPreviewUrl(null);
-
-    // Resetar inputs de arquivo
-    const fileInput = document.getElementById('file') as HTMLInputElement;
-    const coverInput = document.getElementById('cover') as HTMLInputElement;
-    if (fileInput) fileInput.value = '';
-    if (coverInput) coverInput.value = '';
-  };
-
-  // Remover e-book da lista
-  const handleRemoveFromList = (id: string) => {
-    setEbooksList(ebooksList.filter(ebook => ebook.id !== id));
-    toast({
-      title: 'E-book removido',
-      description: 'O e-book foi removido da lista.',
-    });
-  };
-
-  // Editar e-book da lista
-  const handleEditFromList = (id: string) => {
-    const ebook = ebooksList.find(e => e.id === id);
-    if (!ebook) return;
-
-    setFormData(ebook);
-    setCoverPreviewUrl(ebook.coverPreviewUrl || null);
-    setEditingId(id);
-
-    // Scroll to top
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-
-    toast({
-      title: 'Editando e-book',
-      description: 'Faça as alterações e clique em "Atualizar na Lista".',
-    });
-  };
-
-  // Salvar todos os e-books
-  const handleSaveAll = async () => {
-    if (ebooksList.length === 0) {
-      toast({
-        title: 'Nenhum e-book na lista',
-        description: 'Adicione pelo menos um e-book antes de salvar.',
         variant: 'destructive',
       });
       return;
@@ -304,35 +187,39 @@ export default function AddEbookPage() {
     let errorCount = 0;
 
     try {
-      for (const ebook of ebooksList) {
+      // Upload da capa (se houver) - uma vez para todos
+      let coverUrl: string | undefined = undefined;
+      if (formData.cover) {
+        const coverFormData = new FormData();
+        coverFormData.append('file', formData.cover);
+        const coverUploadResponse = await api.post('/admin/ebooks/upload-cover', coverFormData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        coverUrl = coverUploadResponse.data.url;
+      }
+
+      // Processar cada arquivo
+      for (const file of formData.files) {
         try {
-          // Upload do arquivo principal
+          // Upload do arquivo
           const fileFormData = new FormData();
-          fileFormData.append('file', ebook.file!);
+          fileFormData.append('file', file);
           const fileUploadResponse = await api.post('/admin/ebooks/upload-file', fileFormData, {
             headers: { 'Content-Type': 'multipart/form-data' },
           });
           const fileUrl = fileUploadResponse.data.url;
 
-          // Upload da capa (se houver)
-          let coverUrl: string | undefined = undefined;
-          if (ebook.cover) {
-            const coverFormData = new FormData();
-            coverFormData.append('file', ebook.cover);
-            const coverUploadResponse = await api.post('/admin/ebooks/upload-cover', coverFormData, {
-              headers: { 'Content-Type': 'multipart/form-data' },
-            });
-            coverUrl = coverUploadResponse.data.url;
-          }
+          // Usar nome do arquivo como título (sem extensão)
+          const fileName = file.name.replace(/\.[^/.]+$/, '');
 
           // Criar o e-book
           const ebookData = {
-            title: ebook.title,
-            description: ebook.description,
-            authorName: ebook.authorName,
-            academicArea: ebook.area,
-            pageCount: Number.parseInt(ebook.pageCount),
-            price: ebook.isFree ? 0 : Math.round(Number.parseFloat(ebook.price) * 100),
+            title: formData.title || fileName,
+            description: formData.description || `E-book: ${fileName}`,
+            authorName: formData.authorName,
+            academicArea: formData.area,
+            pageCount: pageCount,
+            price: formData.isFree ? 0 : Math.round(Number.parseFloat(formData.price) * 100),
             fileUrl: fileUrl,
             coverUrl: coverUrl,
           };
@@ -340,7 +227,7 @@ export default function AddEbookPage() {
           await api.post('/admin/ebooks', ebookData);
           successCount++;
         } catch (error) {
-          console.error(`Erro ao salvar "${ebook.title}":`, error);
+          console.error(`Erro ao salvar "${file.name}":`, error);
           errorCount++;
         }
       }
@@ -368,11 +255,6 @@ export default function AddEbookPage() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    handleAddToList();
   };
 
   return (
@@ -559,33 +441,40 @@ export default function AddEbookPage() {
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div>
-                    <Label htmlFor="file">Arquivo do E-book *</Label>
+                    <Label htmlFor="file">Arquivos dos E-books * (pode selecionar múltiplos)</Label>
 
-                    {/* Preview do arquivo */}
-                    {formData.file ? (
-                      <div className="mt-2 p-4 border-2 border-primary/20 rounded-lg bg-primary/5">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3 flex-1 min-w-0">
-                            <div className="flex-shrink-0 h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                              <FileCheck className="h-5 w-5 text-primary" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium truncate">{formData.file.name}</p>
-                              <p className="text-xs text-muted-foreground">
-                                {formatFileSize(formData.file.size)}
-                              </p>
+                    {/* Preview dos arquivos */}
+                    {formData.files.length > 0 ? (
+                      <div className="mt-2 space-y-2">
+                        <div className="text-sm text-muted-foreground mb-2">
+                          {formData.files.length} arquivo(s) selecionado(s)
+                        </div>
+                        {formData.files.map((file, index) => (
+                          <div key={index} className="p-3 border-2 border-primary/20 rounded-lg bg-primary/5">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3 flex-1 min-w-0">
+                                <div className="flex-shrink-0 h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                                  <FileCheck className="h-5 w-5 text-primary" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium truncate">{file.name}</p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {formatFileSize(file.size)}
+                                  </p>
+                                </div>
+                              </div>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleRemoveFile(index)}
+                                className="flex-shrink-0 h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
                             </div>
                           </div>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={handleRemoveFile}
-                            className="flex-shrink-0 h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
+                        ))}
                       </div>
                     ) : (
                       <div className="mt-2">
@@ -596,19 +485,19 @@ export default function AddEbookPage() {
                           <div className="flex flex-col items-center justify-center pt-5 pb-6">
                             <Upload className="h-8 w-8 text-muted-foreground mb-2" />
                             <p className="text-sm text-muted-foreground">
-                              <span className="font-semibold">Clique para fazer upload</span> ou arraste o arquivo
+                              <span className="font-semibold">Clique para fazer upload</span> de múltiplos arquivos
                             </p>
                             <p className="text-xs text-muted-foreground mt-1">
-                              PDF, DOC, DOCX
+                              PDF, DOC, DOCX (pode selecionar vários)
                             </p>
                           </div>
                           <Input
                             id="file"
                             type="file"
                             accept=".pdf,.doc,.docx"
-                            onChange={(e) => handleFileChange('file', e.target.files?.[0] || null)}
+                            multiple
+                            onChange={(e) => handleFilesChange(e.target.files)}
                             className="hidden"
-                            required
                           />
                         </label>
                       </div>
@@ -683,138 +572,27 @@ export default function AddEbookPage() {
                 </CardContent>
               </Card>
 
-              {/* Botões do Formulário */}
+              {/* Ações */}
               <div className="flex items-center gap-4">
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => {
-                    setFormData(defaultFormData);
-                    setCoverPreviewUrl(null);
-                    setEditingId(null);
-                  }}
+                  onClick={handleBack}
                   disabled={loading}
                   className="flex-1"
                 >
-                  Limpar Formulário
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Cancelar
                 </Button>
                 <Button
                   type="submit"
-                  disabled={loading}
-                  className="flex-1 gap-2"
+                  disabled={loading || formData.files.length === 0}
+                  className="flex-1"
                 >
-                  <Plus className="h-4 w-4" />
-                  {editingId ? 'Atualizar na Lista' : 'Adicionar à Lista'}
+                  {loading ? 'Salvando...' : `Salvar E-book(s) (${formData.files.length})`}
                 </Button>
               </div>
             </form>
-
-            {/* Lista de E-books Pendentes */}
-            {ebooksList.length > 0 && (
-              <Card className="border-2 border-primary/20">
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    <span>E-books Pendentes</span>
-                    <span className="text-sm font-normal text-muted-foreground">
-                      {ebooksList.length} e-book(s) na lista
-                    </span>
-                  </CardTitle>
-                  <CardDescription>
-                    Revise os e-books antes de salvar. Você pode editar ou remover itens da lista.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {ebooksList.map((ebook) => (
-                    <div
-                      key={ebook.id}
-                      className="p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="flex items-start gap-4">
-                        {/* Preview da capa */}
-                        {ebook.coverPreviewUrl ? (
-                          <img
-                            src={ebook.coverPreviewUrl}
-                            alt={ebook.title}
-                            className="h-24 w-18 object-cover rounded border-2 border-background shadow-sm flex-shrink-0"
-                          />
-                        ) : (
-                          <div className="h-24 w-18 bg-muted rounded border-2 border-background flex items-center justify-center flex-shrink-0">
-                            <BookOpen className="h-8 w-8 text-muted-foreground" />
-                          </div>
-                        )}
-
-                        {/* Informações */}
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-semibold text-lg mb-1 truncate">{ebook.title}</h4>
-                          <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
-                            {ebook.description}
-                          </p>
-                          <div className="flex flex-wrap gap-2 text-xs">
-                            <span className="px-2 py-1 bg-primary/10 text-primary rounded">
-                              Por: {ebook.authorName}
-                            </span>
-                            <span className="px-2 py-1 bg-muted rounded">
-                              {ebook.area}
-                            </span>
-                            <span className="px-2 py-1 bg-muted rounded">
-                              {ebook.pageCount} páginas
-                            </span>
-                            <span className="px-2 py-1 bg-muted rounded">
-                              {ebook.isFree ? 'Gratuito' : `R$ ${ebook.price}`}
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Ações */}
-                        <div className="flex gap-2 flex-shrink-0">
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleEditFromList(ebook.id!)}
-                            className="h-8 w-8 p-0"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleRemoveFromList(ebook.id!)}
-                            className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Botões de Ação Final */}
-            <div className="flex items-center gap-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleBack}
-                disabled={loading}
-                className="flex-1"
-              >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Voltar
-              </Button>
-              <Button
-                type="button"
-                onClick={handleSaveAll}
-                disabled={loading || ebooksList.length === 0}
-                className="flex-1 gap-2"
-              >
-                <Save className="h-4 w-4" />
-                {loading ? 'Salvando...' : `Salvar Todos (${ebooksList.length})`}
-              </Button>
-            </div>
           </div>
         </main>
       </div>
