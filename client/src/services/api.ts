@@ -7,6 +7,12 @@ const api = axios.create({
 
 api.interceptors.request.use(
   (config) => {
+    // Adicionar token de autenticação se existir
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers['Authorization'] = `Bearer ${token}`;
+    }
+
     // Se não é FormData, define Content-Type como JSON
     if (!(config.data instanceof FormData)) {
       config.headers['Content-Type'] = 'application/json';
