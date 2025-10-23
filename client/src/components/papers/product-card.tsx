@@ -11,6 +11,7 @@ import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 import { FlyToCartAnimation } from '@/components/cart/fly-to-cart-animation';
+import CheckoutModal from '@/components/checkout/checkout-modal';
 
 interface ProductCardProps {
   paper: ReadyPaper;
@@ -24,6 +25,7 @@ export function ProductCard({ paper, isFree = false, onPurchase, className }: Pr
   const { toast } = useToast();
   const { prefetchData, cancelPrefetch } = usePrefetch();
   const [flyingItem, setFlyingItem] = useState<{ x: number; y: number } | null>(null);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
 
   const formatPrice = (price: number) => {
     return (price / 100).toLocaleString('pt-BR', {
@@ -86,8 +88,12 @@ export function ProductCard({ paper, isFree = false, onPurchase, className }: Pr
     e.preventDefault();
     e.stopPropagation();
 
-    if (onPurchase) {
+    if (isFree && onPurchase) {
+      // Para papers gratuitos, usar a função onPurchase (download)
       onPurchase(paper);
+    } else {
+      // Para papers pagos, abrir modal de checkout
+      setCheckoutOpen(true);
     }
   };
 
@@ -275,6 +281,15 @@ export function ProductCard({ paper, isFree = false, onPurchase, className }: Pr
           onComplete={() => setFlyingItem(null)}
         />
       )}
+
+      {/* Checkout Modal */}
+      <CheckoutModal
+        open={checkoutOpen}
+        onOpenChange={setCheckoutOpen}
+        paperId={paper.id.toString()}
+        courseTitle={paper.title}
+        coursePrice={paper.price}
+      />
     </>
   );
 }

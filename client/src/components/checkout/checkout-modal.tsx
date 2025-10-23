@@ -19,6 +19,7 @@ interface CheckoutModalProps {
   onOpenChange: (open: boolean) => void;
   courseId?: string;
   ebookId?: string;
+  paperId?: string;
   courseTitle: string;
   coursePrice: number;
 }
@@ -28,6 +29,7 @@ export default function CheckoutModal({
   onOpenChange,
   courseId,
   ebookId,
+  paperId,
   courseTitle,
   coursePrice,
 }: CheckoutModalProps) {
@@ -130,6 +132,7 @@ export default function CheckoutModal({
     const checkoutData: CheckoutData = {
       ...(courseId && { courseId }),
       ...(ebookId && { ebookId }),
+      ...(paperId && { paperId }),
       itemTitle: courseTitle,
       itemPrice: coursePrice,
       paymentMethod,
@@ -445,10 +448,18 @@ export default function CheckoutModal({
                 </div>
                 <h3 className="text-xl font-bold mb-2">Pagamento Aprovado!</h3>
                 <p className="text-muted-foreground mb-6">
-                  Seu acesso ao curso já está liberado.
+                  {courseId && 'Seu acesso ao curso já está liberado.'}
+                  {ebookId && 'Seu e-book já está disponível para download.'}
+                  {paperId && 'Seu trabalho já está disponível para download.'}
                 </p>
-                <Button onClick={() => (window.location.href = `/courses/${courseId}`)}>
-                  Acessar Curso Agora
+                <Button onClick={() => {
+                  if (courseId) window.location.href = `/courses/${courseId}`;
+                  else if (ebookId) window.location.href = `/ebooks/${ebookId}`;
+                  else if (paperId) window.location.href = `/ready-papers/${paperId}`;
+                }}>
+                  {courseId && 'Acessar Curso Agora'}
+                  {ebookId && 'Baixar E-book'}
+                  {paperId && 'Baixar Trabalho'}
                 </Button>
               </div>
             )}

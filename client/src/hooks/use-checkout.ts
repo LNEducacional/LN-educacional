@@ -7,6 +7,7 @@ import { useAuth } from '@/context/auth-context';
 export interface CheckoutData {
   courseId?: string;
   ebookId?: string;
+  paperId?: string;
   itemTitle: string;
   itemPrice: number;
   paymentMethod: 'CREDIT_CARD' | 'PIX' | 'BOLETO';
@@ -79,6 +80,8 @@ export function useCheckout() {
         payload.courseId = data.courseId;
       } else if (data.ebookId) {
         payload.ebookId = data.ebookId;
+      } else if (data.paperId) {
+        payload.paperId = data.paperId;
       }
 
       const response = await api.post<any>('/checkout/create', payload, config);
@@ -103,10 +106,11 @@ export function useCheckout() {
           description: 'Você já pode acessar o curso.',
         });
 
-        // Invalidar cache de cursos e ebooks do usuário
+        // Invalidar cache de cursos, ebooks e papers do usuário
         queryClient.invalidateQueries({ queryKey: ['student', 'enrollments'] });
         queryClient.invalidateQueries({ queryKey: ['student', 'courses'] });
         queryClient.invalidateQueries({ queryKey: ['student', 'purchases', 'ebooks'] });
+        queryClient.invalidateQueries({ queryKey: ['student', 'purchases', 'papers'] });
 
         return response.data;
       }
