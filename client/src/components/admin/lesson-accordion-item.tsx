@@ -16,6 +16,7 @@ import { GripVertical, Trash2, Upload, FileText, ChevronDown, Save, Loader2 } fr
 import { DeleteConfirmDialog } from './delete-confirm-dialog';
 import { useToast } from '@/hooks/use-toast';
 import api from '@/services/api';
+import { coursesApi } from '@/api/courses';
 
 export interface CourseLesson {
   id?: string;
@@ -110,7 +111,7 @@ export function LessonAccordionItem({
     try {
       // Se a aula já tem ID, atualiza; senão, cria nova
       if (lesson.id) {
-        await api.put(`/courses/lessons/${lesson.id}`, lesson);
+        await coursesApi.updateLesson(lesson.id, lesson);
         toast({
           title: 'Aula salva!',
           description: 'As alterações foram salvas com sucesso.',
