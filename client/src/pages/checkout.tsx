@@ -325,12 +325,15 @@ function OrderConfirmation({
     <div className="min-h-[50vh] bg-gradient-subtle flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-green-600 text-2xl">Pedido Confirmado!</CardTitle>
-          <CardDescription className="text-base mt-4">
+          <CardTitle className="text-green-600">Pedido Confirmado!</CardTitle>
+          <CardDescription>
             Seu pedido #{orderData?.orderId} foi realizado com sucesso.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          <PaymentStatusDisplay orderStatus={orderStatus} />
+          <PixPaymentDisplay orderData={orderData} copyPixCode={copyPixCode} />
+          <PaymentActions orderData={orderData} />
           <Button onClick={() => navigate('/ready-papers')} className="w-full btn-hero">
             Voltar para a Loja
           </Button>
