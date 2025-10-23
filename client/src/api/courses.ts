@@ -23,7 +23,10 @@ export const coursesApi = {
   // Student APIs
   enrollInCourse: (courseId: string) => api.post(`/courses/${courseId}/enroll`),
 
-  getCourseProgress: (courseId: string) => api.get(`/courses/${courseId}/progress`),
+  getCourseProgress: async (courseId: string) => {
+    const response = await api.get(`/courses/${courseId}/progress`);
+    return response.data;
+  },
 
   updateLessonProgress: (
     lessonId: string,
