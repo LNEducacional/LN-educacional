@@ -432,7 +432,6 @@ export default function CheckoutModal({
               <PixPayment
                 data={checkoutResponse.pix}
                 orderId={checkoutResponse.orderId}
-                onPaymentConfirmed={handleClose}
               />
             )}
             {checkoutResponse.boleto && <BoletoPayment data={checkoutResponse.boleto} />}
