@@ -17,7 +17,7 @@ import { useCart } from '@/context/cart-context';
 import { useToast } from '@/hooks/use-toast';
 import api from '@/services/api';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ArrowLeft, Copy, CreditCard, ExternalLink, Loader2, QrCode, Receipt } from 'lucide-react';
+import { ArrowLeft, Check, Copy, CreditCard, ExternalLink, Loader2, QrCode, Receipt } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -355,12 +355,53 @@ function OrderConfirmation({
   orderStatus,
   copyPixCode,
   navigate,
+  purchasedItem,
 }: {
   orderData: CheckoutResponse | null;
   orderStatus: OrderStatus | null;
   copyPixCode: () => void;
   navigate: (path: string) => void;
+  purchasedItem?: CartItem | null;
 }) {
+  // Se o pagamento foi aprovado, mostrar tela de sucesso
+  if (orderStatus?.paymentStatus === 'APPROVED') {
+    return (
+      <div className="min-h-[50vh] bg-gradient-subtle flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardContent className="text-center py-8">
+            <div className="h-16 w-16 bg-accent-subtle dark:bg-accent/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Check className="h-8 w-8 text-accent dark:text-accent" />
+            </div>
+            <h3 className="text-xl font-bold mb-2">Pagamento Aprovado!</h3>
+            <p className="text-muted-foreground mb-6">
+              {purchasedItem?.type === 'course' && 'Seu acesso ao curso já está liberado.'}
+              {purchasedItem?.type === 'ebook' && 'Seu e-book já está disponível para download.'}
+              {purchasedItem?.type === 'paper' && 'Seu trabalho já está disponível para download.'}
+            </p>
+            <div className="space-y-3">
+              <Button
+                onClick={() => {
+                  if (purchasedItem?.type === 'course') navigate(`/courses/${purchasedItem.id}`);
+                  else if (purchasedItem?.type === 'ebook') navigate(`/ebooks/${purchasedItem.id}`);
+                  else if (purchasedItem?.type === 'paper') navigate(`/ready-papers/${purchasedItem.id}`);
+                }}
+                className="w-full btn-hero"
+              >
+                {purchasedItem?.type === 'course' && 'Acessar Curso Agora'}
+                {purchasedItem?.type === 'ebook' && 'Baixar E-book'}
+                {purchasedItem?.type === 'paper' && 'Baixar Trabalho'}
+              </Button>
+              <Button onClick={() => navigate('/ready-papers')} variant="outline" className="w-full">
+                Voltar para a Loja
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Tela padrão de aguardando pagamento
   return (
     <div className="min-h-[50vh] bg-gradient-subtle flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
@@ -623,6 +664,7 @@ const Checkout: React.FC = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [orderConfirmed, setOrderConfirmed] = useState(false);
   const [orderData, setOrderData] = useState<CheckoutResponse | null>(null);
+  const [purchasedItem, setPurchasedItem] = useState<CartItem | null>(null);
 
   const form = useCheckoutForm(user);
   const { orderStatus, startPolling, stopPolling } = useOrderStatusPolling();
@@ -656,6 +698,9 @@ const Checkout: React.FC = () => {
       const checkoutData = prepareCheckoutData(items, data);
       const result = await processPayment(checkoutData);
 
+      // Salvar o item comprado antes de limpar o carrinho
+      setPurchasedItem(items[0]);
+
       setOrderData(result);
       setOrderConfirmed(true);
       clearCart();
@@ -688,6 +733,7 @@ const Checkout: React.FC = () => {
         orderStatus={orderStatus}
         copyPixCode={handleCopyPixCode}
         navigate={navigate}
+        purchasedItem={purchasedItem}
       />
     );
   }
