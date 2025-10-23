@@ -1,136 +1,281 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
+import type { Ebook } from '@/types/ebook';
+import { formatEbookAcademicArea, formatEbookPrice } from '@/utils/ebook-formatters';
+import {
+  BookOpen,
+  User,
+  ShoppingCart,
+  ShoppingBag,
+  FileText,
+} from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { cn } from '@/lib/utils';
+import { useState } from 'react';
+import CheckoutModal from '../checkout/checkout-modal';
 import { useCart } from '@/context/cart-context';
 import { useToast } from '@/hooks/use-toast';
-import { Download, Eye, FileText, ShoppingCart } from 'lucide-react';
-import { memo, useCallback, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { FlyToCartAnimation } from '../cart/fly-to-cart-animation';
 
 interface EbookCardProps {
-  id: number;
-  title: string;
-  description: string;
-  price: number; // em centavos
-  isFree: boolean;
-  pageCount: number;
-  coverUrl: string;
-  academicArea: string;
+  ebook: Ebook;
+  variant?: 'default' | 'featured' | 'compact';
+  className?: string;
+  isPurchased?: boolean;
 }
 
-export const EbookCard = memo(function EbookCard({
-  id,
-  title,
-  description,
-  price,
-  isFree,
-  pageCount,
-  coverUrl,
-  academicArea,
+export function EbookCard({
+  ebook,
+  variant = 'default',
+  className,
+  isPurchased = false,
 }: EbookCardProps) {
-  const { addItem } = useCart();
+  const isCompact = variant === 'compact';
+  const isFeatured = variant === 'featured';
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [flyingItem, setFlyingItem] = useState<{ x: number; y: number } | null>(null);
+  const { addItem, setCartOpen } = useCart();
   const { toast } = useToast();
 
-  // Memoize expensive calculations
-  const formattedPrice = useMemo(() => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    }).format(price / 100);
-  }, [price]);
+  const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
 
-  const handleAddToCart = useCallback(() => {
-    addItem({
-      id: id.toString(),
-      title,
-      description,
-      price,
-      type: 'ebook',
-      thumbnailUrl: coverUrl,
-    });
+    if (!ebook.price || ebook.price === 0) {
+      toast({
+        title: 'E-book gratuito',
+        description: 'Este e-book é gratuito. Clique em "Detalhes" para baixar.',
+      });
+      return;
+    }
 
-    toast({
-      title: 'E-book adicionado ao carrinho',
-      description: `${title} foi adicionado ao seu carrinho.`,
-    });
-  }, [addItem, id, title, description, price, coverUrl, toast]);
+    try {
+      // Capturar posição do botão para animação
+      const button = e.currentTarget;
+      const rect = button.getBoundingClientRect();
+      setFlyingItem({
+        x: rect.left + rect.width / 2,
+        y: rect.top + rect.height / 2,
+      });
 
-  const handleFreeDownload = useCallback(() => {
-    toast({
-      title: 'Download iniciado',
-      description: `${title} será baixado em instantes.`,
-    });
-    // Aqui seria implementada a lógica de download
-  }, [title, toast]);
+      // Adicionar ao carrinho
+      addItem({
+        id: ebook.id,
+        title: ebook.title,
+        description: ebook.description || '',
+        price: ebook.price,
+        type: 'ebook',
+        thumbnailUrl: ebook.coverUrl || '',
+      });
 
-  const thumbnailSrc = useMemo(() => coverUrl || '/placeholder.svg', [coverUrl]);
+      // Abrir drawer do carrinho após animação
+      setTimeout(() => {
+        setCartOpen(true);
+      }, 800);
+
+      toast({
+        title: 'Adicionado ao carrinho!',
+        description: `${ebook.title} foi adicionado ao seu carrinho.`,
+      });
+    } catch (error) {
+      console.error('Erro ao adicionar ao carrinho:', error);
+      toast({
+        title: 'Erro',
+        description: 'Não foi possível adicionar o e-book ao carrinho.',
+        variant: 'destructive',
+      });
+    }
+  };
 
   return (
-    <Card className="group hover:shadow-lg transition-all duration-300 hover:scale-[1.02] bg-card border-border">
-      <CardHeader className="p-4">
-        <div className="aspect-[3/4] rounded-md overflow-hidden bg-muted relative">
-          <img
-            src={thumbnailSrc}
-            alt={title}
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.src = '/placeholder.svg';
-            }}
-          />
-          <div className="absolute top-2 right-2">
-            <FileText className="h-6 w-6 text-white bg-black/50 rounded p-1" />
+    <>
+      <Link to={`/ebooks/${ebook.id}`} className="block h-full">
+        <Card
+        className={cn(
+          'group relative overflow-hidden h-full flex flex-col',
+          'transition-all duration-300 ease-out',
+          'hover:shadow-lg',
+          'hover:-translate-y-1',
+          'bg-card border',
+          isFeatured && 'ring-1 ring-primary/20',
+          className
+        )}
+      >
+
+        {/* Thumbnail Section */}
+        <div className="relative aspect-[3/4] overflow-hidden bg-muted/20">
+          {ebook.coverUrl ? (
+            <img
+              src={ebook.coverUrl}
+              alt={ebook.title}
+              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+              loading="lazy"
+            />
+          ) : (
+            <div className="flex h-full items-center justify-center bg-muted/20">
+              <FileText className="h-16 w-16 text-muted-foreground/40" />
+            </div>
+          )}
+
+          {/* Purchased Badge */}
+          {isPurchased && (
+            <div className="absolute top-3 left-3 z-10">
+              <Badge className="bg-primary text-primary-foreground border-0 shadow-sm px-2.5 py-0.5 text-xs font-medium">
+                ADQUIRIDO
+              </Badge>
+            </div>
+          )}
+
+          {/* Free Badge */}
+          {ebook.price === 0 && (
+            <div className="absolute top-3 right-3 z-10">
+              <Badge
+                variant="outline"
+                className="backdrop-blur-sm bg-background/90 border text-xs bg-emerald-500/10 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300 border-emerald-500/30"
+              >
+                GRATUITO
+              </Badge>
+            </div>
+          )}
+        </div>
+
+        {/* Content Section */}
+        <div className="flex-1 flex flex-col p-5 space-y-3">
+          {/* Academic Area Badge */}
+          <div className="flex items-center gap-2">
+            <Badge
+              variant="secondary"
+              className="text-xs font-normal bg-muted/50"
+            >
+              {formatEbookAcademicArea(ebook.academicArea)}
+            </Badge>
+          </div>
+
+          {/* Title */}
+          <h3 className={cn(
+            'font-semibold leading-tight line-clamp-2 min-h-[3rem]',
+            'text-foreground',
+            isCompact ? 'text-base' : 'text-lg'
+          )}>
+            {ebook.title}
+          </h3>
+
+          {/* Description */}
+          {!isCompact && (
+            <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed flex-grow">
+              {ebook.description}
+            </p>
+          )}
+
+          {/* Author */}
+          <div className="flex items-center gap-2.5 pt-2 border-t">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
+              <User className="h-4 w-4 text-muted-foreground" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-muted-foreground">Autor</p>
+              <p className="font-medium text-sm text-foreground truncate">
+                {ebook.authorName}
+              </p>
+            </div>
+          </div>
+
+          {/* Stats */}
+          <div className="flex items-center gap-3 text-sm text-muted-foreground">
+            <div className="flex items-center gap-1.5">
+              <BookOpen className="h-3.5 w-3.5" />
+              <span>{ebook.pageCount} páginas</span>
+            </div>
           </div>
         </div>
-      </CardHeader>
 
-      <CardContent className="p-4 pt-0">
-        <h3 className="font-semibold text-lg mb-2 line-clamp-2 text-foreground">{title}</h3>
+        {/* Footer with Price and CTA */}
+        <div className="p-5 pt-3 mt-auto border-t">
+          {/* Price */}
+          <div className="flex flex-col mb-3">
+            <span className="text-xs text-muted-foreground mb-0.5">
+              {ebook.price === 0 ? 'Disponível' : 'Investimento'}
+            </span>
+            <div className="flex items-baseline gap-1">
+              <span className="text-2xl font-bold text-primary">
+                {formatEbookPrice(ebook.price)}
+              </span>
+            </div>
+          </div>
 
-        <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{description}</p>
+          {/* Action Buttons */}
+          <div className="space-y-2">
+            {!isPurchased && (
+              <div className="flex gap-2">
+                <Button
+                  size={isCompact ? 'sm' : 'default'}
+                  className="flex-1 bg-primary hover:bg-primary-hover text-primary-foreground font-semibold"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setCheckoutOpen(true);
+                  }}
+                >
+                  <ShoppingCart className="h-4 w-4 mr-2" />
+                  {ebook.price === 0 ? 'Baixar Grátis' : 'Comprar'}
+                </Button>
+                <Button
+                  size={isCompact ? 'sm' : 'default'}
+                  variant="outline"
+                  className="font-medium"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  Detalhes
+                </Button>
+              </div>
+            )}
 
-        <div className="flex flex-wrap gap-2 mb-3">
-          {isFree && (
-            <Badge className="text-xs bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100">
-              Gratuito
-            </Badge>
-          )}
-          <Badge variant="outline" className="text-xs">
-            {pageCount} páginas
-          </Badge>
-          <Badge variant="secondary" className="text-xs">
-            {academicArea}
-          </Badge>
+            {/* Botão discreto de adicionar ao carrinho */}
+            {!isPurchased && ebook.price && ebook.price > 0 && (
+              <Button
+                size="sm"
+                variant="ghost"
+                className="w-full text-xs text-muted-foreground hover:text-foreground"
+                onClick={handleAddToCart}
+              >
+                <ShoppingBag className="h-3 w-3 mr-1.5" />
+                Adicionar ao Carrinho
+              </Button>
+            )}
+
+            {/* Botão para ebooks adquiridos */}
+            {isPurchased && (
+              <Button
+                size={isCompact ? 'sm' : 'default'}
+                variant="default"
+                className="w-full font-medium"
+                onClick={(e) => e.stopPropagation()}
+              >
+                Baixar PDF
+              </Button>
+            )}
+          </div>
         </div>
+      </Card>
+    </Link>
 
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-sm text-muted-foreground">PDF Digital</span>
-          <span className="font-bold text-lg text-primary">
-            {isFree ? 'Gratuito' : formattedPrice}
-          </span>
-        </div>
-      </CardContent>
+    {/* Checkout Modal */}
+    <CheckoutModal
+      open={checkoutOpen}
+      onOpenChange={setCheckoutOpen}
+      courseId={ebook.id}
+      courseTitle={ebook.title}
+      coursePrice={ebook.price}
+    />
 
-      <CardFooter className="p-4 pt-0 flex gap-2">
-        {isFree ? (
-          <Button onClick={handleFreeDownload} className="flex-1 btn-accent">
-            <Download className="w-4 h-4 mr-2" />
-            Download Gratuito
-          </Button>
-        ) : (
-          <Button onClick={handleAddToCart} className="flex-1 btn-hero">
-            <ShoppingCart className="w-4 h-4 mr-2" />
-            Comprar e Baixar
-          </Button>
-        )}
-
-        <Button variant="outline" asChild>
-          <Link to={`/ebooks/${id}`}>
-            <Eye className="w-4 h-4 mr-2" />
-            Detalhes
-          </Link>
-        </Button>
-      </CardFooter>
-    </Card>
+    {/* Animação de item voando para o carrinho */}
+    {flyingItem && (
+      <FlyToCartAnimation
+        startPosition={flyingItem}
+        onComplete={() => setFlyingItem(null)}
+      />
+    )}
+    </>
   );
-});
+}
