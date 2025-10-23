@@ -62,6 +62,13 @@ export default function EditReadyPaperPage() {
     preview: null as File | null,
   });
 
+  // Estado para controlar arquivos existentes que foram removidos
+  const [clearedFiles, setClearedFiles] = useState({
+    file: false,
+    thumbnail: false,
+    preview: false,
+  });
+
   // Buscar paper da API
   const { data: paper, isLoading, error } = useQuery({
     queryKey: ['paper', id],
@@ -101,8 +108,8 @@ export default function EditReadyPaperPage() {
       setFormData({
         title: paper.title,
         authorName: paper.authorName,
-        paperType: paper.paperType,
-        academicArea: paper.academicArea,
+        paperType: paper.paperType.toLowerCase(),
+        academicArea: paper.academicArea.toLowerCase(),
         pageCount: paper.pageCount.toString(),
         price: (paper.price / 100).toString(),
         description: paper.description,
@@ -515,9 +522,10 @@ export default function EditReadyPaperPage() {
                     label="Arquivo do Trabalho"
                     accept=".pdf,.doc,.docx"
                     file={formData.file}
-                    existingFileUrl={paper.fileUrl || undefined}
+                    existingFileUrl={!clearedFiles.file ? (paper.fileUrl || undefined) : undefined}
                     existingFileName={paper.title ? `${paper.title}.pdf` : undefined}
                     onChange={(file) => handleFileChange('file', file)}
+                    onClearExisting={() => setClearedFiles({ ...clearedFiles, file: true })}
                     maxSize="50MB"
                     fileTypes="PDF, DOC, DOCX"
                   />
@@ -527,9 +535,10 @@ export default function EditReadyPaperPage() {
                       label="Thumbnail"
                       accept="image/*"
                       file={formData.thumbnail}
-                      existingFileUrl={paper.thumbnailUrl || undefined}
+                      existingFileUrl={!clearedFiles.thumbnail ? (paper.thumbnailUrl || undefined) : undefined}
                       existingFileName={paper.title ? `${paper.title}-thumbnail` : undefined}
                       onChange={(file) => handleFileChange('thumbnail', file)}
+                      onClearExisting={() => setClearedFiles({ ...clearedFiles, thumbnail: true })}
                       isImage
                       maxSize="10MB"
                       fileTypes="PNG, JPG"
@@ -539,9 +548,10 @@ export default function EditReadyPaperPage() {
                       label="Preview"
                       accept=".pdf,.doc,.docx"
                       file={formData.preview}
-                      existingFileUrl={paper.previewUrl || undefined}
+                      existingFileUrl={!clearedFiles.preview ? (paper.previewUrl || undefined) : undefined}
                       existingFileName={paper.title ? `${paper.title}-preview.pdf` : undefined}
                       onChange={(file) => handleFileChange('preview', file)}
+                      onClearExisting={() => setClearedFiles({ ...clearedFiles, preview: true })}
                       maxSize="10MB"
                       fileTypes="PDF, DOC, DOCX"
                     />

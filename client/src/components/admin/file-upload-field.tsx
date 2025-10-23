@@ -12,6 +12,7 @@ interface FileUploadFieldProps {
   isImage?: boolean;
   required?: boolean;
   onChange: (file: File | null) => void;
+  onClearExisting?: () => void;
   maxSize?: string;
   fileTypes?: string;
 }
@@ -25,10 +26,12 @@ export function FileUploadField({
   isImage = false,
   required = false,
   onChange,
+  onClearExisting,
   maxSize = '50MB',
   fileTypes = 'PDF, DOC, DOCX',
 }: FileUploadFieldProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [clearedExisting, setClearedExisting] = useState(false);
 
   // Criar preview URL para arquivos de imagem
   useEffect(() => {
@@ -59,6 +62,13 @@ export function FileUploadField({
     }
   };
 
+  const handleClearExisting = () => {
+    setClearedExisting(true);
+    if (onClearExisting) {
+      onClearExisting();
+    }
+  };
+
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
@@ -68,7 +78,7 @@ export function FileUploadField({
   };
 
   const hasFile = file !== null;
-  const hasExistingFile = !hasFile && existingFileUrl;
+  const hasExistingFile = !hasFile && existingFileUrl && !clearedExisting;
 
   return (
     <div className="space-y-2">
@@ -96,9 +106,20 @@ export function FileUploadField({
             </Button>
           )}
           {hasExistingFile && (
-            <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white p-2 text-xs">
-              Arquivo atual: {existingFileName || 'imagem existente'}
-            </div>
+            <>
+              <Button
+                type="button"
+                variant="destructive"
+                size="icon"
+                className="absolute top-2 right-2"
+                onClick={handleClearExisting}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+              <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white p-2 text-xs">
+                Arquivo atual: {existingFileName || 'imagem existente'}
+              </div>
+            </>
           )}
         </div>
       )}
@@ -143,21 +164,33 @@ export function FileUploadField({
               </p>
             </div>
           </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => window.open(existingFileUrl, '_blank')}
-            className="flex-shrink-0"
-          >
-            <Download className="h-4 w-4 mr-1" />
-            Baixar
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => window.open(existingFileUrl, '_blank')}
+              className="flex-shrink-0"
+            >
+              <Download className="h-4 w-4 mr-1" />
+              Baixar
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              size="sm"
+              onClick={handleClearExisting}
+              className="flex-shrink-0"
+            >
+              <X className="h-4 w-4 mr-1" />
+              Remover
+            </Button>
+          </div>
         </div>
       )}
 
       {/* Upload Zone */}
-      {!hasFile && (!hasExistingFile || isImage) && (
+      {!hasFile && !hasExistingFile && (
         <div className="relative">
           <input
             id={`file-input-${label}`}
