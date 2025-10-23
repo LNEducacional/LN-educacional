@@ -177,7 +177,7 @@ function prepareCheckoutData(items: CartItem[], data: CheckoutFormData) {
       title: item.title,
       description: item.description || '',
       price: item.price,
-      type: item.type.toUpperCase(),
+      type: item.type,
     })),
     customer: {
       name: data.fullName,
