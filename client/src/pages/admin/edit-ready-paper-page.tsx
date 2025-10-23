@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/select';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { Textarea } from '@/components/ui/textarea';
+import { FileUploadField } from '@/components/admin/file-upload-field';
 import api from '@/services/api';
 import { toast } from '@/hooks/use-toast';
 import type { AcademicArea, PaperType, ReadyPaper } from '@/types/paper';
@@ -510,90 +511,40 @@ export default function EditReadyPaperPage() {
                   <CardDescription>Arquivos atuais e opção de atualizar</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="file">Arquivo do Trabalho</Label>
-                    <div className="relative">
-                      <input
-                        type="file"
-                        id="file"
-                        accept=".pdf,.doc,.docx"
-                        onChange={(e) => handleFileChange('file', e.target.files?.[0] || null)}
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                      />
-                      <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center hover:border-primary/50 hover:bg-accent/5 transition-colors">
-                        <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                        {formData.file ? (
-                          <p className="text-sm text-primary font-medium">
-                            {formData.file.name}
-                          </p>
-                        ) : (
-                          <>
-                            <p className="text-sm text-muted-foreground">
-                              Clique para {paper.fileUrl ? 'alterar' : 'fazer upload do'} trabalho
-                            </p>
-                            <p className="text-xs text-muted-foreground mt-1">PDF, DOC, DOCX até 50MB</p>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </div>
+                  <FileUploadField
+                    label="Arquivo do Trabalho"
+                    accept=".pdf,.doc,.docx"
+                    file={formData.file}
+                    existingFileUrl={paper.fileUrl || undefined}
+                    existingFileName={paper.title ? `${paper.title}.pdf` : undefined}
+                    onChange={(file) => handleFileChange('file', file)}
+                    maxSize="50MB"
+                    fileTypes="PDF, DOC, DOCX"
+                  />
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <Label htmlFor="thumbnail">Thumbnail</Label>
-                      <div className="relative">
-                        <input
-                          type="file"
-                          id="thumbnail"
-                          accept="image/*"
-                          onChange={(e) => handleFileChange('thumbnail', e.target.files?.[0] || null)}
-                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                        />
-                        <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center hover:border-primary/50 hover:bg-accent/5 transition-colors">
-                          <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                          {formData.thumbnail ? (
-                            <p className="text-sm text-primary font-medium">
-                              {formData.thumbnail.name}
-                            </p>
-                          ) : (
-                            <>
-                              <p className="text-sm text-muted-foreground">
-                                Clique para {paper.thumbnailUrl ? 'alterar' : 'fazer upload da'} thumbnail
-                              </p>
-                              <p className="text-xs text-muted-foreground mt-1">PNG, JPG até 10MB</p>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </div>
+                    <FileUploadField
+                      label="Thumbnail"
+                      accept="image/*"
+                      file={formData.thumbnail}
+                      existingFileUrl={paper.thumbnailUrl || undefined}
+                      existingFileName={paper.title ? `${paper.title}-thumbnail` : undefined}
+                      onChange={(file) => handleFileChange('thumbnail', file)}
+                      isImage
+                      maxSize="10MB"
+                      fileTypes="PNG, JPG"
+                    />
 
-                    <div className="space-y-2">
-                      <Label htmlFor="preview">Preview</Label>
-                      <div className="relative">
-                        <input
-                          type="file"
-                          id="preview"
-                          accept=".pdf,.doc,.docx"
-                          onChange={(e) => handleFileChange('preview', e.target.files?.[0] || null)}
-                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                        />
-                        <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center hover:border-primary/50 hover:bg-accent/5 transition-colors">
-                          <Upload className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                          {formData.preview ? (
-                            <p className="text-sm text-primary font-medium">
-                              {formData.preview.name}
-                            </p>
-                          ) : (
-                            <>
-                              <p className="text-sm text-muted-foreground">
-                                Clique para {paper.previewUrl ? 'alterar' : 'fazer upload do'} preview
-                              </p>
-                              <p className="text-xs text-muted-foreground mt-1">PDF, DOC, DOCX até 10MB</p>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </div>
+                    <FileUploadField
+                      label="Preview"
+                      accept=".pdf,.doc,.docx"
+                      file={formData.preview}
+                      existingFileUrl={paper.previewUrl || undefined}
+                      existingFileName={paper.title ? `${paper.title}-preview.pdf` : undefined}
+                      onChange={(file) => handleFileChange('preview', file)}
+                      maxSize="10MB"
+                      fileTypes="PDF, DOC, DOCX"
+                    />
                   </div>
                 </CardContent>
               </Card>
