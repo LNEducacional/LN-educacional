@@ -562,7 +562,10 @@ export default function AddEbookPage() {
                             id="cover"
                             type="file"
                             accept="image/jpeg,image/png,image/webp"
-                            onChange={(e) => handleFileChange('cover', e.target.files?.[0] || null)}
+                            onChange={(e) => {
+                              const file = e.target.files?.[0] || null;
+                              setFormData((prev) => ({ ...prev, cover: file }));
+                            }}
                             className="hidden"
                           />
                         </label>
