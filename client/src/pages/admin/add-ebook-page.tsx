@@ -44,7 +44,7 @@ export default function AddEbookPage() {
     pageCount: '',
     isFree: false,
     price: '',
-    files: [] as File[],
+    file: null as File | null,
     cover: null as File | null,
   });
 
@@ -99,17 +99,14 @@ export default function AddEbookPage() {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleFilesChange = (files: FileList | null) => {
-    if (files) {
-      setFormData((prev) => ({ ...prev, files: Array.from(files) }));
-    }
+  const handleFileChange = (file: File | null) => {
+    setFormData((prev) => ({ ...prev, file }));
   };
 
-  const handleRemoveFile = (index: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      files: prev.files.filter((_, i) => i !== index),
-    }));
+  const handleRemoveFile = () => {
+    setFormData((prev) => ({ ...prev, file: null }));
+    const fileInput = document.getElementById('file') as HTMLInputElement;
+    if (fileInput) fileInput.value = '';
   };
 
   const handleRemoveCover = () => {
@@ -132,14 +129,16 @@ export default function AddEbookPage() {
 
     // Validações básicas
     if (
+      !formData.title ||
+      !formData.description ||
       !formData.authorName ||
       !formData.area ||
       !formData.pageCount ||
-      formData.files.length === 0
+      !formData.file
     ) {
       toast({
         title: 'Campos obrigatórios',
-        description: 'Por favor, preencha autor, área, páginas e selecione pelo menos um arquivo.',
+        description: 'Por favor, preencha todos os campos obrigatórios e selecione um arquivo.',
         variant: 'destructive',
       });
       return;
@@ -183,11 +182,9 @@ export default function AddEbookPage() {
     }
 
     setLoading(true);
-    let successCount = 0;
-    let errorCount = 0;
 
     try {
-      // Upload da capa (se houver) - uma vez para todos
+      // Upload da capa (se houver)
       let coverUrl: string | undefined = undefined;
       if (formData.cover) {
         const coverFormData = new FormData();
@@ -198,68 +195,45 @@ export default function AddEbookPage() {
         coverUrl = coverUploadResponse.data.url;
       }
 
-      // Processar cada arquivo
-      for (const file of formData.files) {
-        try {
-          // Upload do arquivo
-          const fileFormData = new FormData();
-          fileFormData.append('file', file);
-          const fileUploadResponse = await api.post('/admin/ebooks/upload-file', fileFormData, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-          });
-          const fileUrl = fileUploadResponse.data.url;
+      // Upload do arquivo do e-book
+      const fileFormData = new FormData();
+      fileFormData.append('file', formData.file);
+      const fileUploadResponse = await api.post('/admin/ebooks/upload-file', fileFormData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      const fileUrl = fileUploadResponse.data.url;
 
-          // Usar nome do arquivo como título (sem extensão)
-          const fileName = file.name.replace(/\.[^/.]+$/, '');
+      // Converter preço para centavos corretamente
+      // Garantir que não há vírgulas, apenas pontos decimais
+      const priceInReais = formData.isFree ? 0 : parseFloat(formData.price.replace(',', '.'));
+      // Multiplicar por 100 e arredondar para evitar problemas de ponto flutuante
+      const priceInCents = Math.round(priceInReais * 100);
 
-          // Lógica de título:
-          // - Se múltiplos arquivos: sempre usar nome do arquivo
-          // - Se arquivo único E título foi preenchido: usar título do formulário
-          // - Se arquivo único E título vazio: usar nome do arquivo
-          const useFormTitle = formData.files.length === 1 && formData.title.trim();
-          const ebookTitle = useFormTitle ? formData.title.trim() : fileName;
-          const ebookDescription = useFormTitle && formData.description.trim()
-            ? formData.description.trim()
-            : `E-book: ${fileName}`;
+      // Criar o e-book
+      const ebookData = {
+        title: formData.title.trim(),
+        description: formData.description.trim(),
+        authorName: formData.authorName.trim(),
+        academicArea: formData.area,
+        pageCount: pageCount,
+        price: priceInCents,
+        fileUrl: fileUrl,
+        coverUrl: coverUrl,
+      };
 
-          // Criar o e-book
-          const ebookData = {
-            title: ebookTitle,
-            description: ebookDescription,
-            authorName: formData.authorName,
-            academicArea: formData.area,
-            pageCount: pageCount,
-            price: formData.isFree ? 0 : Math.round(Number.parseFloat(formData.price) * 100),
-            fileUrl: fileUrl,
-            coverUrl: coverUrl,
-          };
+      await api.post('/admin/ebooks', ebookData);
 
-          await api.post('/admin/ebooks', ebookData);
-          successCount++;
-        } catch (error) {
-          console.error(`Erro ao salvar "${file.name}":`, error);
-          errorCount++;
-        }
-      }
+      toast({
+        title: 'E-book criado com sucesso!',
+        description: 'O e-book foi adicionado ao catálogo.',
+      });
 
-      if (errorCount === 0) {
-        toast({
-          title: 'Todos os e-books foram salvos!',
-          description: `${successCount} e-book(s) adicionado(s) com sucesso.`,
-        });
-        navigate('/admin/ebooks');
-      } else {
-        toast({
-          title: 'Salvamento parcial',
-          description: `${successCount} salvos com sucesso, ${errorCount} com erro.`,
-          variant: 'destructive',
-        });
-      }
+      navigate('/admin/ebooks');
     } catch (error: any) {
-      console.error('Erro geral:', error);
+      console.error('Erro ao criar e-book:', error);
       toast({
         title: 'Erro ao salvar',
-        description: 'Não foi possível salvar os e-books. Tente novamente.',
+        description: error.response?.data?.error || 'Não foi possível criar o e-book. Tente novamente.',
         variant: 'destructive',
       });
     } finally {
@@ -305,7 +279,7 @@ export default function AddEbookPage() {
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div>
-                    <Label htmlFor="title">Título (opcional para múltiplos arquivos)</Label>
+                    <Label htmlFor="title">Título *</Label>
                     <div className="relative">
                       <BookOpen className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
@@ -314,15 +288,13 @@ export default function AddEbookPage() {
                         onChange={(e) => handleInputChange('title', e.target.value)}
                         placeholder="Ex: Introdução à Programação Python"
                         className="pl-10"
+                        required
                       />
                     </div>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Para múltiplos arquivos, o nome de cada arquivo será usado como título
-                    </p>
                   </div>
 
                   <div>
-                    <Label htmlFor="description">Descrição (opcional para múltiplos arquivos)</Label>
+                    <Label htmlFor="description">Descrição *</Label>
                     <div className="relative">
                       <FileText className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Textarea
@@ -332,6 +304,7 @@ export default function AddEbookPage() {
                         placeholder="Descreva o conteúdo do e-book"
                         rows={4}
                         className="pl-10"
+                        required
                       />
                     </div>
                   </div>
@@ -449,40 +422,35 @@ export default function AddEbookPage() {
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div>
-                    <Label htmlFor="file">Arquivos dos E-books * (pode selecionar múltiplos)</Label>
+                    <Label htmlFor="file">Arquivo do E-book *</Label>
 
-                    {/* Preview dos arquivos */}
-                    {formData.files.length > 0 ? (
-                      <div className="mt-2 space-y-2">
-                        <div className="text-sm text-muted-foreground mb-2">
-                          {formData.files.length} arquivo(s) selecionado(s)
-                        </div>
-                        {formData.files.map((file, index) => (
-                          <div key={index} className="p-3 border-2 border-primary/20 rounded-lg bg-primary/5">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3 flex-1 min-w-0">
-                                <div className="flex-shrink-0 h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                                  <FileCheck className="h-5 w-5 text-primary" />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-sm font-medium truncate">{file.name}</p>
-                                  <p className="text-xs text-muted-foreground">
-                                    {formatFileSize(file.size)}
-                                  </p>
-                                </div>
+                    {/* Preview do arquivo */}
+                    {formData.file ? (
+                      <div className="mt-2">
+                        <div className="p-3 border-2 border-primary/20 rounded-lg bg-primary/5">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                              <div className="flex-shrink-0 h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                                <FileCheck className="h-5 w-5 text-primary" />
                               </div>
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleRemoveFile(index)}
-                                className="flex-shrink-0 h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
-                              >
-                                <X className="h-4 w-4" />
-                              </Button>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium truncate">{formData.file.name}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {formatFileSize(formData.file.size)}
+                                </p>
+                              </div>
                             </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={handleRemoveFile}
+                              className="flex-shrink-0 h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
                           </div>
-                        ))}
+                        </div>
                       </div>
                     ) : (
                       <div className="mt-2">
@@ -493,18 +461,17 @@ export default function AddEbookPage() {
                           <div className="flex flex-col items-center justify-center pt-5 pb-6">
                             <Upload className="h-8 w-8 text-muted-foreground mb-2" />
                             <p className="text-sm text-muted-foreground">
-                              <span className="font-semibold">Clique para fazer upload</span> de múltiplos arquivos
+                              <span className="font-semibold">Clique para fazer upload</span> do arquivo
                             </p>
                             <p className="text-xs text-muted-foreground mt-1">
-                              PDF, EPUB, MOBI (pode selecionar vários)
+                              PDF, EPUB, MOBI
                             </p>
                           </div>
                           <Input
                             id="file"
                             type="file"
                             accept=".pdf,.epub,.mobi"
-                            multiple
-                            onChange={(e) => handleFilesChange(e.target.files)}
+                            onChange={(e) => handleFileChange(e.target.files?.[0] || null)}
                             className="hidden"
                           />
                         </label>
@@ -597,10 +564,10 @@ export default function AddEbookPage() {
                 </Button>
                 <Button
                   type="submit"
-                  disabled={loading || formData.files.length === 0}
+                  disabled={loading || !formData.file}
                   className="flex-1"
                 >
-                  {loading ? 'Salvando...' : `Salvar E-book(s) (${formData.files.length})`}
+                  {loading ? 'Salvando...' : 'Salvar E-book'}
                 </Button>
               </div>
             </form>
