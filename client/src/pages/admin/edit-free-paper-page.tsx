@@ -72,13 +72,20 @@ export default function EditFreePaperPage() {
     preview: null as File | null,
   });
 
+  // Estado para controlar arquivos existentes que foram removidos
+  const [clearedFiles, setClearedFiles] = useState({
+    file: false,
+    thumbnail: false,
+    preview: false,
+  });
+
   useEffect(() => {
     if (paper && !error) {
       setFormData({
         title: paper.title,
         authorName: paper.authorName,
-        paperType: paper.paperType,
-        academicArea: paper.academicArea,
+        paperType: paper.paperType.toLowerCase(),
+        academicArea: paper.academicArea.toLowerCase(),
         pageCount: paper.pageCount.toString(),
         description: paper.description,
         language: paper.language,
@@ -455,10 +462,12 @@ export default function EditFreePaperPage() {
                     label="Arquivo do Trabalho"
                     accept=".pdf,.doc,.docx"
                     file={formData.file}
+                    existingFileUrl={!clearedFiles.file ? (paper.fileUrl || undefined) : undefined}
+                    existingFileName={paper.title ? `${paper.title}.pdf` : undefined}
                     onChange={(file) => handleFileChange('file', file)}
+                    onClearExisting={() => setClearedFiles({ ...clearedFiles, file: true })}
                     maxSize="50MB"
                     fileTypes="PDF, DOC, DOCX"
-                    currentFileUrl={paper.fileUrl}
                   />
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -466,21 +475,25 @@ export default function EditFreePaperPage() {
                       label="Thumbnail"
                       accept="image/*"
                       file={formData.thumbnail}
+                      existingFileUrl={!clearedFiles.thumbnail ? (paper.thumbnailUrl || undefined) : undefined}
+                      existingFileName={paper.title ? `${paper.title}-thumbnail` : undefined}
                       onChange={(file) => handleFileChange('thumbnail', file)}
+                      onClearExisting={() => setClearedFiles({ ...clearedFiles, thumbnail: true })}
                       isImage
                       maxSize="10MB"
                       fileTypes="PNG, JPG"
-                      currentFileUrl={paper.thumbnailUrl}
                     />
 
                     <FileUploadField
                       label="Preview"
                       accept=".pdf,.doc,.docx"
                       file={formData.preview}
+                      existingFileUrl={!clearedFiles.preview ? (paper.previewUrl || undefined) : undefined}
+                      existingFileName={paper.title ? `${paper.title}-preview.pdf` : undefined}
                       onChange={(file) => handleFileChange('preview', file)}
+                      onClearExisting={() => setClearedFiles({ ...clearedFiles, preview: true })}
                       maxSize="10MB"
                       fileTypes="PDF, DOC, DOCX"
-                      currentFileUrl={paper.previewUrl}
                     />
                   </div>
                 </CardContent>
