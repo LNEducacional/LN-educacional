@@ -15,11 +15,37 @@ import { SidebarProvider } from '@/components/ui/sidebar';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/hooks/use-toast';
 import type { AcademicArea } from '@/types/ebook';
-import { BookOpen, FileText, GraduationCap, DollarSign, Upload, User, ArrowLeft, X, FileCheck, ImagePlus } from 'lucide-react';
+import { BookOpen, FileText, GraduationCap, DollarSign, Upload, User, ArrowLeft, X, FileCheck, ImagePlus, Edit, Trash2, Plus, Save } from 'lucide-react';
 import type React from 'react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '@/services/api';
+
+interface EbookFormData {
+  id?: string;
+  title: string;
+  description: string;
+  authorName: string;
+  area: AcademicArea | '';
+  pageCount: string;
+  isFree: boolean;
+  price: string;
+  file: File | null;
+  cover: File | null;
+  coverPreviewUrl?: string;
+}
+
+const defaultFormData: EbookFormData = {
+  title: '',
+  description: '',
+  authorName: '',
+  area: '' as AcademicArea | '',
+  pageCount: '',
+  isFree: false,
+  price: '',
+  file: null,
+  cover: null,
+};
 
 export default function AddEbookPage() {
   const navigate = useNavigate();
@@ -36,19 +62,10 @@ export default function AddEbookPage() {
     | 'ebooks'
   >('ebooks');
 
-  const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    authorName: '',
-    area: '' as AcademicArea | '',
-    pageCount: '',
-    isFree: false,
-    price: '',
-    file: null as File | null,
-    cover: null as File | null,
-  });
-
+  const [formData, setFormData] = useState<EbookFormData>(defaultFormData);
   const [coverPreviewUrl, setCoverPreviewUrl] = useState<string | null>(null);
+  const [ebooksList, setEbooksList] = useState<EbookFormData[]>([]);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   // Gerenciar preview da capa
   useEffect(() => {
@@ -126,12 +143,8 @@ export default function AddEbookPage() {
     return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('🚀 [ADD EBOOK] handleSubmit called');
-    console.log('📋 [ADD EBOOK] Form data:', formData);
-
-    // Validações
+  // Validar formulário
+  const validateForm = (): boolean => {
     if (
       !formData.title ||
       !formData.description ||
@@ -140,145 +153,226 @@ export default function AddEbookPage() {
       !formData.pageCount ||
       !formData.file
     ) {
-      console.log('❌ [ADD EBOOK] Validation failed - missing required fields');
       toast({
         title: 'Campos obrigatórios',
         description: 'Por favor, preencha todos os campos obrigatórios.',
         variant: 'destructive',
       });
-      return;
+      return false;
     }
 
     // Validar título (mínimo 2 palavras)
     const titleWords = formData.title.trim().split(/\s+/);
     if (titleWords.length < 2) {
-      console.log('❌ [ADD EBOOK] Validation failed - title needs at least 2 words');
       toast({
         title: 'Título inválido',
-        description: 'O título deve conter pelo menos 2 palavras. Exemplo: "Introdução à Programação"',
+        description: 'O título deve conter pelo menos 2 palavras.',
         variant: 'destructive',
       });
-      return;
+      return false;
     }
 
     // Validar descrição (mínimo 10 caracteres)
     if (formData.description.trim().length < 10) {
-      console.log('❌ [ADD EBOOK] Validation failed - description too short');
       toast({
         title: 'Descrição muito curta',
         description: 'A descrição deve ter pelo menos 10 caracteres.',
         variant: 'destructive',
       });
-      return;
+      return false;
     }
 
-    // Validar nome do autor (mínimo 2 caracteres)
+    // Validar nome do autor
     if (formData.authorName.trim().length < 2) {
-      console.log('❌ [ADD EBOOK] Validation failed - author name too short');
       toast({
         title: 'Nome do autor inválido',
         description: 'O nome do autor deve ter pelo menos 2 caracteres.',
         variant: 'destructive',
       });
-      return;
+      return false;
     }
 
     if (!formData.isFree && (!formData.price || Number.parseFloat(formData.price) <= 0)) {
-      console.log('❌ [ADD EBOOK] Validation failed - invalid price');
       toast({
         title: 'Preço obrigatório',
         description: 'Para e-books pagos, é necessário definir um preço válido.',
         variant: 'destructive',
       });
-      return;
+      return false;
     }
 
-    // Validar número de páginas com regra de e-book gratuito/pago
     const pageCount = Number.parseInt(formData.pageCount);
     if (formData.isFree && pageCount > 100) {
-      console.log('❌ [ADD EBOOK] Validation failed - free ebook too many pages');
       toast({
         title: 'Número de páginas inválido',
         description: 'E-books gratuitos não devem exceder 100 páginas.',
         variant: 'destructive',
       });
-      return;
+      return false;
     }
 
     if (!formData.isFree && pageCount < 10) {
-      console.log('❌ [ADD EBOOK] Validation failed - paid ebook too few pages');
       toast({
         title: 'Número de páginas inválido',
         description: 'E-books pagos devem ter pelo menos 10 páginas.',
         variant: 'destructive',
       });
+      return false;
+    }
+
+    return true;
+  };
+
+  // Adicionar e-book à lista
+  const handleAddToList = () => {
+    if (!validateForm()) return;
+
+    const newEbook: EbookFormData = {
+      ...formData,
+      id: editingId || `temp-${Date.now()}`,
+      coverPreviewUrl: coverPreviewUrl || undefined,
+    };
+
+    if (editingId) {
+      // Atualizar e-book existente
+      setEbooksList(ebooksList.map(ebook => ebook.id === editingId ? newEbook : ebook));
+      toast({
+        title: 'E-book atualizado',
+        description: 'As alterações foram salvas na lista.',
+      });
+      setEditingId(null);
+    } else {
+      // Adicionar novo e-book
+      setEbooksList([...ebooksList, newEbook]);
+      toast({
+        title: 'E-book adicionado à lista',
+        description: `"${formData.title}" foi adicionado. Adicione mais ou salve todos.`,
+      });
+    }
+
+    // Limpar formulário
+    setFormData(defaultFormData);
+    setCoverPreviewUrl(null);
+
+    // Resetar inputs de arquivo
+    const fileInput = document.getElementById('file') as HTMLInputElement;
+    const coverInput = document.getElementById('cover') as HTMLInputElement;
+    if (fileInput) fileInput.value = '';
+    if (coverInput) coverInput.value = '';
+  };
+
+  // Remover e-book da lista
+  const handleRemoveFromList = (id: string) => {
+    setEbooksList(ebooksList.filter(ebook => ebook.id !== id));
+    toast({
+      title: 'E-book removido',
+      description: 'O e-book foi removido da lista.',
+    });
+  };
+
+  // Editar e-book da lista
+  const handleEditFromList = (id: string) => {
+    const ebook = ebooksList.find(e => e.id === id);
+    if (!ebook) return;
+
+    setFormData(ebook);
+    setCoverPreviewUrl(ebook.coverPreviewUrl || null);
+    setEditingId(id);
+
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    toast({
+      title: 'Editando e-book',
+      description: 'Faça as alterações e clique em "Atualizar na Lista".',
+    });
+  };
+
+  // Salvar todos os e-books
+  const handleSaveAll = async () => {
+    if (ebooksList.length === 0) {
+      toast({
+        title: 'Nenhum e-book na lista',
+        description: 'Adicione pelo menos um e-book antes de salvar.',
+        variant: 'destructive',
+      });
       return;
     }
 
-    console.log('✅ [ADD EBOOK] Validation passed, starting upload...');
     setLoading(true);
+    let successCount = 0;
+    let errorCount = 0;
 
     try {
-      // 1. Upload do arquivo principal
-      console.log('📤 [ADD EBOOK] Uploading file...');
-      const fileFormData = new FormData();
-      fileFormData.append('file', formData.file);
+      for (const ebook of ebooksList) {
+        try {
+          // Upload do arquivo principal
+          const fileFormData = new FormData();
+          fileFormData.append('file', ebook.file!);
+          const fileUploadResponse = await api.post('/admin/ebooks/upload-file', fileFormData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+          });
+          const fileUrl = fileUploadResponse.data.url;
 
-      const fileUploadResponse = await api.post('/admin/ebooks/upload-file', fileFormData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+          // Upload da capa (se houver)
+          let coverUrl: string | undefined = undefined;
+          if (ebook.cover) {
+            const coverFormData = new FormData();
+            coverFormData.append('file', ebook.cover);
+            const coverUploadResponse = await api.post('/admin/ebooks/upload-cover', coverFormData, {
+              headers: { 'Content-Type': 'multipart/form-data' },
+            });
+            coverUrl = coverUploadResponse.data.url;
+          }
 
-      const fileUrl = fileUploadResponse.data.url;
-      console.log('✅ [ADD EBOOK] File uploaded:', fileUrl);
+          // Criar o e-book
+          const ebookData = {
+            title: ebook.title,
+            description: ebook.description,
+            authorName: ebook.authorName,
+            academicArea: ebook.area,
+            pageCount: Number.parseInt(ebook.pageCount),
+            price: ebook.isFree ? 0 : Math.round(Number.parseFloat(ebook.price) * 100),
+            fileUrl: fileUrl,
+            coverUrl: coverUrl,
+          };
 
-      // 2. Upload da capa (se houver)
-      let coverUrl: string | undefined = undefined;
-      if (formData.cover) {
-        console.log('📤 [ADD EBOOK] Uploading cover...');
-        const coverFormData = new FormData();
-        coverFormData.append('file', formData.cover);
-
-        const coverUploadResponse = await api.post('/admin/ebooks/upload-cover', coverFormData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
-
-        coverUrl = coverUploadResponse.data.url;
-        console.log('✅ [ADD EBOOK] Cover uploaded:', coverUrl);
+          await api.post('/admin/ebooks', ebookData);
+          successCount++;
+        } catch (error) {
+          console.error(`Erro ao salvar "${ebook.title}":`, error);
+          errorCount++;
+        }
       }
 
-      // 3. Criar o e-book com as URLs
-      const ebookData = {
-        title: formData.title,
-        description: formData.description,
-        authorName: formData.authorName,
-        academicArea: formData.area,
-        pageCount: Number.parseInt(formData.pageCount),
-        price: formData.isFree ? 0 : Math.round(Number.parseFloat(formData.price) * 100),
-        fileUrl: fileUrl,
-        coverUrl: coverUrl,
-      };
-
-      console.log('📝 [ADD EBOOK] Creating ebook with data:', ebookData);
-      await api.post('/admin/ebooks', ebookData);
-
-      console.log('✅ [ADD EBOOK] E-book created successfully');
-      toast({
-        title: 'E-book adicionado com sucesso',
-        description: 'O e-book foi adicionado à plataforma.',
-      });
-
-      navigate('/admin/ebooks');
+      if (errorCount === 0) {
+        toast({
+          title: 'Todos os e-books foram salvos!',
+          description: `${successCount} e-book(s) adicionado(s) com sucesso.`,
+        });
+        navigate('/admin/ebooks');
+      } else {
+        toast({
+          title: 'Salvamento parcial',
+          description: `${successCount} salvos com sucesso, ${errorCount} com erro.`,
+          variant: 'destructive',
+        });
+      }
     } catch (error: any) {
-      console.error('❌ [ADD EBOOK] Error:', error);
-      console.error('❌ [ADD EBOOK] Error response:', error.response?.data);
+      console.error('Erro geral:', error);
       toast({
-        title: 'Erro ao adicionar',
-        description: error.response?.data?.error || 'Não foi possível adicionar o e-book. Tente novamente.',
+        title: 'Erro ao salvar',
+        description: 'Não foi possível salvar os e-books. Tente novamente.',
         variant: 'destructive',
       });
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    handleAddToList();
   };
 
   return (
@@ -589,16 +683,138 @@ export default function AddEbookPage() {
                 </CardContent>
               </Card>
 
-              {/* Ações */}
+              {/* Botões do Formulário */}
               <div className="flex items-center gap-4">
-                <Button type="button" variant="outline" onClick={handleBack} disabled={loading} className="w-full">
-                  Cancelar
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setFormData(defaultFormData);
+                    setCoverPreviewUrl(null);
+                    setEditingId(null);
+                  }}
+                  disabled={loading}
+                  className="flex-1"
+                >
+                  Limpar Formulário
                 </Button>
-                <Button type="submit" disabled={loading} className="w-full">
-                  {loading ? 'Salvando...' : 'Salvar E-book'}
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="flex-1 gap-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  {editingId ? 'Atualizar na Lista' : 'Adicionar à Lista'}
                 </Button>
               </div>
             </form>
+
+            {/* Lista de E-books Pendentes */}
+            {ebooksList.length > 0 && (
+              <Card className="border-2 border-primary/20">
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    <span>E-books Pendentes</span>
+                    <span className="text-sm font-normal text-muted-foreground">
+                      {ebooksList.length} e-book(s) na lista
+                    </span>
+                  </CardTitle>
+                  <CardDescription>
+                    Revise os e-books antes de salvar. Você pode editar ou remover itens da lista.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {ebooksList.map((ebook) => (
+                    <div
+                      key={ebook.id}
+                      className="p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="flex items-start gap-4">
+                        {/* Preview da capa */}
+                        {ebook.coverPreviewUrl ? (
+                          <img
+                            src={ebook.coverPreviewUrl}
+                            alt={ebook.title}
+                            className="h-24 w-18 object-cover rounded border-2 border-background shadow-sm flex-shrink-0"
+                          />
+                        ) : (
+                          <div className="h-24 w-18 bg-muted rounded border-2 border-background flex items-center justify-center flex-shrink-0">
+                            <BookOpen className="h-8 w-8 text-muted-foreground" />
+                          </div>
+                        )}
+
+                        {/* Informações */}
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-semibold text-lg mb-1 truncate">{ebook.title}</h4>
+                          <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
+                            {ebook.description}
+                          </p>
+                          <div className="flex flex-wrap gap-2 text-xs">
+                            <span className="px-2 py-1 bg-primary/10 text-primary rounded">
+                              Por: {ebook.authorName}
+                            </span>
+                            <span className="px-2 py-1 bg-muted rounded">
+                              {ebook.area}
+                            </span>
+                            <span className="px-2 py-1 bg-muted rounded">
+                              {ebook.pageCount} páginas
+                            </span>
+                            <span className="px-2 py-1 bg-muted rounded">
+                              {ebook.isFree ? 'Gratuito' : `R$ ${ebook.price}`}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Ações */}
+                        <div className="flex gap-2 flex-shrink-0">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEditFromList(ebook.id!)}
+                            className="h-8 w-8 p-0"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleRemoveFromList(ebook.id!)}
+                            className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Botões de Ação Final */}
+            <div className="flex items-center gap-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleBack}
+                disabled={loading}
+                className="flex-1"
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Voltar
+              </Button>
+              <Button
+                type="button"
+                onClick={handleSaveAll}
+                disabled={loading || ebooksList.length === 0}
+                className="flex-1 gap-2"
+              >
+                <Save className="h-4 w-4" />
+                {loading ? 'Salvando...' : `Salvar Todos (${ebooksList.length})`}
+              </Button>
+            </div>
           </div>
         </main>
       </div>
