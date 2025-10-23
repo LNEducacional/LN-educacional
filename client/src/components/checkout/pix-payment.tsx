@@ -49,17 +49,12 @@ export default function PixPayment({ data, orderId, onPaymentConfirmed }: PixPay
 
           toast({
             title: 'Pagamento confirmado!',
-            description: 'Redirecionando para área de membros...',
+            description: 'Seu acesso ao curso foi liberado.',
           });
 
           if (onPaymentConfirmed) {
             onPaymentConfirmed();
           }
-
-          // Redirecionar após 2 segundos
-          setTimeout(() => {
-            navigate('/student/courses');
-          }, 2000);
         }
       } catch (error) {
         console.error('Error checking payment status:', error);
@@ -78,24 +73,37 @@ export default function PixPayment({ data, orderId, onPaymentConfirmed }: PixPay
   // Se pagamento confirmado, mostrar tela de sucesso
   if (paymentStatus === 'confirmed') {
     return (
-      <div className="text-center space-y-6 py-8">
+      <div className="text-center space-y-8 py-8">
         <div className="flex justify-center">
-          <div className="h-20 w-20 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
-            <CheckCircle className="h-12 w-12 text-green-600 dark:text-green-400" />
+          <div className="relative">
+            {/* Círculo com animação de pulso */}
+            <div className="absolute inset-0 bg-green-100 dark:bg-green-900 rounded-full animate-ping opacity-20"></div>
+            <div className="relative h-24 w-24 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
+              <CheckCircle className="h-16 w-16 text-green-600 dark:text-green-400" />
+            </div>
           </div>
         </div>
-        <div>
-          <h3 className="text-2xl font-bold text-green-600 dark:text-green-400 mb-2">
+
+        <div className="space-y-3">
+          <h3 className="text-3xl font-bold text-green-600 dark:text-green-400">
             Pagamento Confirmado!
           </h3>
-          <p className="text-muted-foreground">
-            Seu acesso ao curso foi liberado com sucesso.
+          <p className="text-lg text-foreground">
+            Parabéns! Seu acesso ao curso foi liberado.
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Você já pode começar a estudar e acessar todo o conteúdo.
           </p>
         </div>
-        <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          <span>Redirecionando para área de membros...</span>
-        </div>
+
+        <Button
+          onClick={() => navigate('/student/courses')}
+          size="lg"
+          className="px-8 py-6 text-lg font-semibold"
+        >
+          <CheckCircle className="h-5 w-5 mr-2" />
+          Acessar Meus Cursos
+        </Button>
       </div>
     );
   }
