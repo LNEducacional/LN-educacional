@@ -15,9 +15,9 @@ import { SidebarProvider } from '@/components/ui/sidebar';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/hooks/use-toast';
 import type { AcademicArea } from '@/types/ebook';
-import { BookOpen, FileText, GraduationCap, DollarSign, Upload, User, ArrowLeft } from 'lucide-react';
+import { BookOpen, FileText, GraduationCap, DollarSign, Upload, User, ArrowLeft, X, FileCheck, ImagePlus } from 'lucide-react';
 import type React from 'react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '@/services/api';
 
@@ -47,6 +47,23 @@ export default function AddEbookPage() {
     file: null as File | null,
     cover: null as File | null,
   });
+
+  const [coverPreviewUrl, setCoverPreviewUrl] = useState<string | null>(null);
+
+  // Gerenciar preview da capa
+  useEffect(() => {
+    if (formData.cover) {
+      const url = URL.createObjectURL(formData.cover);
+      setCoverPreviewUrl(url);
+
+      // Cleanup: revogar URL ao desmontar ou trocar arquivo
+      return () => {
+        URL.revokeObjectURL(url);
+      };
+    } else {
+      setCoverPreviewUrl(null);
+    }
+  }, [formData.cover]);
 
   const handleSectionChange = (
     section:
@@ -84,6 +101,29 @@ export default function AddEbookPage() {
 
   const handleFileChange = (field: 'file' | 'cover', file: File | null) => {
     setFormData((prev) => ({ ...prev, [field]: file }));
+  };
+
+  const handleRemoveFile = () => {
+    setFormData((prev) => ({ ...prev, file: null }));
+    // Resetar o input
+    const fileInput = document.getElementById('file') as HTMLInputElement;
+    if (fileInput) fileInput.value = '';
+  };
+
+  const handleRemoveCover = () => {
+    setFormData((prev) => ({ ...prev, cover: null }));
+    // Resetar o input
+    const coverInput = document.getElementById('cover') as HTMLInputElement;
+    if (coverInput) coverInput.value = '';
+  };
+
+  // Formatar tamanho do arquivo
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -426,37 +466,125 @@ export default function AddEbookPage() {
                 <CardContent className="space-y-6">
                   <div>
                     <Label htmlFor="file">Arquivo do E-book *</Label>
-                    <div className="relative">
-                      <Upload className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="file"
-                        type="file"
-                        accept=".pdf,.doc,.docx"
-                        onChange={(e) => handleFileChange('file', e.target.files?.[0] || null)}
-                        className="pl-10"
-                        required
-                      />
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Formatos aceitos: PDF, DOC, DOCX
-                    </p>
+
+                    {/* Preview do arquivo */}
+                    {formData.file ? (
+                      <div className="mt-2 p-4 border-2 border-primary/20 rounded-lg bg-primary/5">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <div className="flex-shrink-0 h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                              <FileCheck className="h-5 w-5 text-primary" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium truncate">{formData.file.name}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {formatFileSize(formData.file.size)}
+                              </p>
+                            </div>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={handleRemoveFile}
+                            className="flex-shrink-0 h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="mt-2">
+                        <label
+                          htmlFor="file"
+                          className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-muted-foreground/25 rounded-lg cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors"
+                        >
+                          <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                            <Upload className="h-8 w-8 text-muted-foreground mb-2" />
+                            <p className="text-sm text-muted-foreground">
+                              <span className="font-semibold">Clique para fazer upload</span> ou arraste o arquivo
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              PDF, DOC, DOCX
+                            </p>
+                          </div>
+                          <Input
+                            id="file"
+                            type="file"
+                            accept=".pdf,.doc,.docx"
+                            onChange={(e) => handleFileChange('file', e.target.files?.[0] || null)}
+                            className="hidden"
+                            required
+                          />
+                        </label>
+                      </div>
+                    )}
                   </div>
 
                   <div>
-                    <Label htmlFor="cover">Capa</Label>
-                    <div className="relative">
-                      <Upload className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        id="cover"
-                        type="file"
-                        accept="image/jpeg,image/png,image/webp"
-                        onChange={(e) => handleFileChange('cover', e.target.files?.[0] || null)}
-                        className="pl-10"
-                      />
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Formatos aceitos: JPG, PNG, WEBP (opcional)
-                    </p>
+                    <Label htmlFor="cover">Capa (opcional)</Label>
+
+                    {/* Preview da capa */}
+                    {formData.cover && coverPreviewUrl ? (
+                      <div className="mt-2 p-4 border-2 border-primary/20 rounded-lg bg-primary/5">
+                        <div className="flex items-start gap-4">
+                          <div className="flex-shrink-0">
+                            <img
+                              src={coverPreviewUrl}
+                              alt="Preview da capa"
+                              className="h-32 w-24 object-cover rounded-lg border-2 border-background shadow-md"
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium truncate">{formData.cover.name}</p>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  {formatFileSize(formData.cover.size)}
+                                </p>
+                                <div className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
+                                  <ImagePlus className="h-3 w-3" />
+                                  <span>Imagem carregada</span>
+                                </div>
+                              </div>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={handleRemoveCover}
+                                className="flex-shrink-0 h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="mt-2">
+                        <label
+                          htmlFor="cover"
+                          className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-muted-foreground/25 rounded-lg cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors"
+                        >
+                          <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                            <ImagePlus className="h-8 w-8 text-muted-foreground mb-2" />
+                            <p className="text-sm text-muted-foreground">
+                              <span className="font-semibold">Clique para fazer upload</span> da capa
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              JPG, PNG, WEBP (opcional)
+                            </p>
+                          </div>
+                          <Input
+                            id="cover"
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp"
+                            onChange={(e) => handleFileChange('cover', e.target.files?.[0] || null)}
+                            className="hidden"
+                          />
+                        </label>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
