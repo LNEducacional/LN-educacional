@@ -212,10 +212,20 @@ export default function AddEbookPage() {
           // Usar nome do arquivo como título (sem extensão)
           const fileName = file.name.replace(/\.[^/.]+$/, '');
 
+          // Lógica de título:
+          // - Se múltiplos arquivos: sempre usar nome do arquivo
+          // - Se arquivo único E título foi preenchido: usar título do formulário
+          // - Se arquivo único E título vazio: usar nome do arquivo
+          const useFormTitle = formData.files.length === 1 && formData.title.trim();
+          const ebookTitle = useFormTitle ? formData.title.trim() : fileName;
+          const ebookDescription = useFormTitle && formData.description.trim()
+            ? formData.description.trim()
+            : `E-book: ${fileName}`;
+
           // Criar o e-book
           const ebookData = {
-            title: formData.title || fileName,
-            description: formData.description || `E-book: ${fileName}`,
+            title: ebookTitle,
+            description: ebookDescription,
             authorName: formData.authorName,
             academicArea: formData.area,
             pageCount: pageCount,
@@ -295,7 +305,7 @@ export default function AddEbookPage() {
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div>
-                    <Label htmlFor="title">Título * (mínimo 2 palavras)</Label>
+                    <Label htmlFor="title">Título (opcional para múltiplos arquivos)</Label>
                     <div className="relative">
                       <BookOpen className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
@@ -304,16 +314,15 @@ export default function AddEbookPage() {
                         onChange={(e) => handleInputChange('title', e.target.value)}
                         placeholder="Ex: Introdução à Programação Python"
                         className="pl-10"
-                        required
                       />
                     </div>
                     <p className="text-sm text-muted-foreground mt-1">
-                      O título deve conter pelo menos 2 palavras
+                      Para múltiplos arquivos, o nome de cada arquivo será usado como título
                     </p>
                   </div>
 
                   <div>
-                    <Label htmlFor="description">Descrição *</Label>
+                    <Label htmlFor="description">Descrição (opcional para múltiplos arquivos)</Label>
                     <div className="relative">
                       <FileText className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Textarea
@@ -323,7 +332,6 @@ export default function AddEbookPage() {
                         placeholder="Descreva o conteúdo do e-book"
                         rows={4}
                         className="pl-10"
-                        required
                       />
                     </div>
                   </div>
