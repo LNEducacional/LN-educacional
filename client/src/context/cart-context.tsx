@@ -187,19 +187,21 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (state.items.length === 0) return true;
 
     try {
-      const productIds = state.items.map((item) => item.id);
-      const response = await api.post('/products/validate', { ids: productIds });
-      const unavailable = response.data.unavailable || [];
+      // Validação de produtos desabilitada - rota /products/validate não implementada
+      // TODO: Implementar validação de disponibilidade de produtos no backend
+      // const productIds = state.items.map((item) => item.id);
+      // const response = await api.post('/products/validate', { ids: productIds });
+      // const unavailable = response.data.unavailable || [];
 
-      if (unavailable.length > 0) {
-        if (isMountedRef.current) {
-          // Remove itens indisponíveis do carrinho
-          for (const id of unavailable) {
-            dispatch({ type: 'REMOVE_ITEM', payload: id });
-          }
-        }
-        return false;
-      }
+      // if (unavailable.length > 0) {
+      //   if (isMountedRef.current) {
+      //     // Remove itens indisponíveis do carrinho
+      //     for (const id of unavailable) {
+      //       dispatch({ type: 'REMOVE_ITEM', payload: id });
+      //     }
+      //   }
+      //   return false;
+      // }
 
       return true;
     } catch (error) {

@@ -97,12 +97,22 @@ const formatCurrency = (amount: number) => {
 
 interface CheckoutResponse {
   orderId: string;
+  chargeId?: string;
   paymentUrl?: string;
   pixQRCode?: string;
   pixCode?: string;
   boletoUrl?: string;
-  status: string;
+  status?: string;
   paymentMethod?: string;
+  pix?: {
+    payload: string;
+    qrCodeImage: string;
+    expirationDate: string;
+  };
+  boleto?: {
+    url: string;
+    barcode: string;
+  };
 }
 
 interface OrderStatus {
@@ -171,28 +181,57 @@ function useOrderStatusPolling() {
 
 // Function to prepare checkout data
 function prepareCheckoutData(items: CartItem[], data: CheckoutFormData) {
-  return {
-    items: items.map((item) => ({
-      id: item.id,
-      title: item.title,
-      description: item.description || '',
-      price: item.price,
-      type: item.type,
-    })),
+  // A API /checkout/create aceita apenas um item por vez
+  const firstItem = items[0];
+
+  const payload: any = {
+    paymentMethod: data.paymentMethod,
     customer: {
       name: data.fullName,
       email: data.email,
       cpfCnpj: data.cpfCnpj,
       phone: data.phone,
     },
-    paymentMethod: data.paymentMethod,
   };
+
+  // Adicionar o ID do item baseado no tipo
+  if (firstItem.type === 'course') {
+    payload.courseId = firstItem.id;
+  } else if (firstItem.type === 'ebook') {
+    payload.ebookId = firstItem.id;
+  } else if (firstItem.type === 'paper') {
+    payload.paperId = firstItem.id;
+  }
+
+  return payload;
 }
 
 // Function to handle payment processing
-async function processPayment(checkoutData: CheckoutData): Promise<CheckoutResponse> {
-  const response = await api.post<CheckoutResponse>('/checkout', checkoutData);
-  return response.data;
+async function processPayment(checkoutData: any): Promise<CheckoutResponse> {
+  const response = await api.post<any>('/checkout/create', checkoutData);
+
+  // Adaptar resposta para o formato esperado pelo componente
+  const adaptedResponse: CheckoutResponse = {
+    orderId: response.data.orderId,
+    chargeId: response.data.chargeId,
+    paymentMethod: response.data.paymentMethod,
+    status: response.data.status,
+  };
+
+  // Mapear dados do PIX
+  if (response.data.pix) {
+    adaptedResponse.pixCode = response.data.pix.payload;
+    adaptedResponse.pixQRCode = response.data.pix.qrCodeImage;
+    adaptedResponse.pix = response.data.pix;
+  }
+
+  // Mapear dados do Boleto
+  if (response.data.boleto) {
+    adaptedResponse.boletoUrl = response.data.boleto.url;
+    adaptedResponse.boleto = response.data.boleto;
+  }
+
+  return adaptedResponse;
 }
 
 // Function to handle copy PIX code
