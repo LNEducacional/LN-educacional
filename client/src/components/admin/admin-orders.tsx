@@ -33,9 +33,21 @@ import {
   Eye,
   Loader2,
   Search,
+  Trash2,
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import api from '@/services/api';
 
 const statusMap = {
   pending: { label: 'Pendente', variant: 'secondary' as const },
@@ -61,6 +73,10 @@ export function AdminOrders() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Delete confirmation dialog
+  const [orderToDelete, setOrderToDelete] = useState<Order | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Filters
   const [customerFilter, setCustomerFilter] = useState('');
@@ -109,6 +125,35 @@ export function AdminOrders() {
       // Se é um novo campo, ordena ascendente por padrão
       setSortField(field);
       setSortOrder('asc');
+    }
+  };
+
+  // Handler para deletar pedido
+  const handleDeleteOrder = async () => {
+    if (!orderToDelete) return;
+
+    setIsDeleting(true);
+    try {
+      await api.delete(`/admin/orders/${orderToDelete.id}`);
+
+      // Remover pedido da lista local
+      setOrders((prev) => prev.filter((order) => order.id !== orderToDelete.id));
+
+      toast({
+        title: 'Pedido excluído',
+        description: 'O pedido foi excluído com sucesso.',
+      });
+
+      setOrderToDelete(null);
+    } catch (error: any) {
+      console.error('[DELETE ORDER] Error:', error);
+      toast({
+        title: 'Erro ao excluir pedido',
+        description: error.response?.data?.error || 'Não foi possível excluir o pedido. Tente novamente.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -356,14 +401,25 @@ export function AdminOrders() {
                       {format(new Date(order.createdAt), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
                     </TableCell>
                     <TableCell>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => navigate(`/admin/pedidos/${order.id}`)}
-                        aria-label={`Visualizar pedido #${order.id}`}
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => navigate(`/admin/pedidos/${order.id}`)}
+                          aria-label={`Visualizar pedido #${order.id}`}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setOrderToDelete(order)}
+                          aria-label={`Excluir pedido #${order.id}`}
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                   ))}
@@ -423,6 +479,40 @@ export function AdminOrders() {
           )}
         </CardContent>
       </Card>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!orderToDelete} onOpenChange={() => setOrderToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir o pedido de{' '}
+              <strong>{orderToDelete?.customerName}</strong>?
+              <br />
+              <br />
+              Esta ação não pode ser desfeita. O pedido e todos os seus itens serão
+              permanentemente removidos do sistema.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteOrder}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Excluindo...
+                </>
+              ) : (
+                'Excluir pedido'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

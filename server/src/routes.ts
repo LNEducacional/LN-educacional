@@ -1053,6 +1053,42 @@ export async function registerOrderRoutes(app: FastifyInstance) {
       }
     }
   );
+
+  // Delete order (Admin only)
+  app.delete<{ Params: IdParams }>(
+    '/admin/orders/:id',
+    { preHandler: [app.authenticate, app.requireAdmin] },
+    async (request, reply) => {
+      try {
+        console.log('[DELETE ORDER] Deleting order:', request.params.id);
+
+        // Verificar se o pedido existe
+        const order = await prisma.order.findUnique({
+          where: { id: request.params.id },
+        });
+
+        if (!order) {
+          return reply.status(404).send({ error: 'Order not found' });
+        }
+
+        // Deletar itens do pedido primeiro (devido a foreign key)
+        await prisma.orderItem.deleteMany({
+          where: { orderId: request.params.id },
+        });
+
+        // Deletar o pedido
+        await prisma.order.delete({
+          where: { id: request.params.id },
+        });
+
+        console.log('[DELETE ORDER] Order deleted successfully:', request.params.id);
+        reply.status(200).send({ message: 'Order deleted successfully' });
+      } catch (error: unknown) {
+        console.error('[DELETE ORDER] Error:', error);
+        reply.status(500).send({ error: (error as Error).message });
+      }
+    }
+  );
 }
 
 export async function registerStudentRoutes(app: FastifyInstance) {
