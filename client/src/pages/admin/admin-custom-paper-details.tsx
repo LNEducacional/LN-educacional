@@ -15,7 +15,6 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
@@ -45,7 +44,6 @@ import {
   FileText,
   Hash,
   MessageCircle,
-  Send,
   Tag,
   Trash2,
   Upload,
@@ -60,8 +58,6 @@ export function AdminCustomPaperDetailsPage() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const [quotedPrice, setQuotedPrice] = useState('');
-  const [adminNotes, setAdminNotes] = useState('');
   const [messageContent, setMessageContent] = useState('');
   const [statusNotes, setStatusNotes] = useState('');
   const [rejectionReason, setRejectionReason] = useState('');
@@ -77,20 +73,6 @@ export function AdminCustomPaperDetailsPage() {
       return response.data;
     },
     enabled: !!id,
-  });
-
-  const provideQuoteMutation = useMutation({
-    mutationFn: (data: { quotedPrice: number; adminNotes?: string }) =>
-      customPapersApi.provideQuote(id!, data),
-    onSuccess: () => {
-      toast({ title: 'Orçamento enviado com sucesso!' });
-      queryClient.invalidateQueries({ queryKey: ['custom-paper', id] });
-      setQuotedPrice('');
-      setAdminNotes('');
-    },
-    onError: () => {
-      toast({ title: 'Erro ao enviar orçamento', variant: 'destructive' });
-    },
   });
 
   const updateStatusMutation = useMutation({
@@ -178,11 +160,6 @@ export function AdminCustomPaperDetailsPage() {
     NORMAL: 'Normal',
     URGENT: 'Urgente',
     VERY_URGENT: 'Muito Urgente',
-  };
-
-  const handleProvideQuote = () => {
-    const price = Number.parseFloat(quotedPrice) * 100;
-    provideQuoteMutation.mutate({ quotedPrice: price, adminNotes });
   };
 
   const handleStatusChange = (status: CustomPaperStatus) => {
@@ -397,42 +374,6 @@ export function AdminCustomPaperDetailsPage() {
               </Card>
             )}
 
-            {/* Ações Administrativas */}
-            {paper.status === 'REQUESTED' && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Fornecer Orçamento</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="quotedPrice">Valor (R$)</Label>
-                      <Input
-                        id="quotedPrice"
-                        type="number"
-                        step="0.01"
-                        value={quotedPrice}
-                        onChange={(e) => setQuotedPrice(e.target.value)}
-                        placeholder="Ex: 500.00"
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="adminNotes">Notas do Admin (opcional)</Label>
-                    <Textarea
-                      id="adminNotes"
-                      value={adminNotes}
-                      onChange={(e) => setAdminNotes(e.target.value)}
-                      placeholder="Observações sobre o orçamento"
-                    />
-                  </div>
-                  <Button onClick={handleProvideQuote} disabled={!quotedPrice}>
-                    <Send className="h-4 w-4 mr-2" />
-                    Enviar Orçamento
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
 
             {/* Alterar Status */}
             {paper.status !== 'REQUESTED' && paper.status !== 'REJECTED' && (
