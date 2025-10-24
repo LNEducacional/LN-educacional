@@ -104,6 +104,21 @@ export function AdminCollaborators() {
   // View controls
   const [viewMode, setViewMode] = useState<'table' | 'kanban' | 'analytics'>('table');
 
+  // Bulk actions
+  const [selectedApplications, setSelectedApplications] = useState<number[]>([]);
+  const [isBulkActionsOpen, setIsBulkActionsOpen] = useState(false);
+
+  // Filters - DEVE VIR ANTES DO useCallback que os usa
+  const [searchFilter, setSearchFilter] = useState('');
+  const [areaFilter, setAreaFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
+
+  // Sorting and pagination
+  const [sortField, setSortField] = useState<SortField>('createdAt');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
   // Fetch applications from API
   const fetchApplications = useCallback(async () => {
     setIsLoading(true);
@@ -141,25 +156,10 @@ export function AdminCollaborators() {
     }
   }, [statusFilter, searchFilter, toast]);
 
-  // Bulk actions
-  const [selectedApplications, setSelectedApplications] = useState<number[]>([]);
-  const [isBulkActionsOpen, setIsBulkActionsOpen] = useState(false);
-
-  // Filters
-  const [searchFilter, setSearchFilter] = useState('');
-  const [areaFilter, setAreaFilter] = useState('all');
-  const [statusFilter, setStatusFilter] = useState('all');
-
   // Fetch applications on mount and when filters change
   useEffect(() => {
     fetchApplications();
   }, [fetchApplications]);
-
-  // Sorting and pagination
-  const [sortField, setSortField] = useState<SortField>('createdAt');
-  const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
 
   // Get unique values for filters
   const uniqueAreas = useMemo(() => {
