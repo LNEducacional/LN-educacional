@@ -32,6 +32,7 @@ const AddBlogPostPage = () => {
   const [tags, setTags] = useState<Tag[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [newTagName, setNewTagName] = useState('');
+  const [newCategoryName, setNewCategoryName] = useState('');
   const [formData, setFormData] = useState({
     title: '',
     excerpt: '',
@@ -108,6 +109,28 @@ const AddBlogPostPage = () => {
       toast({
         title: 'Erro',
         description: 'Erro ao criar tag',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleCreateCategory = async () => {
+    if (!newCategoryName.trim()) return;
+
+    try {
+      const newCategory = await blogService.createCategory({ name: newCategoryName.trim() });
+      setCategories((prev) => [...prev, newCategory]);
+      setFormData((prev) => ({ ...prev, categoryId: newCategory.id }));
+      setNewCategoryName('');
+
+      toast({
+        title: 'Sucesso',
+        description: 'Categoria criada e selecionada',
+      });
+    } catch (error) {
+      toast({
+        title: 'Erro',
+        description: 'Erro ao criar categoria',
         variant: 'destructive',
       });
     }
@@ -236,30 +259,59 @@ const AddBlogPostPage = () => {
                     {/* Category Selection */}
                     <div className="space-y-2">
                       <Label htmlFor="category">Categoria</Label>
-                      <div className="relative">
-                        <FolderOpen className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
-                        <Select
-                          value={formData.categoryId}
-                          onValueChange={(value) => handleInputChange('categoryId', value)}
-                        >
-                          <SelectTrigger className="pl-10">
-                            <SelectValue placeholder="Selecione uma categoria" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="none">Nenhuma categoria</SelectItem>
-                            {!isLoadingCategories && categories.map((category) => (
-                              <SelectItem key={category.id} value={category.id}>
-                                {category.name}
-                              </SelectItem>
-                            ))}
-                            {isLoadingCategories && (
-                              <SelectItem value="loading" disabled>
-                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                                Carregando...
-                              </SelectItem>
-                            )}
-                          </SelectContent>
-                        </Select>
+                      <div className="space-y-4">
+                        <div className="relative">
+                          <FolderOpen className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
+                          <Select
+                            value={formData.categoryId}
+                            onValueChange={(value) => handleInputChange('categoryId', value)}
+                          >
+                            <SelectTrigger className="pl-10">
+                              <SelectValue placeholder="Selecione uma categoria" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="none">Nenhuma categoria</SelectItem>
+                              {!isLoadingCategories && categories.map((category) => (
+                                <SelectItem key={category.id} value={category.id}>
+                                  {category.name}
+                                </SelectItem>
+                              ))}
+                              {isLoadingCategories && (
+                                <SelectItem value="loading" disabled>
+                                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                  Carregando...
+                                </SelectItem>
+                              )}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {/* Create New Category */}
+                        <div className="flex gap-2">
+                          <div className="relative flex-1">
+                            <FolderOpen className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input
+                              placeholder="Nova categoria"
+                              value={newCategoryName}
+                              onChange={(e) => setNewCategoryName(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.preventDefault();
+                                  handleCreateCategory();
+                                }
+                              }}
+                              className="pl-10"
+                            />
+                          </div>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={handleCreateCategory}
+                            disabled={!newCategoryName.trim()}
+                          >
+                            Criar
+                          </Button>
+                        </div>
                       </div>
                     </div>
 
