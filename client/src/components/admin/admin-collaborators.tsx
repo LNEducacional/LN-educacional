@@ -45,8 +45,8 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Textarea } from '@/components/ui/textarea';
-import { mockCollaboratorApplications } from '@/data/mock-collaborators';
 import { useToast } from '@/hooks/use-toast';
+import collaboratorService from '@/services/collaborator.service';
 import type { CollaboratorApplication } from '@/types/collaborator';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -71,7 +71,7 @@ import {
   Trash2,
   XCircle,
 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ApplicationKanban } from './application-kanban';
 import { CollaboratorAnalytics } from './collaborator-analytics';
 import { EvaluationForm } from './evaluation-form';
@@ -90,21 +90,56 @@ type SortOrder = 'asc' | 'desc';
 export function AdminCollaborators() {
   const { toast } = useToast();
 
-  const [applications, setApplications] = useState<CollaboratorApplication[]>(
-    mockCollaboratorApplications
-  );
+  const [applications, setApplications] = useState<CollaboratorApplication[]>([]);
   const [selectedApplication, setSelectedApplication] = useState<CollaboratorApplication | null>(
     null
   );
   const [deleteApplication, setDeleteApplication] = useState<CollaboratorApplication | null>(null);
   const [evaluatingApplication, setEvaluatingApplication] = useState<CollaboratorApplication | null>(null);
-  const [isLoading, _setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const [feedback, setFeedback] = useState('');
 
   // View controls
   const [viewMode, setViewMode] = useState<'table' | 'kanban' | 'analytics'>('table');
+
+  // Fetch applications from API
+  const fetchApplications = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const response = await collaboratorService.getApplications({
+        status: statusFilter !== 'all' ? statusFilter : undefined,
+        search: searchFilter || undefined,
+      });
+
+      // Transform backend data to frontend format
+      const transformedApplications = response.applications.map((app: any) => ({
+        id: app.id,
+        fullName: app.fullName,
+        email: app.email,
+        phone: app.phone,
+        area: app.area,
+        experience: app.experience,
+        availability: app.availability,
+        status: app.status.toLowerCase() as 'pending' | 'interviewing' | 'approved' | 'rejected',
+        createdAt: app.createdAt,
+        resumeUrl: app.resumeUrl,
+        stage: 'application' as ApplicationStage,
+      }));
+
+      setApplications(transformedApplications);
+    } catch (error: any) {
+      console.error('[ADMIN/COLLABORATORS] Error fetching applications:', error);
+      toast({
+        title: 'Erro ao carregar colaboradores',
+        description: error.response?.data?.error || 'Não foi possível carregar a lista de colaboradores',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [statusFilter, searchFilter, toast]);
 
   // Bulk actions
   const [selectedApplications, setSelectedApplications] = useState<number[]>([]);
@@ -114,6 +149,11 @@ export function AdminCollaborators() {
   const [searchFilter, setSearchFilter] = useState('');
   const [areaFilter, setAreaFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
+
+  // Fetch applications on mount and when filters change
+  useEffect(() => {
+    fetchApplications();
+  }, [fetchApplications]);
 
   // Sorting and pagination
   const [sortField, setSortField] = useState<SortField>('createdAt');
@@ -207,14 +247,15 @@ export function AdminCollaborators() {
   }, [searchFilter, areaFilter, statusFilter]);
 
   const handleStatusUpdate = async (
-    applicationId: number,
+    applicationId: number | string,
     newStatus: CollaboratorApplication['status']
   ) => {
     setIsUpdatingStatus(true);
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // Call real API - convert status to UPPERCASE for backend
+      const backendStatus = newStatus.toUpperCase() as 'PENDING' | 'INTERVIEWING' | 'APPROVED' | 'REJECTED';
+      await collaboratorService.updateStatus(String(applicationId), backendStatus);
 
       // Update local state
       setApplications((prev) =>
@@ -229,10 +270,11 @@ export function AdminCollaborators() {
         title: 'Sucesso',
         description: 'Status da candidatura atualizado com sucesso',
       });
-    } catch (_error) {
+    } catch (error: any) {
+      console.error('[ADMIN/COLLABORATORS] Error updating status:', error);
       toast({
         title: 'Erro',
-        description: 'Erro ao atualizar status da candidatura',
+        description: error.response?.data?.error || 'Erro ao atualizar status da candidatura',
         variant: 'destructive',
       });
     } finally {
