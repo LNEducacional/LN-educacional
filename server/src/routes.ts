@@ -2234,6 +2234,8 @@ export async function registerAdminRoutes(app: FastifyInstance) {
     { preHandler: [app.authenticate, app.requireAdmin] },
     async (request, reply) => {
       try {
+        console.log('[ADMIN/COLLABORATORS] Request query:', request.query);
+        console.log('[ADMIN/COLLABORATORS] User:', request.currentUser);
         const query = collaboratorsQuerySchema.parse(request.query);
         const result = await getCollaboratorApplications({
           status: query.status?.toUpperCase(),
@@ -2241,8 +2243,13 @@ export async function registerAdminRoutes(app: FastifyInstance) {
           skip: query.skip,
           take: query.take,
         });
+        console.log('[ADMIN/COLLABORATORS] Result:', {
+          total: result.total,
+          applicationsCount: result.applications.length
+        });
         reply.send(result);
       } catch (error: unknown) {
+        console.error('[ADMIN/COLLABORATORS] Error:', error);
         reply.status(400).send({ error: (error as Error).message });
       }
     }
@@ -2385,8 +2392,9 @@ export async function registerAdminRoutes(app: FastifyInstance) {
     { preHandler: [app.authenticate] },
     async (request, reply) => {
       try {
-        const application = await prisma.collaboratorApplication.findUnique({
+        const application = await prisma.collaboratorApplication.findFirst({
           where: { userId: request.currentUser!.id },
+          orderBy: { createdAt: 'desc' },
           include: {
             evaluations: {
               select: {
