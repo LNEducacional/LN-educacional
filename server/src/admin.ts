@@ -717,10 +717,25 @@ export async function applyAsCollaborator(
     fullName: string;
     email: string;
     phone: string;
+    // Address fields
+    zipCode?: string;
+    address?: string;
+    addressNumber?: string;
+    neighborhood?: string;
+    city?: string;
+    state?: string;
+    // Professional fields
     area: string;
+    education?: string;
     experience: string;
     availability: string;
+    // Links and documents
+    portfolioUrl?: string;
+    linkedin?: string;
     resumeUrl?: string;
+    portfolioFiles?: string[];
+    // Form control (not saved to DB)
+    acceptTerms?: boolean;
   }
 ) {
   const existingApplication = await prisma.collaboratorApplication.findUnique({
@@ -731,10 +746,15 @@ export async function applyAsCollaborator(
     throw new Error('Application already exists');
   }
 
+  // Remove fields that don't exist in DB or are not saved
+  const { acceptTerms, portfolioFiles, addressNumber, neighborhood, ...dbData } = data;
+
   return prisma.collaboratorApplication.create({
     data: {
-      ...data,
+      ...dbData,
       userId,
+      // Save portfolioFiles as JSON array
+      portfolioUrls: portfolioFiles ? portfolioFiles : undefined,
     },
   });
 }

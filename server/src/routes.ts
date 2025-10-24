@@ -2182,10 +2182,25 @@ export async function registerAdminRoutes(app: FastifyInstance) {
     fullName: z.string(),
     email: z.string().email(),
     phone: z.string(),
+    // Address fields
+    zipCode: z.string().optional(),
+    address: z.string().optional(),
+    addressNumber: z.string().optional(),
+    neighborhood: z.string().optional(),
+    city: z.string().optional(),
+    state: z.string().optional(),
+    // Professional fields
     area: z.string(),
+    education: z.string().optional(),
     experience: z.string(),
     availability: z.string(),
+    // Links and documents
+    portfolioUrl: z.string().optional(),
+    linkedin: z.string().optional(),
     resumeUrl: z.string().optional(),
+    portfolioFiles: z.array(z.string()).optional(),
+    // Form control (not saved to DB)
+    acceptTerms: z.boolean().optional(),
   });
 
   app.post('/collaborator/apply', { preHandler: [app.authenticate] }, async (request, reply) => {
