@@ -8,7 +8,7 @@ import collaboratorService, { type CollaboratorResponse } from '@/services/colla
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import type React from 'react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import {
   Dialog,
@@ -72,7 +72,7 @@ export default function AdminCollaborators() {
         status: statusFilter !== 'all' ? statusFilter : undefined,
         search: searchTerm || undefined,
       });
-      setApplications(response.items || []);
+      setApplications(response.applications || []);
     } catch (error: unknown) {
       toast({
         title: 'Erro ao carregar aplicações',
