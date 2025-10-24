@@ -2205,11 +2205,20 @@ export async function registerAdminRoutes(app: FastifyInstance) {
 
   app.post('/collaborator/apply', { preHandler: [app.authenticate] }, async (request, reply) => {
     try {
+      console.log('[COLLABORATOR/APPLY] Request body:', JSON.stringify(request.body, null, 2));
       const data = collaboratorApplicationSchema.parse(request.body);
+      console.log('[COLLABORATOR/APPLY] Validated data:', JSON.stringify(data, null, 2));
       const application = await applyAsCollaborator(request.currentUser!.id, data);
+      console.log('[COLLABORATOR/APPLY] Application created successfully');
       reply.status(201).send(application);
     } catch (error: unknown) {
-      reply.status(400).send({ error: (error as Error).message });
+      console.error('[COLLABORATOR/APPLY] Error:', error);
+      if (error instanceof z.ZodError) {
+        console.error('[COLLABORATOR/APPLY] Validation errors:', JSON.stringify(error.errors, null, 2));
+        reply.status(400).send({ error: 'Validation error', details: error.errors });
+      } else {
+        reply.status(400).send({ error: (error as Error).message });
+      }
     }
   });
 

@@ -742,20 +742,26 @@ export async function applyAsCollaborator(
     where: { userId },
   });
 
-  if (existingApplication) {
-    throw new Error('Application already exists');
-  }
-
   // Remove fields that don't exist in DB or are not saved
   const { acceptTerms, portfolioFiles, addressNumber, neighborhood, ...dbData } = data;
 
+  const applicationData = {
+    ...dbData,
+    userId,
+    // Save portfolioFiles as JSON array
+    portfolioUrls: portfolioFiles ? portfolioFiles : undefined,
+  };
+
+  // If application exists, update it; otherwise create new one
+  if (existingApplication) {
+    return prisma.collaboratorApplication.update({
+      where: { userId },
+      data: applicationData,
+    });
+  }
+
   return prisma.collaboratorApplication.create({
-    data: {
-      ...dbData,
-      userId,
-      // Save portfolioFiles as JSON array
-      portfolioUrls: portfolioFiles ? portfolioFiles : undefined,
-    },
+    data: applicationData,
   });
 }
 
