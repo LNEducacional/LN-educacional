@@ -665,15 +665,24 @@ export async function registerProductRoutes(app: FastifyInstance) {
           return reply.status(400).send({ error: 'No file uploaded' });
         }
 
-        // Validate file type (PDF, DOC, DOCX)
+        // Validate file type (PDF, EPUB, MOBI) - formatos de e-book
         const allowedTypes = [
           'application/pdf',
-          'application/msword',
-          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          'application/epub+zip',
+          'application/x-mobipocket-ebook',
+          'application/vnd.amazon.ebook', // MOBI alternativo
+          'application/octet-stream', // Fallback para alguns arquivos EPUB/MOBI
         ];
-        if (!allowedTypes.includes(data.mimetype)) {
+
+        // Também validar pela extensão do arquivo como fallback
+        const filename = data.filename.toLowerCase();
+        const hasValidExtension = filename.endsWith('.pdf') ||
+                                  filename.endsWith('.epub') ||
+                                  filename.endsWith('.mobi');
+
+        if (!allowedTypes.includes(data.mimetype) && !hasValidExtension) {
           return reply.status(400).send({
-            error: 'Invalid file type. Only PDF, DOC, and DOCX files are allowed.',
+            error: 'Invalid file type. Only PDF, EPUB, and MOBI files are allowed.',
           });
         }
 
