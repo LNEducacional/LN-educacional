@@ -142,87 +142,60 @@ export function BlogCard({ post, featured = false }: BlogCardProps) {
   }
 
   return (
-    <Card className="overflow-hidden shadow-soft hover:shadow-medium transition-all duration-300 group cursor-pointer h-full flex flex-col">
-      {/* Image */}
-      <div className="relative h-48 overflow-hidden bg-muted">
-        <div className="absolute inset-0 bg-gradient-to-t from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-        {post.coverImageUrl ? (
-          <img
-            src={post.coverImageUrl}
-            alt={post.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center">
-            <span className="text-4xl opacity-20">📖</span>
-          </div>
-        )}
-      </div>
-
-      {/* Content */}
-      <div className="p-6 flex flex-col flex-1">
-        {/* Category */}
-        {post.category && (
-          <div className="mb-3">
-            <Badge variant="secondary" className="bg-primary/10 text-primary hover:bg-primary/20 text-xs">
-              {post.category.name}
-            </Badge>
-          </div>
-        )}
-
-        <div className="flex items-center gap-3 mb-3">
-          {post.author && <div className="text-xs text-muted-foreground">{post.author.name}</div>}
-          <div className="flex items-center text-xs text-muted-foreground">
-            <Clock className="h-3 w-3 mr-1" />
-            {Math.ceil(post.content.length / 1500)} min
-          </div>
-        </div>
-
-        <CardTitle className="text-xl mb-3 leading-tight group-hover:text-primary transition-colors line-clamp-2">
-          {post.title}
-        </CardTitle>
-
-        <CardDescription className="text-sm mb-4 leading-relaxed line-clamp-3 flex-1">
-          {post.excerpt}
-        </CardDescription>
-
-        {/* Tags */}
-        {post.tags && post.tags.length > 0 && (
-          <div className="flex items-center gap-2 mb-4">
-            <Tag className="h-3 w-3 text-muted-foreground" />
-            <div className="flex flex-wrap gap-1">
-              {post.tags.slice(0, 2).map(({ tag }) => (
-                <Badge key={tag.id} variant="outline" className="text-xs">
-                  {tag.name}
-                </Badge>
-              ))}
-              {post.tags.length > 2 && (
-                <Badge variant="outline" className="text-xs">
-                  +{post.tags.length - 2}
-                </Badge>
-              )}
+    <Link to={`/blog/${post.slug}`} className="block h-full">
+      <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 group cursor-pointer h-full flex flex-col border-border/50">
+        {/* Image */}
+        <div className="relative h-44 overflow-hidden bg-muted">
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          {post.coverImageUrl ? (
+            <img
+              src={post.coverImageUrl}
+              alt={post.title}
+              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+            />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center">
+              <span className="text-5xl opacity-20">📖</span>
             </div>
-          </div>
-        )}
+          )}
 
-        <div className="flex items-center justify-between pt-4 border-t border-border">
-          <div className="flex items-center text-xs text-muted-foreground">
-            <Calendar className="h-3 w-3 mr-1" />
-            {formatDate(post.createdAt)}
-          </div>
-
-          <Button
-            asChild
-            variant="ghost"
-            size="sm"
-            className="p-2 h-auto text-primary hover:text-primary-hover group/btn"
-          >
-            <Link to={`/blog/${post.slug}`}>
-              <ArrowRight className="h-4 w-4 group-hover/btn:translate-x-1 transition-transform" />
-            </Link>
-          </Button>
+          {/* Category Badge on Image */}
+          {post.category && (
+            <div className="absolute top-3 left-3">
+              <Badge variant="secondary" className="bg-background/90 backdrop-blur-sm text-foreground text-xs">
+                {post.category.name}
+              </Badge>
+            </div>
+          )}
         </div>
-      </div>
-    </Card>
+
+        {/* Content */}
+        <div className="p-5 flex flex-col flex-1">
+          <CardTitle className="text-lg mb-2 leading-snug group-hover:text-primary transition-colors line-clamp-2 font-semibold">
+            {post.title}
+          </CardTitle>
+
+          <CardDescription className="text-sm mb-4 leading-relaxed line-clamp-2 flex-1">
+            {post.excerpt}
+          </CardDescription>
+
+          {/* Footer */}
+          <div className="flex items-center justify-between text-xs text-muted-foreground pt-3 border-t border-border/50">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1">
+                <Calendar className="h-3 w-3" />
+                <span>{formatDate(post.createdAt)}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Clock className="h-3 w-3" />
+                <span>{Math.ceil(post.content.length / 1500)} min</span>
+              </div>
+            </div>
+
+            <ArrowRight className="h-4 w-4 text-primary opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+          </div>
+        </div>
+      </Card>
+    </Link>
   );
 }

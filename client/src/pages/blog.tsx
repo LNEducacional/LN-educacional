@@ -1,6 +1,6 @@
 import { BlogCard } from '@/components/ui/blog-card';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -11,9 +11,8 @@ import {
 } from '@/components/ui/select';
 import { AdvancedSearch } from '@/components/ui/advanced-search';
 import { useToast } from '@/hooks/use-toast';
-import api from '@/services/api';
 import blogService, { type BlogPost, type Category, type Tag, type AdvancedSearchFilters } from '@/services/blog.service';
-import { Loader2, Mail, Search, Filter } from 'lucide-react';
+import { Loader2, Search, Filter, X } from 'lucide-react';
 import type React from 'react';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -23,8 +22,6 @@ export default function Blog() {
   const [tags, setTags] = useState<Tag[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [newsletterEmail, setNewsletterEmail] = useState('');
-  const [isSubscribing, setIsSubscribing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingCategories, setIsLoadingCategories] = useState(false);
   const [isLoadingTags, setIsLoadingTags] = useState(false);
@@ -127,114 +124,91 @@ export default function Blog() {
     }
   };
 
-  const handleNewsletterSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!newsletterEmail || !newsletterEmail.includes('@')) {
-      toast({
-        title: 'Erro de validação',
-        description: 'Por favor, insira um e-mail válido.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    setIsSubscribing(true);
-
-    try {
-      await api.post('/newsletter/subscribe', { email: newsletterEmail });
-
-      toast({
-        title: 'Inscrição realizada com sucesso!',
-        description: 'Você receberá nossos melhores conteúdos em breve.',
-      });
-
-      setNewsletterEmail('');
-    } catch (error: unknown) {
-      toast({
-        title: 'Erro ao se inscrever',
-        description:
-          error.response?.data?.message ||
-          'Ocorreu um erro ao processar sua inscrição. Tente novamente.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsSubscribing(false);
-    }
-  };
-
   const handleRetry = () => {
     setError(null);
     loadPosts();
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
+    <div className="container mx-auto px-4 py-12 max-w-7xl">
       {/* Header */}
-      <div className="text-center mb-12 animate-fade-in">
-        <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">Blog Educacional</h1>
-        <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-          Artigos, dicas e conteúdos exclusivos para auxiliar em sua jornada acadêmica.
+      <div className="text-center mb-10 animate-fade-in">
+        <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-3">Blog</h1>
+        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          Artigos e conteúdos para sua jornada acadêmica
         </p>
       </div>
 
-      {/* Search Toggle */}
-      <div className="flex justify-center mb-6">
-        <Button
-          variant="outline"
-          onClick={toggleSearchMode}
-          className="gap-2"
-        >
-          <Filter className="h-4 w-4" />
-          {useAdvancedSearch ? 'Busca Simples' : 'Busca Avançada'}
-        </Button>
-      </div>
+      {/* Filters Bar */}
+      <div className="mb-8 animate-slide-up">
+        <div className="bg-muted/30 rounded-lg p-4">
+          <div className="flex flex-col lg:flex-row gap-4 items-center">
+            {/* Search */}
+            <div className="relative flex-1 w-full">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <Input
+                type="search"
+                placeholder="Buscar artigos..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 bg-background"
+              />
+            </div>
 
-      {/* Search Interface */}
-      {useAdvancedSearch ? (
-        <div className="mb-8 animate-slide-up">
-          <AdvancedSearch
-            onSearch={handleAdvancedSearch}
-            categories={categories}
-            tags={tags}
-            isLoading={isLoading}
-            initialFilters={currentFilters}
-          />
-        </div>
-      ) : (
-        /* Simple Filters */
-        <div className="flex flex-col md:flex-row gap-4 mb-8 animate-slide-up">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-            <Input
-              type="search"
-              placeholder="Buscar artigos..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
+            {/* Category Filter */}
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger className="w-full lg:w-[280px] bg-background">
+                <SelectValue placeholder="Todas as categorias" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas as categorias</SelectItem>
+                {!isLoadingCategories && categories.map((category) => (
+                  <SelectItem key={category.id} value={category.id}>
+                    {category.name} ({category._count?.posts || 0})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {/* Clear Filters */}
+            {(searchQuery || selectedCategory !== 'all') && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleClearFilters}
+                className="gap-2"
+              >
+                <X className="h-4 w-4" />
+                Limpar
+              </Button>
+            )}
+
+            {/* Advanced Search Toggle */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={toggleSearchMode}
+              className="gap-2 lg:w-auto w-full"
+            >
+              <Filter className="h-4 w-4" />
+              {useAdvancedSearch ? 'Simples' : 'Avançada'}
+            </Button>
           </div>
-          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-            <SelectTrigger className="w-full md:w-[240px]">
-              <SelectValue placeholder="Todas as categorias" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todas as categorias</SelectItem>
-              {!isLoadingCategories && categories.map((category) => (
-                <SelectItem key={category.id} value={category.id}>
-                  {category.name} ({category._count?.posts || 0})
-                </SelectItem>
-              ))}
-              {isLoadingCategories && (
-                <SelectItem value="loading" disabled>
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  Carregando...
-                </SelectItem>
-              )}
-            </SelectContent>
-          </Select>
+
+          {/* Advanced Search Panel */}
+          {useAdvancedSearch && (
+            <div className="mt-4 pt-4 border-t border-border">
+              <AdvancedSearch
+                onSearch={handleAdvancedSearch}
+                categories={categories}
+                tags={tags}
+                isLoading={isLoading}
+                initialFilters={currentFilters}
+              />
+            </div>
+          )}
         </div>
-      )}
+      </div>
 
       {/* Loading State */}
       {isLoading && (
@@ -257,21 +231,18 @@ export default function Blog() {
 
       {/* Results Summary */}
       {!isLoading && !error && posts.length > 0 && (
-        <div className="mb-6 text-center text-muted-foreground">
-          {useAdvancedSearch ? (
-            <p>
-              Encontrados <strong>{total}</strong> {total === 1 ? 'artigo' : 'artigos'}
-              {Object.keys(currentFilters).some(key => currentFilters[key as keyof AdvancedSearchFilters])
-                ? ' com os filtros aplicados'
-                : ''
-              }
-            </p>
-          ) : (
-            <p>
-              Mostrando <strong>{posts.length}</strong> {posts.length === 1 ? 'artigo' : 'artigos'}
-              {(searchQuery || selectedCategory !== 'all') && ' encontrados'}
-            </p>
-          )}
+        <div className="mb-6 flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
+            {useAdvancedSearch ? (
+              <>
+                <strong className="text-foreground">{total}</strong> {total === 1 ? 'artigo encontrado' : 'artigos encontrados'}
+              </>
+            ) : (
+              <>
+                <strong className="text-foreground">{posts.length}</strong> {posts.length === 1 ? 'artigo' : 'artigos'}
+              </>
+            )}
+          </p>
         </div>
       )}
 
@@ -279,32 +250,13 @@ export default function Blog() {
       {!isLoading &&
         !error &&
         (posts.length > 0 ? (
-          <div className="animate-scale-in">
-            {/* Featured Post */}
-            <div className="mb-12">
-              <BlogCard post={posts[0]} featured={true} />
+          <div className="animate-scale-in space-y-8">
+            {/* All Posts Grid - sem featured, todos do mesmo tamanho */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {posts.map((post) => (
+                <BlogCard key={post.id} post={post} featured={false} />
+              ))}
             </div>
-
-            {/* Regular Posts Grid */}
-            {posts.length > 1 && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-                {posts.slice(1).map((post) => (
-                  <BlogCard key={post.id} post={post} featured={false} />
-                ))}
-              </div>
-            )}
-
-            {/* Load More Button - Could be enhanced for pagination */}
-            {posts.length > 4 && (
-              <div className="text-center">
-                <Button
-                  variant="outline"
-                  onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                >
-                  Ver todos os artigos
-                </Button>
-              </div>
-            )}
           </div>
         ) : (
           <Card className="max-w-md mx-auto text-center py-8 animate-fade-in">
@@ -326,43 +278,6 @@ export default function Blog() {
           </Card>
         ))}
 
-      {/* Newsletter Section */}
-      <Card className="mt-16 shadow-medium animate-fade-in">
-        <CardHeader className="text-center">
-          <div className="flex justify-center mb-4">
-            <div className="p-3 bg-accent/10 rounded-full">
-              <Mail className="h-6 w-6 text-accent" />
-            </div>
-          </div>
-          <CardTitle className="text-2xl">Inscreva-se na nossa Newsletter</CardTitle>
-          <CardDescription>
-            Receba os melhores artigos e novidades diretamente na sua caixa de entrada.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form
-            onSubmit={handleNewsletterSubmit}
-            className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto"
-          >
-            <Input
-              type="email"
-              placeholder="Seu melhor e-mail"
-              value={newsletterEmail}
-              onChange={(e) => setNewsletterEmail(e.target.value)}
-              required
-              className="flex-1"
-            />
-            <Button
-              type="submit"
-              disabled={isSubscribing}
-              className="bg-primary hover:bg-primary-hover"
-            >
-              {isSubscribing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-              Inscrever-se
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
     </div>
   );
 }
