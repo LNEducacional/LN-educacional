@@ -399,10 +399,21 @@ export declare function applyAsCollaborator(userId: string, data: {
     fullName: string;
     email: string;
     phone: string;
+    zipCode?: string;
+    address?: string;
+    addressNumber?: string;
+    neighborhood?: string;
+    city?: string;
+    state?: string;
     area: string;
+    education?: string;
     experience: string;
     availability: string;
+    portfolioUrl?: string;
+    linkedin?: string;
     resumeUrl?: string;
+    portfolioFiles?: string[];
+    acceptTerms?: boolean;
 }): Promise<{
     status: import(".prisma/client").$Enums.ApplicationStatus;
     id: string;

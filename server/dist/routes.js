@@ -776,7 +776,18 @@ async function registerOrderRoutes(app) {
                 reply.status(403).send({ error: 'Forbidden' });
                 return;
             }
-            reply.send(order);
+            // Mapear paymentStatus do banco para o formato esperado pelo cliente
+            const paymentStatusMap = {
+                'CONFIRMED': 'APPROVED',
+                'FAILED': 'REFUSED',
+                'CANCELED': 'REFUSED',
+                'PENDING': 'PENDING',
+            };
+            const mappedOrder = {
+                ...order,
+                paymentStatus: paymentStatusMap[order.paymentStatus] || order.paymentStatus,
+            };
+            reply.send(mappedOrder);
         }
         catch (error) {
             reply.status(400).send({ error: error.message });
@@ -1730,19 +1741,44 @@ async function registerAdminRoutes(app) {
         fullName: zod_1.z.string(),
         email: zod_1.z.string().email(),
         phone: zod_1.z.string(),
+        // Address fields
+        zipCode: zod_1.z.string().optional(),
+        address: zod_1.z.string().optional(),
+        addressNumber: zod_1.z.string().optional(),
+        neighborhood: zod_1.z.string().optional(),
+        city: zod_1.z.string().optional(),
+        state: zod_1.z.string().optional(),
+        // Professional fields
         area: zod_1.z.string(),
+        education: zod_1.z.string().optional(),
         experience: zod_1.z.string(),
         availability: zod_1.z.string(),
+        // Links and documents - allow empty strings or undefined
+        portfolioUrl: zod_1.z.string().optional().or(zod_1.z.literal('')),
+        linkedin: zod_1.z.string().optional().or(zod_1.z.literal('')),
         resumeUrl: zod_1.z.string().optional(),
+        portfolioFiles: zod_1.z.array(zod_1.z.string()).optional().default([]),
+        // Form control (not saved to DB)
+        acceptTerms: zod_1.z.boolean().optional(),
     });
     app.post('/collaborator/apply', { preHandler: [app.authenticate] }, async (request, reply) => {
         try {
+            console.log('[COLLABORATOR/APPLY] Request body:', JSON.stringify(request.body, null, 2));
             const data = collaboratorApplicationSchema.parse(request.body);
+            console.log('[COLLABORATOR/APPLY] Validated data:', JSON.stringify(data, null, 2));
             const application = await applyAsCollaborator(request.currentUser.id, data);
+            console.log('[COLLABORATOR/APPLY] Application created successfully');
             reply.status(201).send(application);
         }
         catch (error) {
-            reply.status(400).send({ error: error.message });
+            console.error('[COLLABORATOR/APPLY] Error:', error);
+            if (error instanceof zod_1.z.ZodError) {
+                console.error('[COLLABORATOR/APPLY] Validation errors:', JSON.stringify(error.errors, null, 2));
+                reply.status(400).send({ error: 'Validation error', details: error.errors });
+            }
+            else {
+                reply.status(400).send({ error: error.message });
+            }
         }
     });
     const collaboratorsQuerySchema = zod_1.z.object({

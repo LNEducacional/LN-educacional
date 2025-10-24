@@ -23,7 +23,8 @@
       "Bash(npm run seed:*)",
       "Bash(npx tsx:*)",
       "Bash(curl:*)",
-      "Bash(git log:*)"
+      "Bash(git log:*)",
+      "Bash(timeout 30 pm2 logs:*)"
     ],
     "deny": [],
     "ask": []

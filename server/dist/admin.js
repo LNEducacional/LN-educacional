@@ -671,14 +671,34 @@ async function applyAsCollaborator(userId, data) {
     const existingApplication = await prisma_1.prisma.collaboratorApplication.findUnique({
         where: { userId },
     });
+    // Remove fields that don't exist in DB or are not saved
+    const { acceptTerms, portfolioFiles, addressNumber, neighborhood, ...dbData } = data;
+    // Convert empty strings to undefined for optional fields
+    const cleanData = {
+        ...dbData,
+        portfolioUrl: dbData.portfolioUrl || undefined,
+        linkedin: dbData.linkedin || undefined,
+        zipCode: dbData.zipCode || undefined,
+        address: dbData.address || undefined,
+        city: dbData.city || undefined,
+        state: dbData.state || undefined,
+        education: dbData.education || undefined,
+    };
+    const applicationData = {
+        ...cleanData,
+        userId,
+        // Save portfolioFiles as JSON array
+        portfolioUrls: portfolioFiles && portfolioFiles.length > 0 ? portfolioFiles : undefined,
+    };
+    // If application exists, update it; otherwise create new one
     if (existingApplication) {
-        throw new Error('Application already exists');
+        return prisma_1.prisma.collaboratorApplication.update({
+            where: { userId },
+            data: applicationData,
+        });
     }
     return prisma_1.prisma.collaboratorApplication.create({
-        data: {
-            ...data,
-            userId,
-        },
+        data: applicationData,
     });
 }
 async function updateCollaboratorStatus(id, status) {

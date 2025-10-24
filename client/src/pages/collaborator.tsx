@@ -954,8 +954,11 @@ export default function Collaborator() {
           portfolioFiles.length > 0 ? Promise.all(portfolioFiles.map(convertFileToBase64)) : [],
         ]);
 
+        // Remove resumeFile and portfolioFiles from data before sending
+        const { resumeFile: _, portfolioFiles: __, ...applicationData } = data;
+
         const response = await collaboratorService.apply({
-          ...data,
+          ...applicationData,
           resumeUrl,
           portfolioFiles: portfolioUrls,
         });
