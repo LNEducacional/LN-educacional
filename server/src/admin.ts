@@ -745,11 +745,23 @@ export async function applyAsCollaborator(
   // Remove fields that don't exist in DB or are not saved
   const { acceptTerms, portfolioFiles, addressNumber, neighborhood, ...dbData } = data;
 
-  const applicationData = {
+  // Convert empty strings to undefined for optional fields
+  const cleanData = {
     ...dbData,
+    portfolioUrl: dbData.portfolioUrl || undefined,
+    linkedin: dbData.linkedin || undefined,
+    zipCode: dbData.zipCode || undefined,
+    address: dbData.address || undefined,
+    city: dbData.city || undefined,
+    state: dbData.state || undefined,
+    education: dbData.education || undefined,
+  };
+
+  const applicationData = {
+    ...cleanData,
     userId,
     // Save portfolioFiles as JSON array
-    portfolioUrls: portfolioFiles ? portfolioFiles : undefined,
+    portfolioUrls: portfolioFiles && portfolioFiles.length > 0 ? portfolioFiles : undefined,
   };
 
   // If application exists, update it; otherwise create new one

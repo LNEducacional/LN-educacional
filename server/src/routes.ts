@@ -2194,11 +2194,11 @@ export async function registerAdminRoutes(app: FastifyInstance) {
     education: z.string().optional(),
     experience: z.string(),
     availability: z.string(),
-    // Links and documents
-    portfolioUrl: z.string().optional(),
-    linkedin: z.string().optional(),
+    // Links and documents - allow empty strings or undefined
+    portfolioUrl: z.string().optional().or(z.literal('')),
+    linkedin: z.string().optional().or(z.literal('')),
     resumeUrl: z.string().optional(),
-    portfolioFiles: z.array(z.string()).optional(),
+    portfolioFiles: z.array(z.string()).optional().default([]),
     // Form control (not saved to DB)
     acceptTerms: z.boolean().optional(),
   });
