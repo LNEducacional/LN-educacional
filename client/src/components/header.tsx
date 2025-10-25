@@ -196,13 +196,13 @@ export function Header({ showSearch = true, showNotifications = true }: HeaderPr
                 <DropdownMenuItem key={item.href} asChild>
                   <Link
                     to={item.href}
-                    className="flex flex-col items-start gap-1 p-3 cursor-pointer"
+                    className="flex flex-col items-center gap-1 p-3 cursor-pointer"
                   >
                     <div className="flex items-center gap-2">
                       <item.icon className="h-4 w-4 text-primary" />
                       <span className="text-sm font-medium">{item.title}</span>
                     </div>
-                    <p className="text-xs text-muted-foreground">{item.description}</p>
+                    <p className="text-xs text-muted-foreground text-center">{item.description}</p>
                   </Link>
                 </DropdownMenuItem>
               ))}
@@ -248,13 +248,13 @@ export function Header({ showSearch = true, showNotifications = true }: HeaderPr
                 <DropdownMenuItem key={item.href} asChild>
                   <Link
                     to={item.href}
-                    className="flex flex-col items-start gap-1 p-3 cursor-pointer"
+                    className="flex flex-col items-center gap-1 p-3 cursor-pointer"
                   >
                     <div className="flex items-center gap-2">
                       <item.icon className="h-4 w-4 text-primary" />
                       <span className="text-sm font-medium">{item.title}</span>
                     </div>
-                    <p className="text-xs text-muted-foreground">{item.description}</p>
+                    <p className="text-xs text-muted-foreground text-center">{item.description}</p>
                   </Link>
                 </DropdownMenuItem>
               ))}
