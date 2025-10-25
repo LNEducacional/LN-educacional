@@ -1,4 +1,5 @@
 import { Award, BookOpen, Clock, HeadphonesIcon, TrendingUp, Users } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const benefits = [
   {
@@ -35,6 +36,21 @@ const benefits = [
 ];
 
 export function BenefitsSection() {
+  const navigate = useNavigate();
+
+  const handleExplorarServicos = () => {
+    navigate('/courses');
+  };
+
+  const handleFalarConsultor = () => {
+    const phoneNumber = '5594984211357'; // Formato internacional: +55 94 98421-1357
+    const message = encodeURIComponent(
+      'Olá! Gostaria de falar com um especialista da LN Educacional sobre os serviços oferecidos.'
+    );
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${message}`;
+    window.open(whatsappUrl, '_blank');
+  };
+
   return (
     <section className="py-20 bg-gray-100">
       <div className="container mx-auto px-4">
@@ -92,12 +108,14 @@ export function BenefitsSection() {
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center pt-4">
                 <button
                   type="button"
+                  onClick={handleExplorarServicos}
                   className="bg-white text-primary hover:bg-gray-50 font-semibold px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg transition-all duration-300 hover:shadow-lg text-sm sm:text-base"
                 >
                   Explorar serviços
                 </button>
                 <button
                   type="button"
+                  onClick={handleFalarConsultor}
                   className="border-2 border-white text-white hover:bg-white hover:text-primary font-semibold px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg transition-all duration-300 text-sm sm:text-base"
                 >
                   Falar com um consultor
