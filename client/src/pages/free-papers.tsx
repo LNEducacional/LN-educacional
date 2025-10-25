@@ -182,7 +182,7 @@ export default function FreePapers() {
     setSearchParams({});
   };
 
-  const handleDownload = async (paperId: string) => {
+  const handleDownload = async (paper: ReadyPaper) => {
     // Verificar se usuário está logado
     if (!user) {
       setLoginModalOpen(true);
@@ -190,7 +190,7 @@ export default function FreePapers() {
     }
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/papers/${paperId}/download`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/papers/${paper.id}/download`, {
         credentials: 'include',
         headers: {
           Authorization: `Bearer ${user.token}`,
@@ -215,7 +215,7 @@ export default function FreePapers() {
       // Opcional: Atualizar contador de downloads local
       setAllPapers((prev) =>
         prev.map((p) =>
-          p.id === paperId ? { ...p, downloadCount: (p.downloadCount || 0) + 1 } : p
+          p.id === paper.id ? { ...p, downloadCount: (p.downloadCount || 0) + 1 } : p
         )
       );
     } catch (error) {
