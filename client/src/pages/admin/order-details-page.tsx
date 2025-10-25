@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/select';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { useToast } from '@/hooks/use-toast';
-import { mockOrders } from '@/data/mock-orders';
+import api from '@/services/api';
 import type { Order } from '@/types/order';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -46,11 +46,10 @@ const OrderDetailsPage = () => {
     const loadOrder = async () => {
       try {
         setIsLoading(true);
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        const foundOrder = mockOrders.find((o) => o.id.toString() === id);
-        if (foundOrder) {
-          setOrder(foundOrder);
+        // Buscar pedido da API
+        const response = await api.get(`/admin/orders/${id}`);
+        if (response.data) {
+          setOrder(response.data);
         } else {
           toast({
             title: 'Pedido não encontrado',
@@ -59,12 +58,22 @@ const OrderDetailsPage = () => {
           });
           navigate('/admin/pedidos');
         }
-      } catch (_error) {
-        toast({
-          title: 'Erro ao carregar pedido',
-          description: 'Não foi possível carregar os detalhes do pedido.',
-          variant: 'destructive',
-        });
+      } catch (error: any) {
+        console.error('[ORDER DETAILS] Error loading order:', error);
+        if (error.response?.status === 404) {
+          toast({
+            title: 'Pedido não encontrado',
+            description: 'O pedido solicitado não existe.',
+            variant: 'destructive',
+          });
+          navigate('/admin/pedidos');
+        } else {
+          toast({
+            title: 'Erro ao carregar pedido',
+            description: 'Não foi possível carregar os detalhes do pedido.',
+            variant: 'destructive',
+          });
+        }
       } finally {
         setIsLoading(false);
       }
@@ -81,25 +90,28 @@ const OrderDetailsPage = () => {
   };
 
   const handleStatusUpdate = async (newStatus: string) => {
+    if (!order) return;
+
     setIsUpdatingStatus(true);
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // Atualizar status na API
+      await api.put(`/admin/orders/${order.id}/status`, {
+        status: newStatus.toUpperCase()
+      });
 
       // Update local state
-      if (order) {
-        setOrder({ ...order, status: newStatus as Order['status'] });
-      }
+      setOrder({ ...order, status: newStatus.toUpperCase() as Order['status'] });
 
       toast({
         title: 'Sucesso',
         description: 'Status do pedido atualizado com sucesso',
       });
-    } catch (_error) {
+    } catch (error: any) {
+      console.error('[ORDER DETAILS] Error updating status:', error);
       toast({
         title: 'Erro',
-        description: 'Erro ao atualizar status do pedido',
+        description: error.response?.data?.error || 'Erro ao atualizar status do pedido',
         variant: 'destructive',
       });
     } finally {
@@ -112,7 +124,7 @@ const OrderDetailsPage = () => {
 
     const subject = encodeURIComponent(`Atualização do seu pedido #${order.id}`);
     const body = encodeURIComponent(
-      `Olá ${order.customerName},\n\nSeu pedido #${order.id} teve o status atualizado para: ${statusMap[order.status].label}\n\nAtenciosamente,\nEquipe LN Educacional`
+      `Olá ${order.customerName},\n\nSeu pedido #${order.id} teve o status atualizado para: ${statusMap[order.status.toLowerCase()].label}\n\nAtenciosamente,\nEquipe LN Educacional`
     );
 
     window.open(`mailto:${order.customerEmail}?subject=${subject}&body=${body}`);
@@ -190,8 +202,8 @@ const OrderDetailsPage = () => {
                         <div>
                           <span className="text-muted-foreground">Status:</span>
                           <div className="mt-1">
-                            <Badge variant={statusMap[order.status].variant}>
-                              {statusMap[order.status].label}
+                            <Badge variant={statusMap[order.status.toLowerCase()].variant}>
+                              {statusMap[order.status.toLowerCase()].label}
                             </Badge>
                           </div>
                         </div>
@@ -252,7 +264,7 @@ const OrderDetailsPage = () => {
                     <CardContent>
                       <div className="flex flex-col sm:flex-row gap-4">
                         <Select
-                          value={order.status}
+                          value={order.status.toLowerCase()}
                           onValueChange={handleStatusUpdate}
                           disabled={isUpdatingStatus}
                         >
