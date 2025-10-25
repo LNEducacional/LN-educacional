@@ -28,7 +28,6 @@ import {
   EditUserPage,
   AdminEbooks,
   AdminFreePapers,
-  AdminMessages,
   AdminOrders,
   AdminPapers,
   BlogPage,
@@ -283,10 +282,6 @@ export default function AppRoutes() {
           <Route
             path="/admin/pedidos/:id"
             element={<LazyWrapper component={OrderDetailsPage} fallback={<LoadingSpinner />} />}
-          />
-          <Route
-            path="/admin/mensagens"
-            element={<LazyWrapper component={AdminMessages} fallback={<LoadingSpinner />} />}
           />
           <Route
             path="/admin/colaboradores"

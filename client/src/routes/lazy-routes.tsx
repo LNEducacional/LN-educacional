@@ -62,9 +62,6 @@ export const AdminOrders = lazy(
 export const OrderDetailsPage = lazy(
   () => import(/* webpackPrefetch: true */ '@/pages/admin/order-details-page')
 );
-export const AdminMessages = lazy(
-  () => import(/* webpackPrefetch: true */ '@/pages/admin/messages-page')
-);
 export const AdminCollaborators = lazy(
   () => import(/* webpackPrefetch: true */ '@/pages/admin/collaborators-page')
 );

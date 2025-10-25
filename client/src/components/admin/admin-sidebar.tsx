@@ -23,7 +23,6 @@ import {
   Link2,
   LogOut,
   Menu,
-  MessageSquare,
   Palette,
   PenTool,
   Settings,
@@ -88,11 +87,6 @@ const menuItems = [
     path: '/admin/pedidos',
     title: 'Pedidos',
     icon: ShoppingCart,
-  },
-  {
-    path: '/admin/mensagens',
-    title: 'Mensagens',
-    icon: MessageSquare,
   },
   {
     path: '/admin/colaboradores',
