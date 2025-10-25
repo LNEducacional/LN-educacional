@@ -1,8 +1,15 @@
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 export function ServicesSection() {
+  const navigate = useNavigate();
+
+  const handleServiceClick = (href: string) => {
+    navigate(href);
+    // Scroll para o topo da página com animação suave
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
   const services = [
     {
       id: 1,
@@ -87,12 +94,10 @@ export function ServicesSection() {
                 <Button
                   variant="ghost"
                   className="w-full justify-between text-primary hover:text-primary hover:bg-primary/5 group p-0 h-auto"
-                  asChild
+                  onClick={() => handleServiceClick(service.href)}
                 >
-                  <Link to={service.href}>
-                    {service.buttonText}
-                    <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                  </Link>
+                  {service.buttonText}
+                  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </div>
             </div>
