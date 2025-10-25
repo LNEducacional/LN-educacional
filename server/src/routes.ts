@@ -1007,6 +1007,27 @@ export async function registerOrderRoutes(app: FastifyInstance) {
     }
   );
 
+  // Get order by ID (Admin only)
+  app.get<{ Params: IdParams }>(
+    '/admin/orders/:id',
+    { preHandler: [app.authenticate, app.requireAdmin] },
+    async (request, reply) => {
+      try {
+        const { getOrderById } = await import('./prisma');
+        const order = await getOrderById(request.params.id);
+
+        if (!order) {
+          return reply.status(404).send({ error: 'Order not found' });
+        }
+
+        reply.send(order);
+      } catch (error: unknown) {
+        console.error('[GET ORDER] Error:', error);
+        reply.status(500).send({ error: (error as Error).message });
+      }
+    }
+  );
+
   app.put<{ Params: IdParams }>(
     '/admin/orders/:id/status',
     { preHandler: [app.authenticate, app.requireAdmin] },

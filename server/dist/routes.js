@@ -570,15 +570,22 @@ async function registerProductRoutes(app) {
             if (!data) {
                 return reply.status(400).send({ error: 'No file uploaded' });
             }
-            // Validate file type (PDF, DOC, DOCX)
+            // Validate file type (PDF, EPUB, MOBI) - formatos de e-book
             const allowedTypes = [
                 'application/pdf',
-                'application/msword',
-                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'application/epub+zip',
+                'application/x-mobipocket-ebook',
+                'application/vnd.amazon.ebook', // MOBI alternativo
+                'application/octet-stream', // Fallback para alguns arquivos EPUB/MOBI
             ];
-            if (!allowedTypes.includes(data.mimetype)) {
+            // Também validar pela extensão do arquivo como fallback
+            const filename = data.filename.toLowerCase();
+            const hasValidExtension = filename.endsWith('.pdf') ||
+                filename.endsWith('.epub') ||
+                filename.endsWith('.mobi');
+            if (!allowedTypes.includes(data.mimetype) && !hasValidExtension) {
                 return reply.status(400).send({
-                    error: 'Invalid file type. Only PDF, DOC, and DOCX files are allowed.',
+                    error: 'Invalid file type. Only PDF, EPUB, and MOBI files are allowed.',
                 });
             }
             // Validate file size (50MB max)
@@ -849,6 +856,21 @@ async function registerOrderRoutes(app) {
             reply.status(400).send({ error: error.message });
         }
     });
+    // Get order by ID (Admin only)
+    app.get('/admin/orders/:id', { preHandler: [app.authenticate, app.requireAdmin] }, async (request, reply) => {
+        try {
+            const { getOrderById } = await Promise.resolve().then(() => __importStar(require('./prisma')));
+            const order = await getOrderById(request.params.id);
+            if (!order) {
+                return reply.status(404).send({ error: 'Order not found' });
+            }
+            reply.send(order);
+        }
+        catch (error) {
+            console.error('[GET ORDER] Error:', error);
+            reply.status(500).send({ error: error.message });
+        }
+    });
     app.put('/admin/orders/:id/status', { preHandler: [app.authenticate, app.requireAdmin] }, async (request, reply) => {
         try {
             const statusSchema = zod_1.z.object({
@@ -882,6 +904,33 @@ async function registerOrderRoutes(app) {
         }
         catch (error) {
             reply.status(400).send({ error: error.message });
+        }
+    });
+    // Delete order (Admin only)
+    app.delete('/admin/orders/:id', { preHandler: [app.authenticate, app.requireAdmin] }, async (request, reply) => {
+        try {
+            console.log('[DELETE ORDER] Deleting order:', request.params.id);
+            // Verificar se o pedido existe
+            const order = await prisma_1.prisma.order.findUnique({
+                where: { id: request.params.id },
+            });
+            if (!order) {
+                return reply.status(404).send({ error: 'Order not found' });
+            }
+            // Deletar itens do pedido primeiro (devido a foreign key)
+            await prisma_1.prisma.orderItem.deleteMany({
+                where: { orderId: request.params.id },
+            });
+            // Deletar o pedido
+            await prisma_1.prisma.order.delete({
+                where: { id: request.params.id },
+            });
+            console.log('[DELETE ORDER] Order deleted successfully:', request.params.id);
+            reply.status(200).send({ message: 'Order deleted successfully' });
+        }
+        catch (error) {
+            console.error('[DELETE ORDER] Error:', error);
+            reply.status(500).send({ error: error.message });
         }
     });
 }
@@ -1789,6 +1838,8 @@ async function registerAdminRoutes(app) {
     });
     app.get('/admin/collaborators', { preHandler: [app.authenticate, app.requireAdmin] }, async (request, reply) => {
         try {
+            console.log('[ADMIN/COLLABORATORS] Request query:', request.query);
+            console.log('[ADMIN/COLLABORATORS] User:', request.currentUser);
             const query = collaboratorsQuerySchema.parse(request.query);
             const result = await getCollaboratorApplications({
                 status: query.status?.toUpperCase(),
@@ -1796,9 +1847,14 @@ async function registerAdminRoutes(app) {
                 skip: query.skip,
                 take: query.take,
             });
+            console.log('[ADMIN/COLLABORATORS] Result:', {
+                total: result.total,
+                applicationsCount: result.applications.length
+            });
             reply.send(result);
         }
         catch (error) {
+            console.error('[ADMIN/COLLABORATORS] Error:', error);
             reply.status(400).send({ error: error.message });
         }
     });
@@ -1911,8 +1967,9 @@ async function registerAdminRoutes(app) {
     // Portal do Colaborador - Perfil
     app.get('/collaborator/profile', { preHandler: [app.authenticate] }, async (request, reply) => {
         try {
-            const application = await prisma_1.prisma.collaboratorApplication.findUnique({
+            const application = await prisma_1.prisma.collaboratorApplication.findFirst({
                 where: { userId: request.currentUser.id },
+                orderBy: { createdAt: 'desc' },
                 include: {
                     evaluations: {
                         select: {
