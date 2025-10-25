@@ -18,7 +18,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { mockOrders } from '@/data/mock-orders';
 import { useToast } from '@/hooks/use-toast';
 import type { Order } from '@/types/order';
 import { format } from 'date-fns';
@@ -94,16 +93,16 @@ export function AdminOrders() {
     const loadOrders = async () => {
       try {
         setIsLoading(true);
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        setOrders(
-          mockOrders.sort(
-            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-          )
-        );
+        // Buscar pedidos reais da API
+        const response = await api.get('/admin/orders');
+        // A API retorna { orders: [], total: number }
+        setOrders(response.data.orders || []);
         setError(null);
-      } catch (_err) {
+      } catch (err: any) {
+        console.error('[ADMIN/ORDERS] Error loading orders:', err);
         setError('Erro ao carregar dados dos pedidos');
+        // Fallback para array vazio em caso de erro
+        setOrders([]);
       } finally {
         setIsLoading(false);
       }
