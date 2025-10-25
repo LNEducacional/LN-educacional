@@ -131,7 +131,7 @@ const buildWhatsAppMessage = (data: RequestFormData, files: string[]): string =>
 const sendToWhatsApp = (data: RequestFormData, files: string[]) => {
   const message = buildWhatsAppMessage(data, files);
   const encodedMessage = encodeURIComponent(message.normalize('NFC'));
-  const whatsappUrl = `https://wa.me/5581994076486?text=${encodedMessage}`;
+  const whatsappUrl = `https://wa.me/5594984211357?text=${encodedMessage}`;
   window.open(whatsappUrl, '_blank');
 };
 
