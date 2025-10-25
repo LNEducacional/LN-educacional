@@ -167,7 +167,7 @@ export function AdminOrders() {
         order.customerEmail.toLowerCase().includes(customerFilter.toLowerCase());
 
       // Status filter
-      const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
+      const matchesStatus = statusFilter === 'all' || order.status.toLowerCase() === statusFilter;
 
       // Date filter
       let matchesDate = true;
@@ -212,8 +212,8 @@ export function AdminOrders() {
           bValue = b.totalAmount;
           break;
         case 'status':
-          aValue = statusMap[a.status].label.toLowerCase();
-          bValue = statusMap[b.status].label.toLowerCase();
+          aValue = statusMap[a.status.toLowerCase()].label.toLowerCase();
+          bValue = statusMap[b.status.toLowerCase()].label.toLowerCase();
           break;
         case 'createdAt':
           aValue = new Date(a.createdAt).getTime();
@@ -392,8 +392,8 @@ export function AdminOrders() {
                     </TableCell>
                     <TableCell>{formatCurrency(order.totalAmount)}</TableCell>
                     <TableCell>
-                      <Badge variant={statusMap[order.status].variant}>
-                        {statusMap[order.status].label}
+                      <Badge variant={statusMap[order.status.toLowerCase()].variant}>
+                        {statusMap[order.status.toLowerCase()].label}
                       </Badge>
                     </TableCell>
                     <TableCell>
