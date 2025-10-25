@@ -39,7 +39,9 @@ export function BenefitsSection() {
   const navigate = useNavigate();
 
   const handleExplorarServicos = () => {
-    navigate('/courses');
+    navigate('/ready-papers');
+    // Scroll para o topo da página
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleFalarConsultor = () => {
