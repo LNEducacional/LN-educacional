@@ -11,6 +11,7 @@ import type { PaperFilters, ReadyPaper } from '@/types/paper';
 import { Filter } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { LoginRequiredModal } from '@/components/auth/login-required-modal';
 
 export default function FreePapers() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -32,6 +33,9 @@ export default function FreePapers() {
   const [currentPage, setCurrentPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+
+  // Estado para modal de login
+  const [loginModalOpen, setLoginModalOpen] = useState(false);
 
   const ITEMS_PER_PAGE = 12;
 
@@ -179,13 +183,9 @@ export default function FreePapers() {
   };
 
   const handleDownload = async (paperId: string) => {
+    // Verificar se usuário está logado
     if (!user) {
-      toast({
-        title: 'Login necessário',
-        description: 'Faça login para baixar trabalhos gratuitos.',
-        variant: 'destructive',
-      });
-      navigate('/login');
+      setLoginModalOpen(true);
       return;
     }
 
@@ -367,6 +367,9 @@ export default function FreePapers() {
           </div>
         </div>
       </div>
+
+      {/* Modal de Login Obrigatório */}
+      <LoginRequiredModal open={loginModalOpen} onOpenChange={setLoginModalOpen} />
     </div>
   );
 }

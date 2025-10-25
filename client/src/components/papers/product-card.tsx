@@ -227,47 +227,51 @@ export function ProductCard({ paper, isFree = false, onPurchase, className }: Pr
 
             {/* Action Buttons */}
             <div className="space-y-1.5">
-              <div className="flex gap-1.5">
-                {isFree ? (
-                  <Button
-                    size="sm"
-                    className="flex-1 bg-primary hover:bg-primary-hover text-primary-foreground font-semibold text-xs h-8"
-                    onClick={handlePurchase}
-                  >
-                    <Download className="h-3 w-3 mr-1.5" />
-                    Download Grátis
-                  </Button>
-                ) : (
-                  <Button
-                    size="sm"
-                    className="flex-1 bg-primary hover:bg-primary-hover text-primary-foreground font-semibold text-xs h-8"
-                    onClick={handlePurchase}
-                  >
-                    <ShoppingCart className="h-3 w-3 mr-1.5" />
-                    Comprar
-                  </Button>
-                )}
+              {isFree ? (
+                /* Trabalho gratuito - apenas botão de download */
                 <Button
                   size="sm"
-                  variant="outline"
-                  className="font-medium text-xs h-8"
-                  onClick={(e) => e.stopPropagation()}
+                  className="w-full bg-primary hover:bg-primary-hover text-primary-foreground font-semibold text-xs h-9"
+                  onClick={handlePurchase}
                 >
-                  Detalhes
+                  <Download className="h-4 w-4 mr-2" />
+                  Download Grátis
                 </Button>
-              </div>
+              ) : (
+                /* Trabalho pago - botões de compra e detalhes */
+                <>
+                  <div className="flex gap-1.5">
+                    <Button
+                      size="sm"
+                      className="flex-1 bg-primary hover:bg-primary-hover text-primary-foreground font-semibold text-xs h-8"
+                      onClick={handlePurchase}
+                    >
+                      <ShoppingCart className="h-3 w-3 mr-1.5" />
+                      Comprar
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="font-medium text-xs h-8"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      Detalhes
+                    </Button>
+                  </div>
 
-              {/* Botão discreto de adicionar ao carrinho */}
-              {!isFree && paper.price && paper.price > 0 && (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="w-full text-[10px] text-muted-foreground hover:text-foreground h-7"
-                  onClick={handleAddToCart}
-                >
-                  <ShoppingBag className="h-3 w-3 mr-1" />
-                  Adicionar ao Carrinho
-                </Button>
+                  {/* Botão discreto de adicionar ao carrinho */}
+                  {paper.price && paper.price > 0 && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="w-full text-[10px] text-muted-foreground hover:text-foreground h-7"
+                      onClick={handleAddToCart}
+                    >
+                      <ShoppingBag className="h-3 w-3 mr-1" />
+                      Adicionar ao Carrinho
+                    </Button>
+                  )}
+                </>
               )}
             </div>
           </div>
