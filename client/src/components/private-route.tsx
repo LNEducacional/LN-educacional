@@ -28,14 +28,10 @@ export const AdminRoute = () => {
   }
 
   if (!user) {
-    console.log('[AdminRoute] No user, redirecting to login');
     return <Navigate to="/login" replace />;
   }
 
-  console.log('[AdminRoute] User:', user.email, 'Role:', user.role);
-
   if (user.role !== 'ADMIN') {
-    console.log('[AdminRoute] Not ADMIN, redirecting...');
     // Redireciona STUDENT para dashboard de aluno
     if (user.role === 'STUDENT') {
       return <Navigate to="/dashboard" replace />;
@@ -44,7 +40,6 @@ export const AdminRoute = () => {
     return <Navigate to="/" replace />;
   }
 
-  console.log('[AdminRoute] ADMIN confirmed, allowing access');
   return <Outlet />;
 };
 
@@ -60,24 +55,17 @@ export const StudentRoute = () => {
   }
 
   if (!user) {
-    console.log('[StudentRoute] No user, redirecting to login');
     return <Navigate to="/login" replace />;
   }
 
-  console.log('[StudentRoute] User:', user.email, 'Role:', user.role);
-
   if (user.role !== 'STUDENT') {
-    console.log('[StudentRoute] Not STUDENT, redirecting...');
     // Redireciona ADMIN para o painel administrativo
     if (user.role === 'ADMIN') {
-      console.log('[StudentRoute] ADMIN detected, redirecting to /admin');
       return <Navigate to="/admin" replace />;
     }
     // Redireciona outros roles para a home
-    console.log('[StudentRoute] Other role, redirecting to /');
     return <Navigate to="/" replace />;
   }
 
-  console.log('[StudentRoute] STUDENT confirmed, allowing access');
   return <Outlet />;
 };
