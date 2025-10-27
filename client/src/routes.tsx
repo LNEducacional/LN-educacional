@@ -1,7 +1,7 @@
 import { LazyWrapper } from '@/components/lazy-wrapper';
 import LoadingSpinner from '@/components/loading-spinner';
 import { MainLayout } from '@/components/main-layout';
-import { AdminRoute, PrivateRoute } from '@/components/private-route';
+import { AdminRoute, PrivateRoute, StudentRoute } from '@/components/private-route';
 import { ProgressiveHydration } from '@/components/progressive-hydration';
 import { Route, Routes } from 'react-router-dom';
 
@@ -98,7 +98,7 @@ export default function AppRoutes() {
         />
 
         {/* Protected Student Routes */}
-        <Route element={<PrivateRoute />}>
+        <Route element={<StudentRoute />}>
           <Route element={<LazyWrapper component={StudentLayout} fallback={<LoadingSpinner />} />}>
             <Route
               path="/dashboard"
@@ -143,6 +143,10 @@ export default function AppRoutes() {
               <LazyWrapper component={StudentCoursePlayerPage} fallback={<LoadingSpinner />} />
             }
           />
+        </Route>
+
+        {/* Protected Routes - Any authenticated user */}
+        <Route element={<PrivateRoute />}>
           <Route
             path="/checkout"
             element={

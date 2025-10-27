@@ -37,3 +37,30 @@ export const AdminRoute = () => {
 
   return <Outlet />;
 };
+
+export const StudentRoute = () => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (user.role !== 'STUDENT') {
+    // Redireciona ADMIN para o painel administrativo
+    if (user.role === 'ADMIN') {
+      return <Navigate to="/admin" replace />;
+    }
+    // Redireciona outros roles para a home
+    return <Navigate to="/" replace />;
+  }
+
+  return <Outlet />;
+};
