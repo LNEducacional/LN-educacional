@@ -32,7 +32,12 @@ export const AdminRoute = () => {
   }
 
   if (user.role !== 'ADMIN') {
-    return <Navigate to="/dashboard" replace />;
+    // Redireciona STUDENT para dashboard de aluno
+    if (user.role === 'STUDENT') {
+      return <Navigate to="/dashboard" replace />;
+    }
+    // Redireciona outros roles para home
+    return <Navigate to="/" replace />;
   }
 
   return <Outlet />;
