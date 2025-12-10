@@ -237,20 +237,6 @@ export default function Login() {
               )}
             </Button>
 
-            {/* Demo Credentials */}
-            <div className="p-3 rounded-lg bg-muted/50 border border-border">
-              <p className="text-xs text-muted-foreground text-center mb-2 font-medium">
-                Credenciais de demonstração:
-              </p>
-              <div className="space-y-1 text-xs text-muted-foreground">
-                <p>
-                  <strong>Admin:</strong> admin@lneducacional.com / admin123
-                </p>
-                <p>
-                  <strong>Aluno:</strong> aluno@lneducacional.com / aluno123
-                </p>
-              </div>
-            </div>
           </form>
 
           {/* Sign Up Link */}
