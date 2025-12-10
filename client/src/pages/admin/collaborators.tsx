@@ -7,8 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import collaboratorService, { type CollaboratorResponse } from '@/services/collaborator.service';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import type React from 'react';
-import { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 import {
   Dialog,
@@ -56,6 +55,11 @@ const STATUS_LABELS = {
 };
 
 export default function AdminCollaborators() {
+  // ALERTA DE DEBUG - CONFIRMA QUE CÓDIGO NOVO ESTÁ CARREGANDO
+  React.useEffect(() => {
+    alert('PÁGINA ADMIN COLABORADORES CARREGADA - VERSÃO NOVA COM DEBUG');
+  }, []);
+
   const [applications, setApplications] = useState<CollaboratorResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -68,12 +72,23 @@ export default function AdminCollaborators() {
   const fetchApplications = useCallback(async () => {
     setLoading(true);
     try {
+      console.log('[ADMIN/COLLABORATORS] Fetching applications with filters:', {
+        statusFilter,
+        searchTerm,
+      });
       const response = await collaboratorService.getApplications({
         status: statusFilter !== 'all' ? statusFilter : undefined,
         search: searchTerm || undefined,
       });
+      console.log('[ADMIN/COLLABORATORS] Response:', response);
+      console.log('[ADMIN/COLLABORATORS] Applications count:', response.applications?.length);
+
+      // ALERTA DE DEBUG
+      alert(`TOTAL DE APLICAÇÕES: ${response.applications?.length || 0}\nDados recebidos: ${JSON.stringify(response, null, 2).substring(0, 500)}`);
+
       setApplications(response.applications || []);
     } catch (error: unknown) {
+      console.error('[ADMIN/COLLABORATORS] Error:', error);
       toast({
         title: 'Erro ao carregar aplicações',
         description: error.response?.data?.error || 'Erro ao carregar lista de colaboradores',

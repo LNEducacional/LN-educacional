@@ -24,7 +24,8 @@
       "Bash(npx tsx:*)",
       "Bash(curl:*)",
       "Bash(git log:*)",
-      "Bash(timeout 30 pm2 logs:*)"
+      "Bash(timeout 30 pm2 logs:*)",
+      "Bash(pm2 flush:*)"
     ],
     "deny": [],
     "ask": []

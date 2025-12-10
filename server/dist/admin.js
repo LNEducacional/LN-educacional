@@ -274,8 +274,92 @@ async function updateUser(userId, data) {
     });
 }
 async function deleteUser(userId) {
-    return prisma_1.prisma.user.delete({
-        where: { id: userId },
+    // Delete user and all related records in a transaction
+    return prisma_1.prisma.$transaction(async (tx) => {
+        // Delete custom paper messages first (depends on customPapers)
+        await tx.customPaperMessage.deleteMany({
+            where: { senderId: userId },
+        });
+        // Delete custom papers and their messages
+        const userCustomPapers = await tx.customPaper.findMany({
+            where: { userId },
+            select: { id: true },
+        });
+        for (const paper of userCustomPapers) {
+            await tx.customPaperMessage.deleteMany({
+                where: { customPaperId: paper.id },
+            });
+        }
+        await tx.customPaper.deleteMany({
+            where: { userId },
+        });
+        // Delete course related records
+        await tx.courseProgress.deleteMany({
+            where: { userId },
+        });
+        await tx.courseEnrollment.deleteMany({
+            where: { userId },
+        });
+        await tx.certificate.deleteMany({
+            where: { userId },
+        });
+        // Delete library items
+        await tx.library.deleteMany({
+            where: { userId },
+        });
+        // Delete blog related records
+        await tx.like.deleteMany({
+            where: { userId },
+        });
+        await tx.comment.deleteMany({
+            where: { userId },
+        });
+        await tx.blogPost.deleteMany({
+            where: { authorId: userId },
+        });
+        // Delete collaborator application related records
+        const userApplications = await tx.collaboratorApplication.findMany({
+            where: { userId },
+            select: { id: true },
+        });
+        for (const app of userApplications) {
+            await tx.interview.deleteMany({
+                where: { applicationId: app.id },
+            });
+            await tx.note.deleteMany({
+                where: { applicationId: app.id },
+            });
+            await tx.evaluation.deleteMany({
+                where: { applicationId: app.id },
+            });
+        }
+        // Delete applications where user is reviewer
+        await tx.collaboratorApplication.updateMany({
+            where: { reviewerId: userId },
+            data: { reviewerId: null },
+        });
+        await tx.collaboratorApplication.deleteMany({
+            where: { userId },
+        });
+        // Delete evaluations, notes, and interviews where user is the actor
+        await tx.evaluation.deleteMany({
+            where: { evaluatorId: userId },
+        });
+        await tx.note.deleteMany({
+            where: { authorId: userId },
+        });
+        await tx.interview.deleteMany({
+            where: { interviewerId: userId },
+        });
+        // Update orders to remove user reference (orders can exist without user)
+        await tx.order.updateMany({
+            where: { userId },
+            data: { userId: null },
+        });
+        // Finally, delete the user
+        return tx.user.delete({
+            where: { id: userId },
+        });
     });
 }
 async function getBlogPosts(filters) {

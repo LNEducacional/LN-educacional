@@ -1,4 +1,5 @@
 import { CardSkeleton } from '@/components/skeletons/card-skeleton';
+import { WhatsAppFloatingButton } from '@/components/whatsapp-floating-button';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -359,6 +360,7 @@ const OnlineCourses: React.FC = () => {
           )}
         </div>
       </div>
+      <WhatsAppFloatingButton />
     </>
   );
 };

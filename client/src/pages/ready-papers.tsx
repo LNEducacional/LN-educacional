@@ -1,5 +1,6 @@
 import { PaperFiltersComponent } from '@/components/papers/paper-filters';
 import { ProductCard } from '@/components/papers/product-card';
+import { WhatsAppFloatingButton } from '@/components/whatsapp-floating-button';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -684,17 +685,21 @@ export default function ReadyPapers() {
             onComplete={() => setFlyingItem(null)}
           />
         )}
+        <WhatsAppFloatingButton />
       </>
     );
   }
 
   return (
-    <PapersListingPage
-      filters={filters}
-      filteredPapers={filteredPapers}
-      handleFiltersChange={handleFiltersChange}
-      handleResetFilters={handleResetFilters}
-      handlePurchase={handlePurchase}
-    />
+    <>
+      <PapersListingPage
+        filters={filters}
+        filteredPapers={filteredPapers}
+        handleFiltersChange={handleFiltersChange}
+        handleResetFilters={handleResetFilters}
+        handlePurchase={handlePurchase}
+      />
+      <WhatsAppFloatingButton />
+    </>
   );
 }

@@ -120,10 +120,10 @@ export declare const customPaperService: {
             createdAt: Date;
             content: string;
             attachments: string[];
+            senderId: string;
+            customPaperId: string;
             isFromAdmin: boolean;
             isRead: boolean;
-            customPaperId: string;
-            senderId: string;
         }[];
     } & {
         title: string;
@@ -187,10 +187,10 @@ export declare const customPaperService: {
                 createdAt: Date;
                 content: string;
                 attachments: string[];
+                senderId: string;
+                customPaperId: string;
                 isFromAdmin: boolean;
                 isRead: boolean;
-                customPaperId: string;
-                senderId: string;
             }[];
         } & {
             title: string;

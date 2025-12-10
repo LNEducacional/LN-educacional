@@ -37,10 +37,10 @@ export declare const customPaperMessageService: {
         createdAt: Date;
         content: string;
         attachments: string[];
+        senderId: string;
+        customPaperId: string;
         isFromAdmin: boolean;
         isRead: boolean;
-        customPaperId: string;
-        senderId: string;
     }>;
     getMessages(customPaperId: string, userId: string, isAdmin: boolean): Promise<({
         sender: {
@@ -69,10 +69,10 @@ export declare const customPaperMessageService: {
         createdAt: Date;
         content: string;
         attachments: string[];
+        senderId: string;
+        customPaperId: string;
         isFromAdmin: boolean;
         isRead: boolean;
-        customPaperId: string;
-        senderId: string;
     })[]>;
     markAsRead(customPaperId: string, userId: string): Promise<import(".prisma/client").Prisma.BatchPayload>;
 };

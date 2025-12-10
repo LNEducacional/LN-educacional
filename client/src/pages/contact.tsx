@@ -1,3 +1,4 @@
+import { WhatsAppFloatingButton } from '@/components/whatsapp-floating-button';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useState } from 'react';
 
@@ -653,6 +654,7 @@ export default function Contact() {
           </DialogContent>
         </Dialog>
       </div>
+      <WhatsAppFloatingButton />
     </div>
   );
 }

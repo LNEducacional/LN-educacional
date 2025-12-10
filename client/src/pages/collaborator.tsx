@@ -1,3 +1,4 @@
+import { WhatsAppFloatingButton } from '@/components/whatsapp-floating-button';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -1284,6 +1285,7 @@ export default function Collaborator() {
           isSubmitting={isSubmitting}
         />
       </div>
+      <WhatsAppFloatingButton />
     </div>
   );
 }

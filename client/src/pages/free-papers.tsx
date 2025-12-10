@@ -1,6 +1,7 @@
 import { PaperFiltersComponent } from '@/components/papers/paper-filters';
 import { ProductCard } from '@/components/papers/product-card';
 import { CardSkeleton } from '@/components/skeletons/card-skeleton';
+import { WhatsAppFloatingButton } from '@/components/whatsapp-floating-button';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -370,6 +371,7 @@ export default function FreePapers() {
 
       {/* Modal de Login Obrigatório */}
       <LoginRequiredModal open={loginModalOpen} onOpenChange={setLoginModalOpen} />
+      <WhatsAppFloatingButton />
     </div>
   );
 }
