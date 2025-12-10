@@ -35,19 +35,22 @@ import { useCallback, useEffect, useState } from 'react';
 
 interface Order {
   id: string;
-  orderNumber: string;
-  userId: string;
-  user: {
+  orderNumber?: string;
+  userId?: string;
+  user?: {
     name: string;
     email: string;
   };
+  customerName?: string;
+  customerEmail?: string;
   items: OrderItem[];
-  total: number;
-  subtotal: number;
-  discount: number;
-  status: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'CANCELLED' | 'REFUNDED';
-  paymentStatus: 'PENDING' | 'PROCESSING' | 'APPROVED' | 'FAILED' | 'REFUNDED';
-  paymentMethod: 'CREDIT_CARD' | 'DEBIT_CARD' | 'PIX' | 'BOLETO';
+  total?: number;
+  totalAmount?: number;
+  subtotal?: number;
+  discount?: number;
+  status: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'CANCELLED' | 'CANCELED' | 'REFUNDED' | 'INTERESTED';
+  paymentStatus: 'PENDING' | 'PROCESSING' | 'APPROVED' | 'PAID' | 'CONFIRMED' | 'FAILED' | 'REFUNDED';
+  paymentMethod?: 'CREDIT_CARD' | 'DEBIT_CARD' | 'PIX' | 'BOLETO';
   paymentDetails?: {
     pixCode?: string;
     boletoUrl?: string;
@@ -100,7 +103,8 @@ export function AdminOrders() {
         api.get('/admin/orders/stats'),
       ]);
 
-      setOrders(ordersResponse.data);
+      // A API retorna { orders, total }
+      setOrders(ordersResponse.data.orders || ordersResponse.data);
       setStats(statsResponse.data);
     } catch (_error) {
       toast({
@@ -217,7 +221,9 @@ export function AdminOrders() {
       PROCESSING: { variant: 'default' as const, label: 'Processando', icon: Package },
       COMPLETED: { variant: 'success' as const, label: 'Concluído', icon: CheckCircle },
       CANCELLED: { variant: 'destructive' as const, label: 'Cancelado', icon: XCircle },
+      CANCELED: { variant: 'destructive' as const, label: 'Cancelado', icon: XCircle },
       REFUNDED: { variant: 'outline' as const, label: 'Reembolsado', icon: XCircle },
+      INTERESTED: { variant: 'outline' as const, label: 'Interessado', icon: Clock },
     };
 
     const config = variants[status as keyof typeof variants] || variants.PENDING;
@@ -337,6 +343,7 @@ export function AdminOrders() {
                 <SelectItem value="COMPLETED">Concluído</SelectItem>
                 <SelectItem value="CANCELLED">Cancelado</SelectItem>
                 <SelectItem value="REFUNDED">Reembolsado</SelectItem>
+                <SelectItem value="INTERESTED">Interessado</SelectItem>
               </SelectContent>
             </Select>
             <Select value={paymentFilter} onValueChange={setPaymentFilter}>
@@ -375,12 +382,12 @@ export function AdminOrders() {
                 >
                   <div className="flex-1 space-y-1">
                     <div className="flex items-center gap-2">
-                      <p className="font-medium">#{order.orderNumber}</p>
+                      <p className="font-medium">#{order.orderNumber || order.id.slice(-8)}</p>
                       {getStatusBadge(order.status)}
-                      {getPaymentBadge(order.paymentMethod, order.paymentStatus)}
+                      {order.paymentMethod && getPaymentBadge(order.paymentMethod, order.paymentStatus)}
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      Cliente: {order.user.name} ({order.user.email})
+                      Cliente: {order.user?.name || order.customerName || 'N/A'} ({order.user?.email || order.customerEmail || 'N/A'})
                     </p>
                     <p className="text-sm text-muted-foreground">
                       {format(new Date(order.createdAt), "dd 'de' MMMM 'de' yyyy 'às' HH:mm", {
@@ -389,9 +396,9 @@ export function AdminOrders() {
                     </p>
                     <div className="flex items-center gap-4">
                       <p className="text-sm">
-                        {order.items.length} {order.items.length === 1 ? 'item' : 'itens'}
+                        {order.items?.length || 0} {(order.items?.length || 0) === 1 ? 'item' : 'itens'}
                       </p>
-                      <p className="text-sm font-medium">Total: {formatPrice(order.total)}</p>
+                      <p className="text-sm font-medium">Total: {formatPrice(order.total || order.totalAmount || 0)}</p>
                     </div>
                   </div>
                   <Button variant="ghost" size="icon" onClick={() => openDetailsDialog(order)}>
