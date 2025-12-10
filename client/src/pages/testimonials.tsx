@@ -2,6 +2,7 @@ import { WhatsAppFloatingButton } from '@/components/whatsapp-floating-button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Quote, Star, Users, Award, ThumbsUp, GraduationCap } from 'lucide-react';
+import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
 // Dados mockados de depoimentos
@@ -222,6 +223,11 @@ const TestimonialCard = ({ testimonial, index }: { testimonial: typeof testimoni
 );
 
 export default function TestimonialsPage() {
+  // Scroll para o topo ao carregar a página
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
