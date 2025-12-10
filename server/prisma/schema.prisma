@@ -57,6 +57,7 @@ enum OrderStatus {
   PROCESSING
   COMPLETED
   CANCELED
+  INTERESTED
 }
 
 enum PaymentMethod {

@@ -472,6 +472,67 @@ export async function registerNewsletterRoutes(app: FastifyInstance) {
       }
     }
   );
+
+  // Subscribe as lead (creates Order with INTERESTED status)
+  const leadSubscribeSchema = z.object({
+    email: z.string().email('Email inválido'),
+  });
+
+  app.post('/leads/subscribe', async (request, reply) => {
+    try {
+      const data = leadSubscribeSchema.parse(request.body);
+
+      // Check if email already exists as an INTERESTED lead
+      const existingLead = await prisma.order.findFirst({
+        where: {
+          customerEmail: data.email,
+          status: 'INTERESTED',
+        },
+      });
+
+      if (existingLead) {
+        reply.send({
+          success: true,
+          message: 'Email já cadastrado na nossa lista de interessados!',
+          alreadyExists: true,
+        });
+        return;
+      }
+
+      // Create new lead as Order with INTERESTED status
+      const lead = await prisma.order.create({
+        data: {
+          customerName: 'Sem nome',
+          customerEmail: data.email,
+          customerCpfCnpj: '000.000.000-00',
+          totalAmount: 0,
+          status: 'INTERESTED',
+          paymentStatus: 'PENDING',
+        },
+      });
+
+      reply.status(201).send({
+        success: true,
+        message: 'Email cadastrado com sucesso! Você receberá nossas novidades.',
+        lead: {
+          id: lead.id,
+          email: lead.customerEmail,
+        },
+      });
+    } catch (error: unknown) {
+      if (error instanceof z.ZodError) {
+        reply.status(400).send({
+          success: false,
+          error: 'Email inválido. Por favor, verifique o email informado.'
+        });
+        return;
+      }
+      reply.status(500).send({
+        success: false,
+        error: 'Erro ao cadastrar email. Tente novamente.'
+      });
+    }
+  });
 }
 
 export default registerNewsletterRoutes;

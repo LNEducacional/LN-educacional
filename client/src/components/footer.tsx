@@ -3,6 +3,8 @@ import {
   Mail,
   Phone,
   Youtube,
+  Loader2,
+  CheckCircle,
 } from 'lucide-react';
 import { useState } from 'react';
 import {
@@ -16,6 +18,50 @@ import {
 export function Footer() {
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+  const [email, setEmail] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const handleSubscribe = async () => {
+    if (!email.trim()) {
+      setErrorMessage('Por favor, informe seu e-mail');
+      return;
+    }
+
+    // Validação básica de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setErrorMessage('Por favor, informe um e-mail válido');
+      return;
+    }
+
+    setIsLoading(true);
+    setErrorMessage('');
+
+    try {
+      const response = await fetch('/api/leads/subscribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setIsSubscribed(true);
+        setEmail('');
+      } else {
+        setErrorMessage(data.error || 'Erro ao cadastrar. Tente novamente.');
+      }
+    } catch {
+      setErrorMessage('Erro de conexão. Tente novamente.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
   return (
     <footer className="bg-black border-t border-gray-800">
       <div className="container mx-auto px-4 py-10">
@@ -120,16 +166,54 @@ export function Footer() {
             <p className="text-gray-400 text-sm mb-4 text-center sm:text-left">
               Fique por dentro dos novos cursos e promoções exclusivas.
             </p>
-            <div className="flex flex-col sm:flex-row gap-2">
-              <input
-                type="email"
-                placeholder="Seu e-mail"
-                className="flex-1 px-4 py-2 bg-gray-900 border border-gray-700 text-white placeholder-gray-500 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none text-sm"
-              />
-              <button type="button" className="btn-accent whitespace-nowrap">
-                Inscrever
-              </button>
-            </div>
+            {isSubscribed ? (
+              <div className="flex items-center gap-2 text-green-500">
+                <CheckCircle className="h-5 w-5" />
+                <span className="text-sm font-medium">
+                  Email cadastrado com sucesso! Você receberá nossas novidades.
+                </span>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <input
+                    type="email"
+                    placeholder="Seu e-mail"
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      setErrorMessage('');
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleSubscribe();
+                      }
+                    }}
+                    disabled={isLoading}
+                    className="flex-1 px-4 py-2 bg-gray-900 border border-gray-700 text-white placeholder-gray-500 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none text-sm disabled:opacity-50"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleSubscribe}
+                    disabled={isLoading}
+                    className="btn-accent whitespace-nowrap disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Enviando...
+                      </>
+                    ) : (
+                      'Inscrever'
+                    )}
+                  </button>
+                </div>
+                {errorMessage && (
+                  <p className="text-red-500 text-xs">{errorMessage}</p>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
