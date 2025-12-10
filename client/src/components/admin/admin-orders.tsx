@@ -48,11 +48,12 @@ import {
 } from '@/components/ui/alert-dialog';
 import api from '@/services/api';
 
-const statusMap = {
-  pending: { label: 'Pendente', variant: 'secondary' as const },
-  processing: { label: 'Processando', variant: 'default' as const },
-  completed: { label: 'Concluído', variant: 'default' as const },
-  canceled: { label: 'Cancelado', variant: 'destructive' as const },
+const statusMap: Record<string, { label: string; variant: 'secondary' | 'default' | 'destructive' | 'outline' }> = {
+  pending: { label: 'Pendente', variant: 'secondary' },
+  processing: { label: 'Processando', variant: 'default' },
+  completed: { label: 'Concluído', variant: 'default' },
+  canceled: { label: 'Cancelado', variant: 'destructive' },
+  interested: { label: 'Interessado', variant: 'outline' },
 };
 
 const paymentMethodMap = {
@@ -212,8 +213,8 @@ export function AdminOrders() {
           bValue = b.totalAmount;
           break;
         case 'status':
-          aValue = statusMap[a.status.toLowerCase()].label.toLowerCase();
-          bValue = statusMap[b.status.toLowerCase()].label.toLowerCase();
+          aValue = (statusMap[a.status.toLowerCase()] || { label: a.status }).label.toLowerCase();
+          bValue = (statusMap[b.status.toLowerCase()] || { label: b.status }).label.toLowerCase();
           break;
         case 'createdAt':
           aValue = new Date(a.createdAt).getTime();
@@ -287,6 +288,7 @@ export function AdminOrders() {
                 <SelectItem value="processing">Processando</SelectItem>
                 <SelectItem value="completed">Concluído</SelectItem>
                 <SelectItem value="canceled">Cancelado</SelectItem>
+                <SelectItem value="interested">Interessado</SelectItem>
               </SelectContent>
             </Select>
             <Select value={dateFilter} onValueChange={setDateFilter}>
@@ -392,8 +394,8 @@ export function AdminOrders() {
                     </TableCell>
                     <TableCell>{formatCurrency(order.totalAmount)}</TableCell>
                     <TableCell>
-                      <Badge variant={statusMap[order.status.toLowerCase()].variant}>
-                        {statusMap[order.status.toLowerCase()].label}
+                      <Badge variant={(statusMap[order.status.toLowerCase()] || { variant: 'secondary' }).variant}>
+                        {(statusMap[order.status.toLowerCase()] || { label: order.status }).label}
                       </Badge>
                     </TableCell>
                     <TableCell>
