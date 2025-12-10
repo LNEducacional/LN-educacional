@@ -8,6 +8,7 @@ export const PAPER_TYPES = {
   summary: 'Resumo',
   monography: 'Monografia',
   case_study: 'Estudo de Caso',
+  other: 'Outros',
 };
 
 export const ACADEMIC_AREAS = {

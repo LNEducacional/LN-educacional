@@ -3,7 +3,7 @@ import { z } from 'zod';
 export declare const customPaperRequestSchema: z.ZodObject<{
     title: z.ZodString;
     description: z.ZodString;
-    paperType: z.ZodEnum<["ARTICLE", "REVIEW", "THESIS", "DISSERTATION", "PROJECT", "ESSAY", "SUMMARY", "MONOGRAPHY", "CASE_STUDY"]>;
+    paperType: z.ZodEnum<["ARTICLE", "REVIEW", "THESIS", "DISSERTATION", "PROJECT", "ESSAY", "SUMMARY", "MONOGRAPHY", "CASE_STUDY", "OTHER"]>;
     academicArea: z.ZodEnum<["ADMINISTRATION", "LAW", "EDUCATION", "ENGINEERING", "PSYCHOLOGY", "HEALTH", "ACCOUNTING", "ARTS", "ECONOMICS", "SOCIAL_SCIENCES", "OTHER", "EXACT_SCIENCES", "BIOLOGICAL_SCIENCES", "HEALTH_SCIENCES", "APPLIED_SOCIAL_SCIENCES", "HUMANITIES", "LANGUAGES", "AGRICULTURAL_SCIENCES", "MULTIDISCIPLINARY"]>;
     pageCount: z.ZodNumber;
     deadline: z.ZodString;
@@ -17,7 +17,7 @@ export declare const customPaperRequestSchema: z.ZodObject<{
     description: string;
     academicArea: "ADMINISTRATION" | "LAW" | "EDUCATION" | "ENGINEERING" | "PSYCHOLOGY" | "HEALTH" | "ACCOUNTING" | "ARTS" | "ECONOMICS" | "SOCIAL_SCIENCES" | "OTHER" | "EXACT_SCIENCES" | "BIOLOGICAL_SCIENCES" | "HEALTH_SCIENCES" | "APPLIED_SOCIAL_SCIENCES" | "HUMANITIES" | "LANGUAGES" | "AGRICULTURAL_SCIENCES" | "MULTIDISCIPLINARY";
     pageCount: number;
-    paperType: "ARTICLE" | "REVIEW" | "THESIS" | "DISSERTATION" | "PROJECT" | "ESSAY" | "SUMMARY" | "MONOGRAPHY" | "CASE_STUDY";
+    paperType: "OTHER" | "ARTICLE" | "REVIEW" | "THESIS" | "DISSERTATION" | "PROJECT" | "ESSAY" | "SUMMARY" | "MONOGRAPHY" | "CASE_STUDY";
     deadline: string;
     urgency: "NORMAL" | "URGENT" | "VERY_URGENT";
     requirements: string;
@@ -29,7 +29,7 @@ export declare const customPaperRequestSchema: z.ZodObject<{
     description: string;
     academicArea: "ADMINISTRATION" | "LAW" | "EDUCATION" | "ENGINEERING" | "PSYCHOLOGY" | "HEALTH" | "ACCOUNTING" | "ARTS" | "ECONOMICS" | "SOCIAL_SCIENCES" | "OTHER" | "EXACT_SCIENCES" | "BIOLOGICAL_SCIENCES" | "HEALTH_SCIENCES" | "APPLIED_SOCIAL_SCIENCES" | "HUMANITIES" | "LANGUAGES" | "AGRICULTURAL_SCIENCES" | "MULTIDISCIPLINARY";
     pageCount: number;
-    paperType: "ARTICLE" | "REVIEW" | "THESIS" | "DISSERTATION" | "PROJECT" | "ESSAY" | "SUMMARY" | "MONOGRAPHY" | "CASE_STUDY";
+    paperType: "OTHER" | "ARTICLE" | "REVIEW" | "THESIS" | "DISSERTATION" | "PROJECT" | "ESSAY" | "SUMMARY" | "MONOGRAPHY" | "CASE_STUDY";
     deadline: string;
     urgency: "NORMAL" | "URGENT" | "VERY_URGENT";
     requirements: string;

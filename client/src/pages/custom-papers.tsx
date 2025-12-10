@@ -48,6 +48,7 @@ const requestSchema = z.object({
     'summary',
     'monography',
     'case_study',
+    'other',
   ] as const),
   academicArea: z.enum([
     'administration',

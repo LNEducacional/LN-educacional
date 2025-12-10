@@ -162,6 +162,7 @@ export const freePaperSchema = z.object({
       'case_study',
       'project',
       'essay',
+      'other',
     ],
     {
       errorMap: () => ({ message: 'Tipo de trabalho inválido' }),

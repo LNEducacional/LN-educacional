@@ -16,6 +16,7 @@ exports.customPaperRequestSchema = zod_1.z.object({
         'SUMMARY',
         'MONOGRAPHY',
         'CASE_STUDY',
+        'OTHER',
     ]),
     academicArea: zod_1.z.enum([
         'ADMINISTRATION',

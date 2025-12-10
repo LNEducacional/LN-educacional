@@ -15,6 +15,7 @@ export const customPaperRequestSchema = z.object({
     'SUMMARY',
     'MONOGRAPHY',
     'CASE_STUDY',
+    'OTHER',
   ]),
   academicArea: z.enum([
     'ADMINISTRATION',
