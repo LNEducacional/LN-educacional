@@ -60,6 +60,7 @@ const areaLabels: Record<string, string> = {
   TECNOLOGIA: 'Tecnologia',
   CIENCIAS_HUMANAS: 'Ciências Humanas',
   CIENCIAS_SOCIAIS: 'Ciências Sociais',
+  OUTROS: 'Outros',
 };
 
 const levelColors = {
