@@ -113,6 +113,7 @@ export const paperTypeLabels = {
   project: 'Projeto',
   essay: 'Ensaio',
   summary: 'Resumo',
+  other: 'Outros',
 };
 
 export const academicAreaLabels = {
