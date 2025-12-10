@@ -237,26 +237,34 @@ export function AdminOrders() {
     );
   };
 
-  const getPaymentBadge = (method: string, status: string) => {
-    const methodLabels = {
+  const getPaymentBadge = (method: string | null | undefined, status: string | null | undefined) => {
+    if (!method) return null;
+
+    const methodLabels: Record<string, string> = {
       CREDIT_CARD: 'Cartão de Crédito',
       DEBIT_CARD: 'Cartão de Débito',
       PIX: 'PIX',
       BOLETO: 'Boleto',
     };
 
-    const statusVariants = {
+    const statusVariants: Record<string, 'secondary' | 'default' | 'success' | 'destructive' | 'outline'> = {
       PENDING: 'secondary',
       PROCESSING: 'default',
       APPROVED: 'success',
+      PAID: 'success',
+      CONFIRMED: 'success',
       FAILED: 'destructive',
+      CANCELED: 'destructive',
       REFUNDED: 'outline',
-    } as const;
+    };
+
+    const variant = statusVariants[status || 'PENDING'] || 'secondary';
+    const label = methodLabels[method] || method;
 
     return (
       <div className="flex items-center gap-2">
-        <Badge variant={statusVariants[status as keyof typeof statusVariants]}>
-          {methodLabels[method as keyof typeof methodLabels]}
+        <Badge variant={variant}>
+          {label}
         </Badge>
       </div>
     );
