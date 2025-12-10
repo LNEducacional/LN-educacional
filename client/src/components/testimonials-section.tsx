@@ -1,4 +1,5 @@
 import { Star } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 export function TestimonialsSection() {
   const testimonials = [
@@ -94,12 +95,12 @@ export function TestimonialsSection() {
 
         {/* CTA Button */}
         <div className="text-center">
-          <button
-            type="button"
-            className="px-6 py-3 bg-background border border-border rounded-lg text-foreground hover:bg-muted transition-colors"
+          <Link
+            to="/testimonials"
+            className="inline-block px-6 py-3 bg-background border border-border rounded-lg text-foreground hover:bg-muted transition-colors"
           >
             Ver mais depoimentos
-          </button>
+          </Link>
         </div>
       </div>
     </section>

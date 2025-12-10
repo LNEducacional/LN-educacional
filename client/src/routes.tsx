@@ -39,6 +39,7 @@ import {
   CollaboratorPortalStatus,
   CollaboratorPortalDocuments,
   ContactPage,
+  TestimonialsPage,
   CourseDetailPage,
   CourseDetailsPageAdmin,
   CoursesPage,
@@ -452,6 +453,16 @@ export default function AppRoutes() {
             <MainLayout>
               <ProgressiveHydration priority="low">
                 <LazyWrapper component={ContactPage} fallback={<LoadingSpinner />} />
+              </ProgressiveHydration>
+            </MainLayout>
+          }
+        />
+        <Route
+          path="/testimonials"
+          element={
+            <MainLayout>
+              <ProgressiveHydration priority="low">
+                <LazyWrapper component={TestimonialsPage} fallback={<LoadingSpinner />} />
               </ProgressiveHydration>
             </MainLayout>
           }

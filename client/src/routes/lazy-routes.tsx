@@ -10,6 +10,7 @@ export const EbooksPage = lazy(() => import('@/pages/ebooks-guides'));
 export const BlogPage = lazy(() => import('@/pages/blog'));
 export const ContactPage = lazy(() => import('@/pages/contact'));
 export const CollaboratorPage = lazy(() => import('@/pages/collaborator'));
+export const TestimonialsPage = lazy(() => import('@/pages/testimonials'));
 export const CollaboratorPortalDashboard = lazy(() => import('@/pages/collaborator/portal/Dashboard'));
 export const CollaboratorPortalStatus = lazy(() => import('@/pages/collaborator/portal/Status'));
 export const CollaboratorPortalDocuments = lazy(() => import('@/pages/collaborator/portal/Documents'));
