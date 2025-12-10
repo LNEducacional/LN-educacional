@@ -14,6 +14,7 @@ export const formatPaperType = (type: PaperType | string): string => {
     case_study: 'Estudo de Caso',
     project: 'Projeto',
     essay: 'Ensaio',
+    other: 'Outros',
   };
   return typeMap[normalizedType] || type;
 };

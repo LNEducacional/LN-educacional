@@ -7,7 +7,8 @@ export type PaperType =
   | 'essay'
   | 'summary'
   | 'monography'
-  | 'case_study';
+  | 'case_study'
+  | 'other';
 
 export type AcademicArea =
   | 'administration'

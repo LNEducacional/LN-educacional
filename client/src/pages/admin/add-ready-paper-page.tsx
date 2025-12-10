@@ -113,7 +113,6 @@ export default function AddReadyPaperPage() {
       !formData.academicArea ||
       !formData.pageCount ||
       !formData.price ||
-      !formData.description ||
       !formData.file
     ) {
       toast({
@@ -240,16 +239,15 @@ export default function AddReadyPaperPage() {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="description">Descrição *</Label>
+                    <Label htmlFor="description">Descrição</Label>
                     <div className="relative">
                       <FileText className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Textarea
                         id="description"
                         value={formData.description}
                         onChange={(e) => handleInputChange('description', e.target.value)}
-                        placeholder="Descreva o conteúdo do trabalho"
+                        placeholder="Descreva o conteúdo do trabalho (opcional)"
                         className="min-h-[100px] pl-10"
-                        required
                       />
                     </div>
                   </div>
@@ -342,6 +340,7 @@ export default function AddReadyPaperPage() {
                             <SelectItem value="monography">Monografia</SelectItem>
                             <SelectItem value="case_study">Estudo de Caso</SelectItem>
                             <SelectItem value="project">Projeto</SelectItem>
+                            <SelectItem value="other">Outros</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
