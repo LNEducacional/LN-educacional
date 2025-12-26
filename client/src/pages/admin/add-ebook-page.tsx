@@ -128,61 +128,6 @@ export default function AddEbookPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Validações básicas
-    if (
-      !formData.title ||
-      !formData.description ||
-      !formData.authorName ||
-      !formData.area ||
-      !formData.pageCount ||
-      !formData.file
-    ) {
-      toast({
-        title: 'Campos obrigatórios',
-        description: 'Por favor, preencha todos os campos obrigatórios e selecione um arquivo.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    if (formData.authorName.trim().length < 2) {
-      toast({
-        title: 'Nome do autor inválido',
-        description: 'O nome do autor deve ter pelo menos 2 caracteres.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    if (!formData.isFree && (!formData.price || Number.parseFloat(formData.price) <= 0)) {
-      toast({
-        title: 'Preço obrigatório',
-        description: 'Para e-books pagos, é necessário definir um preço válido.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    const pageCount = Number.parseInt(formData.pageCount);
-    if (formData.isFree && pageCount > 100) {
-      toast({
-        title: 'Número de páginas inválido',
-        description: 'E-books gratuitos não devem exceder 100 páginas.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    if (!formData.isFree && pageCount < 10) {
-      toast({
-        title: 'Número de páginas inválido',
-        description: 'E-books pagos devem ter pelo menos 10 páginas.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
     setLoading(true);
 
     try {
@@ -197,26 +142,30 @@ export default function AddEbookPage() {
         coverUrl = coverUploadResponse.data.url;
       }
 
-      // Upload do arquivo do e-book
-      const fileFormData = new FormData();
-      fileFormData.append('file', formData.file);
-      const fileUploadResponse = await api.post('/admin/ebooks/upload-file', fileFormData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-      const fileUrl = fileUploadResponse.data.url;
+      // Upload do arquivo do e-book (se houver)
+      let fileUrl: string | undefined = undefined;
+      if (formData.file) {
+        const fileFormData = new FormData();
+        fileFormData.append('file', formData.file);
+        const fileUploadResponse = await api.post('/admin/ebooks/upload-file', fileFormData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        fileUrl = fileUploadResponse.data.url;
+      }
 
       // Converter preço para centavos corretamente
-      // Garantir que não há vírgulas, apenas pontos decimais
-      const priceInReais = formData.isFree ? 0 : parseFloat(formData.price.replace(',', '.'));
-      // Multiplicar por 100 e arredondar para evitar problemas de ponto flutuante
+      const priceInReais = formData.isFree ? 0 : parseFloat((formData.price || '0').replace(',', '.'));
       const priceInCents = Math.round(priceInReais * 100);
 
-      // Criar o e-book
+      // Valores padrão
+      const pageCount = Number.parseInt(formData.pageCount) || 1;
+
+      // Criar o e-book com valores padrão
       const ebookData = {
-        title: formData.title.trim(),
-        description: formData.description.trim(),
-        authorName: formData.authorName.trim(),
-        academicArea: formData.area,
+        title: formData.title.trim() || 'Sem título',
+        description: formData.description.trim() || 'Sem descrição',
+        authorName: formData.authorName.trim() || 'Autor desconhecido',
+        academicArea: formData.area || 'MULTIDISCIPLINARY',
         pageCount: pageCount,
         price: priceInCents,
         fileUrl: fileUrl,
@@ -284,7 +233,7 @@ export default function AddEbookPage() {
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div>
-                    <Label htmlFor="title">Título *</Label>
+                    <Label htmlFor="title">Título</Label>
                     <div className="relative">
                       <BookOpen className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
@@ -293,13 +242,12 @@ export default function AddEbookPage() {
                         onChange={(e) => handleInputChange('title', e.target.value)}
                         placeholder="Ex: Introdução à Programação Python"
                         className="pl-10"
-                        required
                       />
                     </div>
                   </div>
 
                   <div>
-                    <Label htmlFor="description">Descrição *</Label>
+                    <Label htmlFor="description">Descrição</Label>
                     <div className="relative">
                       <FileText className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Textarea
@@ -309,13 +257,12 @@ export default function AddEbookPage() {
                         placeholder="Descreva o conteúdo do e-book"
                         rows={4}
                         className="pl-10"
-                        required
                       />
                     </div>
                   </div>
 
                   <div>
-                    <Label htmlFor="authorName">Autor *</Label>
+                    <Label htmlFor="authorName">Autor</Label>
                     <div className="relative">
                       <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
@@ -324,14 +271,13 @@ export default function AddEbookPage() {
                         onChange={(e) => handleInputChange('authorName', e.target.value)}
                         placeholder="Nome do autor do e-book"
                         className="pl-10"
-                        required
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="area">Área Acadêmica *</Label>
+                      <Label htmlFor="area">Área Acadêmica</Label>
                       <div className="relative">
                         <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
                         <Select
@@ -359,7 +305,7 @@ export default function AddEbookPage() {
                     </div>
 
                     <div>
-                      <Label htmlFor="pageCount">Páginas *</Label>
+                      <Label htmlFor="pageCount">Páginas</Label>
                       <div className="relative">
                         <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
@@ -370,12 +316,8 @@ export default function AddEbookPage() {
                           onChange={(e) => handleInputChange('pageCount', e.target.value)}
                           placeholder="Ex: 120"
                           className="pl-10"
-                          required
                         />
                       </div>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Gratuito: máx 100 páginas | Pago: mín 10 páginas
-                      </p>
                     </div>
                   </div>
                 </CardContent>
@@ -399,7 +341,7 @@ export default function AddEbookPage() {
 
                   {!formData.isFree && (
                     <div>
-                      <Label htmlFor="price">Preço (R$) *</Label>
+                      <Label htmlFor="price">Preço (R$)</Label>
                       <div className="relative">
                         <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
@@ -411,7 +353,6 @@ export default function AddEbookPage() {
                           onChange={(e) => handleInputChange('price', e.target.value)}
                           placeholder="Ex: 29.90"
                           className="pl-10"
-                          required={!formData.isFree}
                         />
                       </div>
                     </div>
@@ -427,7 +368,7 @@ export default function AddEbookPage() {
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div>
-                    <Label htmlFor="file">Arquivo do E-book *</Label>
+                    <Label htmlFor="file">Arquivo do E-book</Label>
 
                     {/* Preview do arquivo */}
                     {formData.file ? (
@@ -569,7 +510,7 @@ export default function AddEbookPage() {
                 </Button>
                 <Button
                   type="submit"
-                  disabled={loading || !formData.file}
+                  disabled={loading}
                   className="flex-1"
                 >
                   {loading ? 'Salvando...' : 'Salvar E-book'}
