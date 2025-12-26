@@ -146,26 +146,18 @@ export function AdminSidebar({}: AdminSidebarProps) {
       <div className="p-4 border-b border-sidebar-border">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            {collapsed ? (
+            <Link to="/" title="Ir para página inicial">
               <img
                 src="/logo.png"
                 alt="LN Educacional"
-                className="w-12 h-12 object-contain cursor-pointer transition-all duration-300 hover:opacity-80"
-                onClick={toggleSidebar}
-                title="Expandir menu"
+                className={`object-contain cursor-pointer transition-all duration-300 hover:opacity-80 ${
+                  collapsed ? 'w-10 h-10' : 'w-8 h-8'
+                }`}
               />
-            ) : (
-              <Link to="/" title="Ir para página inicial">
-                <img
-                  src="/logo.png"
-                  alt="LN Educacional"
-                  className="w-8 h-8 object-contain cursor-pointer transition-all duration-300 hover:opacity-80"
-                />
-              </Link>
-            )}
+            </Link>
             {!collapsed && <h2 className="font-bold text-sm text-sidebar-foreground">Painel Administrativo</h2>}
           </div>
-          {!collapsed && <SidebarTrigger />}
+          <SidebarTrigger />
         </div>
       </div>
 
