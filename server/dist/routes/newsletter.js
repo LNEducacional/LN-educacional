@@ -329,31 +329,49 @@ async function registerNewsletterRoutes(app) {
         subject: zod_1.z.string(),
         content: zod_1.z.string(),
         postId: zod_1.z.string().optional(),
+        subscriberIds: zod_1.z.array(zod_1.z.string()).optional(),
         categoryIds: zod_1.z.array(zod_1.z.string()).optional(),
         sendToAll: zod_1.z.boolean().default(false),
     });
     app.post('/admin/newsletter/send', { preHandler: [app.authenticate, app.requireAdmin] }, async (request, reply) => {
         try {
             const data = sendNewsletterSchema.parse(request.body);
-            // Get subscribers based on criteria
-            let where = { active: true };
-            if (!data.sendToAll && data.categoryIds && data.categoryIds.length > 0) {
-                where.subscriptions = {
-                    some: {
-                        categoryId: {
-                            in: data.categoryIds,
-                        },
+            let subscribers;
+            // If specific subscriber IDs are provided, use those
+            if (data.subscriberIds && data.subscriberIds.length > 0) {
+                subscribers = await prisma_1.prisma.newsletterSubscriber.findMany({
+                    where: {
+                        id: { in: data.subscriberIds },
+                        active: true,
                     },
-                };
+                    select: {
+                        id: true,
+                        email: true,
+                        name: true,
+                    },
+                });
             }
-            const subscribers = await prisma_1.prisma.newsletterSubscriber.findMany({
-                where,
-                select: {
-                    id: true,
-                    email: true,
-                    name: true,
-                },
-            });
+            else {
+                // Get subscribers based on criteria
+                let where = { active: true };
+                if (!data.sendToAll && data.categoryIds && data.categoryIds.length > 0) {
+                    where.subscriptions = {
+                        some: {
+                            categoryId: {
+                                in: data.categoryIds,
+                            },
+                        },
+                    };
+                }
+                subscribers = await prisma_1.prisma.newsletterSubscriber.findMany({
+                    where,
+                    select: {
+                        id: true,
+                        email: true,
+                        name: true,
+                    },
+                });
+            }
             // Create notification record
             let notificationId;
             if (data.postId) {
@@ -490,6 +508,75 @@ async function registerNewsletterRoutes(app) {
                 success: false,
                 error: 'Erro ao cadastrar email. Tente novamente.'
             });
+        }
+    });
+    // Admin: Get email settings
+    app.get('/admin/settings/email', { preHandler: [app.authenticate, app.requireAdmin] }, async (_request, reply) => {
+        try {
+            const setting = await prisma_1.prisma.systemSetting.findUnique({
+                where: { key: 'email_config' },
+            });
+            if (!setting) {
+                reply.send({
+                    provider: 'sendgrid',
+                    fromEmail: 'noreply@lneducacional.com.br',
+                    apiKey: '',
+                    configured: false,
+                });
+                return;
+            }
+            const config = JSON.parse(setting.value);
+            reply.send({
+                ...config,
+                // Mask API key for security
+                apiKey: config.apiKey ? '••••••••' + config.apiKey.slice(-4) : '',
+                configured: !!config.apiKey,
+            });
+        }
+        catch (error) {
+            reply.status(400).send({ error: error.message });
+        }
+    });
+    // Admin: Save email settings
+    const emailConfigSchema = zod_1.z.object({
+        provider: zod_1.z.enum(['sendgrid', 'resend']),
+        fromEmail: zod_1.z.string().email(),
+        apiKey: zod_1.z.string(),
+    });
+    app.post('/admin/settings/email', { preHandler: [app.authenticate, app.requireAdmin] }, async (request, reply) => {
+        try {
+            const data = emailConfigSchema.parse(request.body);
+            // Get existing config to preserve API key if not changed
+            const existing = await prisma_1.prisma.systemSetting.findUnique({
+                where: { key: 'email_config' },
+            });
+            let apiKey = data.apiKey;
+            // If the API key is masked, keep the existing one
+            if (data.apiKey.startsWith('••••••••') && existing) {
+                const existingConfig = JSON.parse(existing.value);
+                apiKey = existingConfig.apiKey;
+            }
+            const config = {
+                provider: data.provider,
+                fromEmail: data.fromEmail,
+                apiKey: apiKey,
+            };
+            await prisma_1.prisma.systemSetting.upsert({
+                where: { key: 'email_config' },
+                update: { value: JSON.stringify(config) },
+                create: { key: 'email_config', value: JSON.stringify(config) },
+            });
+            // Update environment variable for immediate use
+            process.env.EMAIL_PROVIDER = data.provider;
+            process.env.EMAIL_API_KEY = apiKey;
+            process.env.EMAIL_FROM = data.fromEmail;
+            reply.send({
+                success: true,
+                message: 'Configurações de email salvas com sucesso',
+            });
+        }
+        catch (error) {
+            reply.status(400).send({ error: error.message });
         }
     });
 }
