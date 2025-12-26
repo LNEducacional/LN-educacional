@@ -7,6 +7,7 @@ import {
   CheckCircle,
 } from 'lucide-react';
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Dialog,
   DialogContent,
@@ -69,14 +70,14 @@ export function Footer() {
         <div className="grid md:grid-cols-3 gap-8 mb-8">
           {/* Company Info */}
           <div className="space-y-6">
-            <div className="flex items-center gap-2">
+            <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity" title="Ir para página inicial">
               <img
                 src="/logo.png"
                 alt="LN Educacional"
                 className="h-8 w-8 object-contain brightness-0 invert"
               />
               <h3 className="text-xl font-bold text-white">LN Educacional</h3>
-            </div>
+            </Link>
 
             <p className="text-gray-400 leading-relaxed max-w-sm">
               Transformando vidas através da educação online de qualidade. Aprenda com os melhores e

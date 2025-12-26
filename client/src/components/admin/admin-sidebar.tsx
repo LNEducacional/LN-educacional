@@ -35,7 +35,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/context/auth-context';
 import { Button } from '@/components/ui/button';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 
 interface AdminSidebarProps {}
 
@@ -146,15 +146,15 @@ export function AdminSidebar({}: AdminSidebarProps) {
       <div className="p-4 border-b border-sidebar-border">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <img
-              src="/logo.png"
-              alt="LN Educacional"
-              className={`object-contain cursor-pointer transition-all duration-300 ${
-                collapsed ? 'w-12 h-12' : 'w-8 h-8'
-              }`}
-              onClick={collapsed ? toggleSidebar : undefined}
-              title={collapsed ? 'Expandir menu' : ''}
-            />
+            <Link to="/" title="Ir para página inicial">
+              <img
+                src="/logo.png"
+                alt="LN Educacional"
+                className={`object-contain cursor-pointer transition-all duration-300 hover:opacity-80 ${
+                  collapsed ? 'w-12 h-12' : 'w-8 h-8'
+                }`}
+              />
+            </Link>
             {!collapsed && <h2 className="font-bold text-sm text-sidebar-foreground">Painel Administrativo</h2>}
           </div>
           {!collapsed && <SidebarTrigger />}

@@ -7,7 +7,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/context/auth-context';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import {
   Award,
   BookOpen,
@@ -119,11 +119,13 @@ export function StudentSidebar({ activeSection, onSectionChange }: StudentSideba
         {/* Header - Logo */}
         <div className="p-4 border-b border-border">
           <div className="flex items-center gap-3">
-            <img
-              src="/logo.png"
-              alt="LN Educacional"
-              className="w-8 h-8 object-contain"
-            />
+            <Link to="/" title="Ir para página inicial">
+              <img
+                src="/logo.png"
+                alt="LN Educacional"
+                className="w-8 h-8 object-contain hover:opacity-80 transition-opacity"
+              />
+            </Link>
             <h2 className="font-bold text-sm text-foreground">Painel do Aluno</h2>
           </div>
         </div>

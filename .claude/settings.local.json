@@ -33,7 +33,8 @@
       "Bash(vmstat:*)",
       "Bash(ss:*)",
       "Bash(journalctl:*)",
-      "Bash(iostat:*)"
+      "Bash(iostat:*)",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "ask": []

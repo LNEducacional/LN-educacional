@@ -195,11 +195,13 @@ export default function Register() {
         <CardHeader className="space-y-6 pb-8">
           {/* Logo */}
           <div className="flex flex-col items-center space-y-4">
-            <img
-              src="/logo.png"
-              alt="LN Educacional"
-              className="h-16 w-16 object-contain -mb-4"
-            />
+            <Link to="/" title="Ir para página inicial">
+              <img
+                src="/logo.png"
+                alt="LN Educacional"
+                className="h-16 w-16 object-contain -mb-4 hover:opacity-80 transition-opacity"
+              />
+            </Link>
             <div className="text-center space-y-2">
               <h1 className="text-2xl font-bold text-gradient-primary">LN Educacional</h1>
               <p className="text-sm text-muted-foreground">
