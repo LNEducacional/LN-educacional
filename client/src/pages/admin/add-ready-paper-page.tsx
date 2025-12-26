@@ -104,50 +104,34 @@ export default function AddReadyPaperPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Validações
-    if (
-      !formData.title ||
-      !formData.authorName ||
-      !formData.paperType ||
-      !formData.academicArea ||
-      !formData.pageCount ||
-      !formData.price ||
-      !formData.file
-    ) {
-      toast({
-        title: 'Campos obrigatórios',
-        description: 'Por favor, preencha todos os campos obrigatórios.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
     setLoading(true);
 
     try {
       const formDataToSend = new FormData();
 
-      // Adicionar dados do formulário
-      formDataToSend.append('title', formData.title);
-      formDataToSend.append('authorName', formData.authorName);
-      formDataToSend.append('description', formData.description);
-      formDataToSend.append('paperType', formData.paperType);
-      formDataToSend.append('academicArea', formData.academicArea);
-      formDataToSend.append('pageCount', formData.pageCount.toString());
-      formDataToSend.append('language', formData.language);
+      // Adicionar dados do formulário com valores padrão
+      formDataToSend.append('title', formData.title || 'Sem título');
+      formDataToSend.append('authorName', formData.authorName || 'Autor desconhecido');
+      formDataToSend.append('description', formData.description || 'Sem descrição');
+      formDataToSend.append('paperType', formData.paperType || 'other');
+      formDataToSend.append('academicArea', formData.academicArea || 'other');
+      formDataToSend.append('pageCount', (formData.pageCount || '1').toString());
+      formDataToSend.append('language', formData.language || 'pt');
       formDataToSend.append('isFree', 'false'); // Trabalho pronto é PAGO
 
-      // Converter preço para centavos (R$ 10,50 -> 1050)
-      const priceInCents = Math.round(parseFloat(formData.price.replace(',', '.')) * 100);
+      // Converter preço para centavos (R$ 10,50 -> 1050), default 0
+      const priceValue = formData.price ? formData.price.replace(',', '.') : '0';
+      const priceInCents = Math.round(parseFloat(priceValue) * 100);
       formDataToSend.append('price', priceInCents.toString());
 
       if (keywords.length > 0) {
         formDataToSend.append('keywords', keywords.join(', '));
       }
 
-      // Adicionar arquivos
-      formDataToSend.append('file', formData.file);
+      // Adicionar arquivos (se existirem)
+      if (formData.file) {
+        formDataToSend.append('file', formData.file);
+      }
       if (formData.thumbnail) {
         formDataToSend.append('thumbnail', formData.thumbnail);
       }
@@ -210,7 +194,7 @@ export default function AddReadyPaperPage() {
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="title">Título *</Label>
+                      <Label htmlFor="title">Título</Label>
                       <div className="relative">
                         <BookOpen className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
@@ -219,12 +203,11 @@ export default function AddReadyPaperPage() {
                           onChange={(e) => handleInputChange('title', e.target.value)}
                           placeholder="Digite o título do trabalho"
                           className="pl-10"
-                          required
                         />
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="authorName">Nome do Autor *</Label>
+                      <Label htmlFor="authorName">Nome do Autor</Label>
                       <div className="relative">
                         <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
@@ -233,7 +216,6 @@ export default function AddReadyPaperPage() {
                           onChange={(e) => handleInputChange('authorName', e.target.value)}
                           placeholder="Digite o nome do autor"
                           className="pl-10"
-                          required
                         />
                       </div>
                     </div>
@@ -321,7 +303,7 @@ export default function AddReadyPaperPage() {
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="paperType">Tipo de Trabalho *</Label>
+                      <Label htmlFor="paperType">Tipo de Trabalho</Label>
                       <div className="relative">
                         <FileType className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
                         <Select
@@ -346,7 +328,7 @@ export default function AddReadyPaperPage() {
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="academicArea">Área Acadêmica *</Label>
+                      <Label htmlFor="academicArea">Área Acadêmica</Label>
                       <div className="relative">
                         <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
                         <Select
@@ -387,7 +369,7 @@ export default function AddReadyPaperPage() {
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="pageCount">Número de Páginas *</Label>
+                      <Label htmlFor="pageCount">Número de Páginas</Label>
                       <div className="relative">
                         <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
@@ -398,12 +380,11 @@ export default function AddReadyPaperPage() {
                           onChange={(e) => handleInputChange('pageCount', e.target.value)}
                           placeholder="Ex: 50"
                           className="pl-10"
-                          required
                         />
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="price">Preço (R$) *</Label>
+                      <Label htmlFor="price">Preço (R$)</Label>
                       <div className="relative">
                         <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
@@ -413,7 +394,6 @@ export default function AddReadyPaperPage() {
                           onChange={(e) => handlePriceChange(e.target.value)}
                           placeholder="Ex: 99,90"
                           className="pl-10"
-                          required
                         />
                       </div>
                       <p className="text-xs text-muted-foreground">Use vírgula para centavos (ex: 99,90)</p>
@@ -434,7 +414,6 @@ export default function AddReadyPaperPage() {
                     accept=".pdf,.doc,.docx"
                     file={formData.file}
                     onChange={(file) => handleFileChange('file', file)}
-                    required
                     maxSize="50MB"
                     fileTypes="PDF, DOC, DOCX"
                   />
