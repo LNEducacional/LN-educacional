@@ -72,6 +72,7 @@ const requestSchema = z.object({
     'agricultural_sciences',
     'multidisciplinary',
   ] as const),
+  otherAcademicArea: z.string().optional(),
   pageCount: z.number().min(1).max(500),
   deadline: z.date().min(addDays(new Date(), 1), 'Prazo deve ser pelo menos 1 dia no futuro'),
   urgency: z.enum(['NORMAL', 'URGENT', 'VERY_URGENT']),
@@ -87,6 +88,15 @@ const requestSchema = z.object({
 }, {
   message: 'Especifique o tipo de trabalho (mínimo 3 caracteres)',
   path: ['otherPaperType'],
+}).refine((data) => {
+  // Se academicArea for 'other', otherAcademicArea é obrigatório
+  if (data.academicArea === 'other') {
+    return data.otherAcademicArea && data.otherAcademicArea.trim().length >= 3;
+  }
+  return true;
+}, {
+  message: 'Especifique a área acadêmica (mínimo 3 caracteres)',
+  path: ['otherAcademicArea'],
 });
 
 type RequestFormData = z.infer<typeof requestSchema>;
@@ -117,7 +127,10 @@ const buildWhatsAppMessage = (data: RequestFormData, files: string[]): string =>
     ? `Outros (${data.otherPaperType})`
     : PAPER_TYPES[data.paperType as keyof typeof PAPER_TYPES];
   message += `- Tipo de Trabalho: ${paperTypeLabel}\n`;
-  message += `- Área Acadêmica: ${ACADEMIC_AREAS[data.academicArea as keyof typeof ACADEMIC_AREAS]}\n`;
+  const academicAreaLabel = data.academicArea === 'other' && data.otherAcademicArea
+    ? `Outros (${data.otherAcademicArea})`
+    : ACADEMIC_AREAS[data.academicArea as keyof typeof ACADEMIC_AREAS];
+  message += `- Área Acadêmica: ${academicAreaLabel}\n`;
   message += `- Número de Páginas: ${data.pageCount}\n`;
   message += `- Prazo de Entrega: ${formatDate(data.deadline)}\n`;
   message += `- Urgência: ${urgencyLabels[data.urgency as keyof typeof urgencyLabels]}\n`;
@@ -378,6 +391,28 @@ export default function CustomPapersPage() {
                       </FormControl>
                       <FormDescription>
                         Informe qual é o tipo de trabalho que você precisa
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+
+              {form.watch('academicArea') === 'other' && (
+                <FormField
+                  control={form.control}
+                  name="otherAcademicArea"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Especifique a Área Acadêmica *</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Ex: Arquitetura, Fisioterapia, Nutrição, Turismo..."
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Informe qual é a área acadêmica do seu trabalho
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
