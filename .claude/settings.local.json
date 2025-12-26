@@ -25,7 +25,10 @@
       "Bash(curl:*)",
       "Bash(git log:*)",
       "Bash(timeout 30 pm2 logs:*)",
-      "Bash(pm2 flush:*)"
+      "Bash(pm2 flush:*)",
+      "Bash(dmesg:*)",
+      "Bash(systemctl status:*)",
+      "Bash(pm2 reset:*)"
     ],
     "deny": [],
     "ask": []

@@ -9,6 +9,7 @@ import {
   Users,
   ShoppingCart,
   ShoppingBag,
+  Heart,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -16,6 +17,7 @@ import { useState } from 'react';
 import CheckoutModal from './checkout/checkout-modal';
 import { useCart } from '@/context/cart-context';
 import { useToast } from '@/hooks/use-toast';
+import { useFavorites } from '@/hooks/use-favorites';
 import { FlyToCartAnimation } from './cart/fly-to-cart-animation';
 
 interface CourseCardProps {
@@ -52,6 +54,20 @@ export function CourseCard({
   const [flyingItem, setFlyingItem] = useState<{ x: number; y: number } | null>(null);
   const { addItem, setCartOpen } = useCart();
   const { toast } = useToast();
+  const { isFavorite, toggleFavorite } = useFavorites();
+  const isCourseFavorite = isFavorite(course.id, 'courses');
+
+  const handleToggleFavorite = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const added = toggleFavorite(course.id, 'courses');
+    toast({
+      title: added ? 'Adicionado aos favoritos!' : 'Removido dos favoritos',
+      description: added
+        ? `${course.title} foi adicionado aos seus favoritos.`
+        : `${course.title} foi removido dos seus favoritos.`,
+    });
+  };
 
   const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -142,8 +158,8 @@ export function CourseCard({
             </div>
           )}
 
-          {/* Level Badge */}
-          <div className="absolute top-2 right-2 z-10">
+          {/* Level Badge and Favorite Button */}
+          <div className="absolute top-2 right-2 z-10 flex items-center gap-1.5">
             <Badge
               variant="outline"
               className={cn(
@@ -153,6 +169,24 @@ export function CourseCard({
             >
               {levelLabels[course.level || 'BEGINNER']}
             </Badge>
+            <button
+              onClick={handleToggleFavorite}
+              className={cn(
+                'p-1.5 rounded-full backdrop-blur-sm transition-all duration-200',
+                'hover:scale-110 active:scale-95',
+                isCourseFavorite
+                  ? 'bg-red-500 text-white'
+                  : 'bg-background/90 text-muted-foreground hover:text-red-500'
+              )}
+              title={isCourseFavorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+            >
+              <Heart
+                className={cn(
+                  'h-4 w-4 transition-all',
+                  isCourseFavorite && 'fill-current'
+                )}
+              />
+            </button>
           </div>
 
           {/* Progress bar if enrolled */}

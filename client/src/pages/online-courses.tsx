@@ -15,13 +15,15 @@ import { CourseCard } from '@/components/course-card';
 import { useAuth } from '@/context/auth-context';
 import { useCart } from '@/context/cart-context';
 import { useToast } from '@/hooks/use-toast';
+import { useFavorites } from '@/hooks/use-favorites';
 import { queryKeys } from '@/lib/query-client';
 import api from '@/services/api';
 import { useQuery } from '@tanstack/react-query';
-import { BookOpen, CheckCircle, Clock, Play } from 'lucide-react';
+import { BookOpen, CheckCircle, Clock, Play, Heart } from 'lucide-react';
 import type React from 'react';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { cn } from '@/lib/utils';
 
 // Interfaces
 interface Course {
@@ -80,10 +82,14 @@ const OnlineCourses: React.FC = () => {
   const [selectedArea, setSelectedArea] = useState<string>('all');
   const [selectedLevel, _setSelectedLevel] = useState<string>('all');
   const [sortBy, _setSortBy] = useState<string>('newest');
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
   const { addItem } = useCart();
   const { toast } = useToast();
+  const { getFavorites, getFavoritesCount } = useFavorites();
+  const favoriteCourseIds = getFavorites('courses');
+  const favoritesCount = getFavoritesCount('courses');
 
   // Buscar cursos da API
   const filters = {
@@ -117,8 +123,14 @@ const OnlineCourses: React.FC = () => {
     staleTime: 0, // Sempre refazer a query ao voltar para a página
   });
 
-  // Filtrar cursos
-  const filteredCourses = coursesData?.courses || [];
+  // Filtrar cursos (incluindo filtro de favoritos)
+  const filteredCourses = useMemo(() => {
+    const courses = coursesData?.courses || [];
+    if (showFavoritesOnly) {
+      return courses.filter(course => favoriteCourseIds.includes(course.id));
+    }
+    return courses;
+  }, [coursesData?.courses, showFavoritesOnly, favoriteCourseIds]);
 
   // Obter cursos matriculados
   const enrolledCourses = useMemo(() => {
@@ -207,7 +219,7 @@ const OnlineCourses: React.FC = () => {
           {/* Filtros */}
           <div className="mb-8 animate-slide-up">
             <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-              <div className="w-full sm:w-auto">
+              <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                 <Select value={selectedArea} onValueChange={setSelectedArea}>
                   <SelectTrigger className="w-full sm:w-[280px]">
                     <SelectValue placeholder="Filtrar por área acadêmica" />
@@ -220,10 +232,38 @@ const OnlineCourses: React.FC = () => {
                     ))}
                   </SelectContent>
                 </Select>
+
+                {/* Botão de Favoritos */}
+                <Button
+                  variant={showFavoritesOnly ? 'default' : 'outline'}
+                  size="default"
+                  onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+                  className={cn(
+                    'gap-2 transition-all',
+                    showFavoritesOnly && 'bg-red-500 hover:bg-red-600 text-white border-red-500'
+                  )}
+                >
+                  <Heart className={cn('h-4 w-4', showFavoritesOnly && 'fill-current')} />
+                  Favoritos
+                  {favoritesCount > 0 && (
+                    <Badge
+                      variant="secondary"
+                      className={cn(
+                        'ml-1 h-5 min-w-5 flex items-center justify-center text-xs',
+                        showFavoritesOnly
+                          ? 'bg-white/20 text-white'
+                          : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+                      )}
+                    >
+                      {favoritesCount}
+                    </Badge>
+                  )}
+                </Button>
               </div>
               <div className="text-sm text-muted-foreground">
                 {filteredCourses.length}{' '}
                 {filteredCourses.length === 1 ? 'curso encontrado' : 'cursos encontrados'}
+                {showFavoritesOnly && ' (favoritos)'}
               </div>
             </div>
           </div>
@@ -324,9 +364,26 @@ const OnlineCourses: React.FC = () => {
           ) : filteredCourses.length === 0 ? (
             <Card className="p-8 text-center">
               <CardContent>
-                <BookOpen className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                <p className="text-muted-foreground mb-4">Nenhum curso encontrado.</p>
-                <Button onClick={() => setSelectedArea('all')}>Ver todos os cursos</Button>
+                {showFavoritesOnly ? (
+                  <>
+                    <Heart className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                    <p className="text-muted-foreground mb-4">
+                      Você ainda não tem cursos favoritos.
+                    </p>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Clique no ícone de coração nos cursos para adicioná-los aos favoritos.
+                    </p>
+                    <Button onClick={() => setShowFavoritesOnly(false)}>
+                      Ver todos os cursos
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <BookOpen className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                    <p className="text-muted-foreground mb-4">Nenhum curso encontrado.</p>
+                    <Button onClick={() => setSelectedArea('all')}>Ver todos os cursos</Button>
+                  </>
+                )}
               </CardContent>
             </Card>
           ) : (
