@@ -1,35 +1,65 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { academicAreaLabels, mockPapers, paperTypeLabels } from '@/data/mock-papers';
+import { academicAreaLabels, paperTypeLabels } from '@/data/mock-papers';
+import { useApi } from '@/hooks/use-api';
+import { useAuth } from '@/context/auth-context';
 import { useToast } from '@/hooks/use-toast';
-import { ArrowLeft, Calendar, Download, Eye, User } from 'lucide-react';
-import { useEffect } from 'react';
+import type { ReadyPaper } from '@/types/paper';
+import { ArrowLeft, Calendar, Download, Eye, Loader2, User } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { LoginRequiredModal } from '@/components/auth/login-required-modal';
 
 export default function FreePaperDetail() {
   const { id } = useParams();
   const { toast } = useToast();
+  const { user } = useAuth();
+  const [loginModalOpen, setLoginModalOpen] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
 
-  const paper = mockPapers.find((p) => p.id === Number.parseInt(id || '0', 10) && p.price === 0);
+  const { data: paper, loading, error } = useApi<ReadyPaper>(`/papers/${id}`);
 
-  const handleDownload = () => {
-    // Simular verificação de login
-    const isLoggedIn = false; // Substituir por lógica real de autenticação
-
-    if (!isLoggedIn) {
-      toast({
-        title: 'Login necessário',
-        description: 'Faça login para baixar este trabalho gratuito.',
-        variant: 'destructive',
-      });
+  const handleDownload = async () => {
+    if (!user) {
+      setLoginModalOpen(true);
       return;
     }
 
-    toast({
-      title: 'Download iniciado!',
-      description: 'Seu arquivo está sendo baixado.',
-    });
+    if (!paper) return;
+
+    setIsDownloading(true);
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/papers/${paper.id}/download`, {
+        credentials: 'include',
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Erro ao baixar arquivo');
+      }
+
+      const data = await response.json();
+
+      // Abrir URL de download em nova aba
+      window.open(data.downloadUrl, '_blank');
+
+      toast({
+        title: 'Download iniciado!',
+        description: `${data.paper.title} foi adicionado à sua biblioteca.`,
+      });
+    } catch (error) {
+      toast({
+        title: 'Erro ao baixar',
+        description: error instanceof Error ? error.message : 'Não foi possível baixar o arquivo.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   // SEO Meta Tags
@@ -43,11 +73,22 @@ export default function FreePaperDetail() {
     }
   }, [paper]);
 
-  if (!paper) {
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (error || !paper) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-foreground mb-4">Trabalho não encontrado</h1>
+          <p className="text-muted-foreground mb-4">
+            O trabalho que você está procurando não existe ou foi removido.
+          </p>
           <Button asChild>
             <Link to="/free-papers">
               <ArrowLeft className="w-4 h-4 mr-2" />
@@ -59,10 +100,35 @@ export default function FreePaperDetail() {
     );
   }
 
-  // Mock de estatísticas
-  const mockStats = {
-    downloads: Math.floor(Math.random() * 1000) + 100,
-    views: Math.floor(Math.random() * 5000) + 500,
+  // Verificar se é realmente gratuito
+  if (paper.price > 0) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-foreground mb-4">Este trabalho não é gratuito</h1>
+          <p className="text-muted-foreground mb-4">
+            Este trabalho está disponível na seção de trabalhos prontos.
+          </p>
+          <div className="flex gap-4 justify-center">
+            <Button asChild variant="outline">
+              <Link to="/free-papers">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Trabalhos Gratuitos
+              </Link>
+            </Button>
+            <Button asChild>
+              <Link to={`/ready-papers/${paper.id}`}>
+                Ver Trabalho
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const formatDate = (date: string | Date) => {
+    return new Date(date).toLocaleDateString('pt-BR');
   };
 
   return (
@@ -116,7 +182,7 @@ export default function FreePaperDetail() {
                   <Calendar className="w-5 h-5 text-muted-foreground" />
                   <div>
                     <p className="font-medium text-foreground">
-                      {paper.createdAt.toLocaleDateString('pt-BR')}
+                      {formatDate(paper.createdAt)}
                     </p>
                     <p className="text-sm text-muted-foreground">Data de publicação</p>
                   </div>
@@ -130,7 +196,7 @@ export default function FreePaperDetail() {
                     <div className="flex items-center justify-center space-x-2 mb-2">
                       <Download className="w-5 h-5 text-primary" />
                       <span className="text-2xl font-bold text-foreground">
-                        {mockStats.downloads}
+                        {paper.downloadCount || 0}
                       </span>
                     </div>
                     <p className="text-sm text-muted-foreground">Downloads</p>
@@ -140,7 +206,9 @@ export default function FreePaperDetail() {
                   <CardContent className="p-4 text-center">
                     <div className="flex items-center justify-center space-x-2 mb-2">
                       <Eye className="w-5 h-5 text-primary" />
-                      <span className="text-2xl font-bold text-foreground">{mockStats.views}</span>
+                      <span className="text-2xl font-bold text-foreground">
+                        {paper.viewCount || 0}
+                      </span>
                     </div>
                     <p className="text-sm text-muted-foreground">Visualizações</p>
                   </CardContent>
@@ -187,9 +255,19 @@ export default function FreePaperDetail() {
                   size="lg"
                   className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
                   onClick={handleDownload}
+                  disabled={isDownloading}
                 >
-                  <Download className="w-4 h-4 mr-2" />
-                  Baixar Trabalho
+                  {isDownloading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Baixando...
+                    </>
+                  ) : (
+                    <>
+                      <Download className="w-4 h-4 mr-2" />
+                      Baixar Trabalho
+                    </>
+                  )}
                 </Button>
 
                 <div className="text-center text-sm text-muted-foreground space-y-2">
@@ -231,6 +309,9 @@ export default function FreePaperDetail() {
           </div>
         </div>
       </div>
+
+      {/* Modal de Login Obrigatório */}
+      <LoginRequiredModal open={loginModalOpen} onOpenChange={setLoginModalOpen} />
     </div>
   );
 }
