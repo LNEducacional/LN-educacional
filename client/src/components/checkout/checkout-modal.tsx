@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -35,9 +36,32 @@ export default function CheckoutModal({
 }: CheckoutModalProps) {
   const { user } = useAuth();
   const { processCheckout, isLoading, checkoutResponse } = useCheckout();
+  const navigate = useNavigate();
 
   const [step, setStep] = useState(1);
   const [paymentMethod, setPaymentMethod] = useState<'CREDIT_CARD' | 'PIX' | 'BOLETO'>('CREDIT_CARD');
+
+  // Redirecionar para página de sucesso quando pagamento for aprovado
+  useEffect(() => {
+    if (checkoutResponse?.status === 'CONFIRMED' && step === 3) {
+      const itemType = courseId ? 'course' : ebookId ? 'ebook' : 'paper';
+      const itemId = courseId || ebookId || paperId || '';
+      const params = new URLSearchParams({
+        orderId: checkoutResponse.orderId || '',
+        type: itemType,
+        itemId: itemId,
+        title: encodeURIComponent(courseTitle || ''),
+      });
+
+      // Pequeno delay para mostrar a mensagem de sucesso
+      const timer = setTimeout(() => {
+        onOpenChange(false);
+        navigate(`/purchase-success?${params.toString()}`);
+      }, 1500);
+
+      return () => clearTimeout(timer);
+    }
+  }, [checkoutResponse?.status, step, courseId, ebookId, paperId, courseTitle, navigate, onOpenChange]);
 
   // Registration data (for non-authenticated users)
   const [registrationData, setRegistrationData] = useState({
@@ -447,20 +471,15 @@ export default function CheckoutModal({
                   <Check className="h-8 w-8 text-accent dark:text-accent" />
                 </div>
                 <h3 className="text-xl font-bold mb-2">Pagamento Aprovado!</h3>
-                <p className="text-muted-foreground mb-6">
+                <p className="text-muted-foreground mb-4">
                   {courseId && 'Seu acesso ao curso já está liberado.'}
                   {ebookId && 'Seu e-book já está disponível para download.'}
                   {paperId && 'Seu trabalho já está disponível para download.'}
                 </p>
-                <Button onClick={() => {
-                  if (courseId) window.location.href = `/courses/${courseId}`;
-                  else if (ebookId) window.location.href = `/ebooks/${ebookId}`;
-                  else if (paperId) window.location.href = `/ready-papers/${paperId}`;
-                }}>
-                  {courseId && 'Acessar Curso Agora'}
-                  {ebookId && 'Baixar E-book'}
-                  {paperId && 'Baixar Trabalho'}
-                </Button>
+                <p className="text-sm text-muted-foreground flex items-center justify-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Redirecionando para ver mais produtos...
+                </p>
               </div>
             )}
           </div>

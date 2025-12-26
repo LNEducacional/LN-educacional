@@ -34,6 +34,7 @@ import {
   BlogPostPage,
   BlogPostDetailsPage,
   CheckoutPage,
+  PurchaseSuccessPage,
   CollaboratorPage,
   CollaboratorPortalDashboard,
   CollaboratorPortalStatus,
@@ -154,6 +155,12 @@ export default function AppRoutes() {
               <MainLayout>
                 <LazyWrapper component={CheckoutPage} fallback={<LoadingSpinner />} />
               </MainLayout>
+            }
+          />
+          <Route
+            path="/purchase-success"
+            element={
+              <LazyWrapper component={PurchaseSuccessPage} fallback={<LoadingSpinner />} />
             }
           />
           <Route

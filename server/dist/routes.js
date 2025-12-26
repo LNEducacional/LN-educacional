@@ -704,6 +704,132 @@ async function registerProductRoutes(app) {
             reply.status(400).send({ error: error.message });
         }
     });
+    // Endpoint para buscar produtos similares (para página de sucesso pós-compra)
+    const similarProductsSchema = zod_1.z.object({
+        type: zod_1.z.enum(['course', 'ebook', 'paper']).optional(),
+        academicArea: zod_1.z.string().optional(),
+        excludeId: zod_1.z.string().optional(),
+        limit: zod_1.z.string().optional().transform((val) => parseInt(val || '6', 10)),
+    });
+    app.get('/products/similar', async (request, reply) => {
+        try {
+            const query = similarProductsSchema.parse(request.query);
+            const limit = Math.min(query.limit || 6, 12);
+            const products = [];
+            // Buscar cursos similares
+            if (!query.type || query.type === 'course') {
+                const courseWhere = {
+                    status: 'ACTIVE',
+                };
+                if (query.academicArea) {
+                    courseWhere.academicArea = query.academicArea;
+                }
+                if (query.excludeId) {
+                    courseWhere.id = { not: query.excludeId };
+                }
+                const courses = await prisma_1.prisma.course.findMany({
+                    where: courseWhere,
+                    take: limit,
+                    orderBy: { createdAt: 'desc' },
+                    select: {
+                        id: true,
+                        title: true,
+                        description: true,
+                        price: true,
+                        thumbnailUrl: true,
+                        academicArea: true,
+                        instructorName: true,
+                        duration: true,
+                        level: true,
+                    },
+                });
+                products.push(...courses.map((c) => ({
+                    ...c,
+                    type: 'course',
+                })));
+            }
+            // Buscar ebooks similares
+            if (!query.type || query.type === 'ebook') {
+                const ebookWhere = {};
+                if (query.academicArea) {
+                    ebookWhere.academicArea = query.academicArea;
+                }
+                if (query.excludeId) {
+                    ebookWhere.id = { not: query.excludeId };
+                }
+                const ebooks = await prisma_1.prisma.ebook.findMany({
+                    where: ebookWhere,
+                    take: limit,
+                    orderBy: { createdAt: 'desc' },
+                    select: {
+                        id: true,
+                        title: true,
+                        description: true,
+                        price: true,
+                        coverUrl: true,
+                        academicArea: true,
+                        authorName: true,
+                        pageCount: true,
+                    },
+                });
+                products.push(...ebooks.map((e) => ({
+                    ...e,
+                    thumbnailUrl: e.coverUrl,
+                    author: e.authorName,
+                    pages: e.pageCount,
+                    type: 'ebook',
+                })));
+            }
+            // Buscar papers similares (apenas pagos)
+            if (!query.type || query.type === 'paper') {
+                const paperWhere = {
+                    isFree: false,
+                };
+                if (query.academicArea) {
+                    paperWhere.academicArea = query.academicArea;
+                }
+                if (query.excludeId) {
+                    paperWhere.id = { not: query.excludeId };
+                }
+                const papers = await prisma_1.prisma.paper.findMany({
+                    where: paperWhere,
+                    take: limit,
+                    orderBy: { createdAt: 'desc' },
+                    select: {
+                        id: true,
+                        title: true,
+                        description: true,
+                        price: true,
+                        thumbnailUrl: true,
+                        academicArea: true,
+                        authorName: true,
+                        pageCount: true,
+                        paperType: true,
+                    },
+                });
+                products.push(...papers.map((p) => ({
+                    ...p,
+                    author: p.authorName,
+                    pages: p.pageCount,
+                    type: 'paper',
+                })));
+            }
+            // Embaralhar e limitar resultados
+            const shuffled = products.sort(() => Math.random() - 0.5).slice(0, limit);
+            reply.send({
+                products: shuffled,
+                purchasedItem: {
+                    id: query.excludeId || '',
+                    type: query.type || 'course',
+                    academicArea: query.academicArea || '',
+                },
+            });
+        }
+        catch (error) {
+            console.error('[SIMILAR PRODUCTS] Error:', error);
+            reply.status(400).send({ error: error.message });
+        }
+    });
 }
 async function registerOrderRoutes(app) {
     const checkoutSchema = zod_1.z.object({

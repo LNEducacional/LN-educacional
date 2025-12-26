@@ -363,7 +363,20 @@ function OrderConfirmation({
   navigate: (path: string) => void;
   purchasedItem?: CartItem | null;
 }) {
-  // Se o pagamento foi aprovado, mostrar tela de sucesso
+  // Se o pagamento foi aprovado, redirecionar para página de sucesso com produtos similares
+  useEffect(() => {
+    if (orderStatus?.paymentStatus === 'APPROVED' && purchasedItem) {
+      const params = new URLSearchParams({
+        orderId: orderData?.orderId || '',
+        type: purchasedItem.type || 'course',
+        itemId: purchasedItem.id || '',
+        title: encodeURIComponent(purchasedItem.title || ''),
+      });
+      navigate(`/purchase-success?${params.toString()}`);
+    }
+  }, [orderStatus?.paymentStatus, purchasedItem, orderData?.orderId, navigate]);
+
+  // Se o pagamento foi aprovado, mostrar loading enquanto redireciona
   if (orderStatus?.paymentStatus === 'APPROVED') {
     return (
       <div className="min-h-[50vh] bg-gradient-subtle flex items-center justify-center p-4">
@@ -373,28 +386,7 @@ function OrderConfirmation({
               <Check className="h-8 w-8 text-accent dark:text-accent" />
             </div>
             <h3 className="text-xl font-bold mb-2">Pagamento Aprovado!</h3>
-            <p className="text-muted-foreground mb-6">
-              {purchasedItem?.type === 'course' && 'Seu acesso ao curso já está liberado.'}
-              {purchasedItem?.type === 'ebook' && 'Seu e-book já está disponível para download.'}
-              {purchasedItem?.type === 'paper' && 'Seu trabalho já está disponível para download.'}
-            </p>
-            <div className="space-y-3">
-              <Button
-                onClick={() => {
-                  if (purchasedItem?.type === 'course') navigate(`/courses/${purchasedItem.id}`);
-                  else if (purchasedItem?.type === 'ebook') navigate(`/ebooks/${purchasedItem.id}`);
-                  else if (purchasedItem?.type === 'paper') navigate(`/ready-papers/${purchasedItem.id}`);
-                }}
-                className="w-full btn-hero"
-              >
-                {purchasedItem?.type === 'course' && 'Acessar Curso Agora'}
-                {purchasedItem?.type === 'ebook' && 'Baixar E-book'}
-                {purchasedItem?.type === 'paper' && 'Baixar Trabalho'}
-              </Button>
-              <Button onClick={() => navigate('/ready-papers')} variant="outline" className="w-full">
-                Voltar para a Loja
-              </Button>
-            </div>
+            <p className="text-muted-foreground mb-6">Redirecionando...</p>
           </CardContent>
         </Card>
       </div>

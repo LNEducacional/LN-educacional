@@ -32,6 +32,7 @@ export const StudentProfilePage = lazy(() => import('@/pages/student/student-pro
 export const StudentDownloadsPage = lazy(() => import('@/pages/student/student-downloads-page'));
 export const StudentCoursePlayerPage = lazy(() => import('@/pages/student-course-player'));
 export const CheckoutPage = lazy(() => import('@/pages/checkout'));
+export const PurchaseSuccessPage = lazy(() => import('@/pages/purchase-success'));
 export const StudentLayout = lazy(() => import('@/components/student/student-layout').then(m => ({ default: m.StudentLayout })));
 
 // Lazy load páginas de detalhes
