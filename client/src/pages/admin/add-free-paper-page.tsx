@@ -110,26 +110,17 @@ export default function AddFreePaperPage() {
   };
 
   const onSubmit = async (data: FreePaperInput) => {
-    if (!files.file) {
-      toast({
-        title: 'Arquivo obrigatório',
-        description: 'É necessário fazer o upload do arquivo principal.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
     try {
       const formData = new FormData();
 
-      // Adicionar dados do formulário
-      formData.append('title', data.title);
-      formData.append('authorName', data.authorName);
-      formData.append('description', data.description);
-      formData.append('paperType', data.paperType);
-      formData.append('academicArea', data.academicArea);
-      formData.append('pageCount', data.pageCount.toString());
-      formData.append('language', data.language);
+      // Adicionar dados do formulário com valores padrão
+      formData.append('title', data.title || 'Sem título');
+      formData.append('authorName', data.authorName || 'Autor desconhecido');
+      formData.append('description', data.description || 'Sem descrição');
+      formData.append('paperType', data.paperType || 'other');
+      formData.append('academicArea', data.academicArea || 'other');
+      formData.append('pageCount', (data.pageCount || 1).toString());
+      formData.append('language', data.language || 'pt');
       formData.append('isFree', 'true');
       formData.append('price', '0');
 
@@ -137,8 +128,10 @@ export default function AddFreePaperPage() {
         formData.append('keywords', JSON.stringify(data.keywords));
       }
 
-      // Adicionar arquivos
-      formData.append('file', files.file);
+      // Adicionar arquivos (se existirem)
+      if (files.file) {
+        formData.append('file', files.file);
+      }
       if (files.thumbnail) {
         formData.append('thumbnail', files.thumbnail);
       }
@@ -195,7 +188,7 @@ export default function AddFreePaperPage() {
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="title">Título *</Label>
+                      <Label htmlFor="title">Título</Label>
                       <div className="relative">
                         <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
@@ -210,7 +203,7 @@ export default function AddFreePaperPage() {
                       )}
                     </div>
                     <div>
-                      <Label htmlFor="authorName">Autor *</Label>
+                      <Label htmlFor="authorName">Autor</Label>
                       <div className="relative">
                         <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
@@ -228,7 +221,7 @@ export default function AddFreePaperPage() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="paperType">Tipo *</Label>
+                      <Label htmlFor="paperType">Tipo</Label>
                       <div className="relative">
                         <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
                         <Select
@@ -256,7 +249,7 @@ export default function AddFreePaperPage() {
                       )}
                     </div>
                     <div>
-                      <Label htmlFor="academicArea">Área Acadêmica *</Label>
+                      <Label htmlFor="academicArea">Área Acadêmica</Label>
                       <div className="relative">
                         <BookOpen className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
                         <Select
@@ -291,7 +284,7 @@ export default function AddFreePaperPage() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="pageCount">Nº de páginas *</Label>
+                      <Label htmlFor="pageCount">Nº de páginas</Label>
                       <div className="relative">
                         <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
@@ -308,7 +301,7 @@ export default function AddFreePaperPage() {
                       )}
                     </div>
                     <div>
-                      <Label htmlFor="language">Idioma *</Label>
+                      <Label htmlFor="language">Idioma</Label>
                       <div className="relative">
                         <BookOpen className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
                         <Select
@@ -333,7 +326,7 @@ export default function AddFreePaperPage() {
                   </div>
 
                   <div>
-                    <Label htmlFor="description">Descrição *</Label>
+                    <Label htmlFor="description">Descrição</Label>
                     <div className="relative">
                       <FileText className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Textarea
@@ -400,7 +393,6 @@ export default function AddFreePaperPage() {
                     accept=".pdf,.doc,.docx"
                     file={files.file}
                     onChange={(file) => handleFileChange('file', file)}
-                    required
                     maxSize="50MB"
                     fileTypes="PDF, DOC, DOCX"
                   />

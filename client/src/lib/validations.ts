@@ -148,9 +148,9 @@ export const ebookSchema = z.object({
 
 // Free Paper validations
 export const freePaperSchema = z.object({
-  title: z.string().min(3, 'Título deve ter no mínimo 3 caracteres'),
-  authorName: z.string().min(3, 'Nome do autor é obrigatório'),
-  description: z.string().min(10, 'Descrição deve ter no mínimo 10 caracteres'),
+  title: z.string().optional(),
+  authorName: z.string().optional(),
+  description: z.string().optional(),
   paperType: z.enum(
     [
       'article',
@@ -167,7 +167,7 @@ export const freePaperSchema = z.object({
     {
       errorMap: () => ({ message: 'Tipo de trabalho inválido' }),
     }
-  ),
+  ).optional(),
   academicArea: z.enum(
     [
       'exact_sciences',
@@ -185,11 +185,11 @@ export const freePaperSchema = z.object({
     {
       errorMap: () => ({ message: 'Área acadêmica inválida' }),
     }
-  ),
-  pageCount: z.number().min(1, 'Número de páginas deve ser maior que 0'),
+  ).optional(),
+  pageCount: z.number().optional(),
   language: z.enum(['pt', 'en', 'es', 'fr'], {
     errorMap: () => ({ message: 'Idioma inválido' }),
-  }),
+  }).optional(),
   keywords: z.array(z.string()).optional(),
 });
 
