@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import { AuthProvider } from './context/auth-context';
 import { CartProvider } from './context/cart-context';
+import { FavoritesProvider } from './context/favorites-context';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -23,10 +24,12 @@ export default function App() {
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <CartProvider>
-            <Suspense fallback={<div>Carregando aplicação...</div>}>
-              <AppRoutes />
-            </Suspense>
-            <Toaster richColors position="top-right" />
+            <FavoritesProvider>
+              <Suspense fallback={<div>Carregando aplicação...</div>}>
+                <AppRoutes />
+              </Suspense>
+              <Toaster richColors position="top-right" />
+            </FavoritesProvider>
           </CartProvider>
         </AuthProvider>
       </QueryClientProvider>
