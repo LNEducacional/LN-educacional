@@ -75,6 +75,7 @@ import {
   StudentCertificatesPage,
   StudentProfilePage,
   StudentDownloadsPage,
+  AdminNewsletterPage,
 } from '@/routes/lazy-routes';
 
 export default function AppRoutes() {
@@ -314,6 +315,10 @@ export default function AppRoutes() {
           <Route
             path="/admin/integracoes"
             element={<LazyWrapper component={AdminIntegrations} fallback={<LoadingSpinner />} />}
+          />
+          <Route
+            path="/admin/newsletter"
+            element={<LazyWrapper component={AdminNewsletterPage} fallback={<LoadingSpinner />} />}
           />
           <Route
             path="/admin/custom-papers"

@@ -22,6 +22,7 @@ import {
   Library,
   Link2,
   LogOut,
+  Mail,
   Menu,
   Palette,
   PenTool,
@@ -102,6 +103,11 @@ const menuItems = [
     path: '/admin/downloads',
     title: 'Downloads',
     icon: Download,
+  },
+  {
+    path: '/admin/newsletter',
+    title: 'Newsletter',
+    icon: Mail,
   },
   {
     path: '/admin/integracoes',

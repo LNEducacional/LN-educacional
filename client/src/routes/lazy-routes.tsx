@@ -106,6 +106,7 @@ export const EditBlogPostPage = lazy(() => import('@/pages/admin/edit-blog-post-
 export const BlogPostDetailsPage = lazy(() => import('@/pages/admin/blog-post-details-page'));
 export const AddCustomPaperPage = lazy(() => import('@/pages/admin/add-custom-paper-page'));
 export const EditCustomPaperPage = lazy(() => import('@/pages/admin/edit-custom-paper-page'));
+export const AdminNewsletterPage = lazy(() => import('@/pages/admin/newsletter-page'));
 
 // Lazy load página 404
 export const NotFoundPage = lazy(() => import('@/pages/not-found'));
