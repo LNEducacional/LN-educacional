@@ -50,6 +50,7 @@ const requestSchema = z.object({
     'case_study',
     'other',
   ] as const),
+  otherPaperType: z.string().optional(),
   academicArea: z.enum([
     'administration',
     'law',
@@ -77,6 +78,15 @@ const requestSchema = z.object({
   requirements: z.string().min(20, 'Requisitos devem ter pelo menos 20 caracteres'),
   keywords: z.string().optional(),
   references: z.string().optional(),
+}).refine((data) => {
+  // Se paperType for 'other', otherPaperType é obrigatório
+  if (data.paperType === 'other') {
+    return data.otherPaperType && data.otherPaperType.trim().length >= 3;
+  }
+  return true;
+}, {
+  message: 'Especifique o tipo de trabalho (mínimo 3 caracteres)',
+  path: ['otherPaperType'],
 });
 
 type RequestFormData = z.infer<typeof requestSchema>;
@@ -103,7 +113,10 @@ const buildWhatsAppMessage = (data: RequestFormData, files: string[]): string =>
   message += 'Resumo da solicitação:\n';
   message += `- Título do Trabalho: ${data.title}\n`;
   message += `- Descrição Detalhada: ${data.description}\n`;
-  message += `- Tipo de Trabalho: ${PAPER_TYPES[data.paperType as keyof typeof PAPER_TYPES]}\n`;
+  const paperTypeLabel = data.paperType === 'other' && data.otherPaperType
+    ? `Outros (${data.otherPaperType})`
+    : PAPER_TYPES[data.paperType as keyof typeof PAPER_TYPES];
+  message += `- Tipo de Trabalho: ${paperTypeLabel}\n`;
   message += `- Área Acadêmica: ${ACADEMIC_AREAS[data.academicArea as keyof typeof ACADEMIC_AREAS]}\n`;
   message += `- Número de Páginas: ${data.pageCount}\n`;
   message += `- Prazo de Entrega: ${formatDate(data.deadline)}\n`;
@@ -349,6 +362,28 @@ export default function CustomPapersPage() {
                   )}
                 />
               </div>
+
+              {form.watch('paperType') === 'other' && (
+                <FormField
+                  control={form.control}
+                  name="otherPaperType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Especifique o Tipo de Trabalho *</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Ex: Relatório de Estágio, Fichamento, Portfólio..."
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Informe qual é o tipo de trabalho que você precisa
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
             </CardContent>
           </Card>
 
