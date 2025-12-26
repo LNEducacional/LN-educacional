@@ -125,7 +125,7 @@ const AddCustomPaperPage = () => {
                   {/* Usuário */}
                   <div className="space-y-2">
                     <Label htmlFor="userId">
-                      Usuário <span className="text-destructive">*</span>
+                      Usuário
                     </Label>
                     <div className="relative">
                       <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />

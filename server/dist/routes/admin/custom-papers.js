@@ -20,13 +20,10 @@ const adminCustomPapersRoutes = async (app) => {
             keywords: data.keywords,
             references: data.references,
         };
-        // Create paper (userId is required by database schema)
-        if (!data.userId) {
-            return reply.status(400).send({ error: 'Usuário é obrigatório' });
-        }
+        // Create paper (userId is optional)
         const paper = await prisma_1.prisma.customPaper.create({
             data: {
-                userId: data.userId,
+                userId: data.userId || null,
                 title: paperData.title,
                 description: paperData.description,
                 paperType: paperData.paperType,

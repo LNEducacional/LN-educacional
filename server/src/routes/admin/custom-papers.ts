@@ -25,14 +25,10 @@ const adminCustomPapersRoutes: FastifyPluginAsync = async (app) => {
         references: data.references,
       };
 
-      // Create paper (userId is required by database schema)
-      if (!data.userId) {
-        return reply.status(400).send({ error: 'Usuário é obrigatório' });
-      }
-
+      // Create paper (userId is optional)
       const paper = await prisma.customPaper.create({
         data: {
-          userId: data.userId,
+          userId: data.userId || null,
           title: paperData.title,
           description: paperData.description,
           paperType: paperData.paperType,

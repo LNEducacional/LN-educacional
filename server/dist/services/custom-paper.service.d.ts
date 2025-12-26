@@ -69,7 +69,7 @@ export declare const customPaperService: {
             state: string | null;
             zipCode: string | null;
             country: string | null;
-        };
+        } | null;
     } & {
         title: string;
         description: string;
@@ -80,7 +80,7 @@ export declare const customPaperService: {
         paperType: import(".prisma/client").$Enums.PaperType;
         keywords: string | null;
         orderId: string | null;
-        userId: string;
+        userId: string | null;
         completedAt: Date | null;
         paymentStatus: import(".prisma/client").$Enums.PaymentStatus;
         approvedAt: Date | null;
@@ -135,7 +135,7 @@ export declare const customPaperService: {
         paperType: import(".prisma/client").$Enums.PaperType;
         keywords: string | null;
         orderId: string | null;
-        userId: string;
+        userId: string | null;
         completedAt: Date | null;
         paymentStatus: import(".prisma/client").$Enums.PaymentStatus;
         approvedAt: Date | null;
@@ -181,7 +181,7 @@ export declare const customPaperService: {
                 state: string | null;
                 zipCode: string | null;
                 country: string | null;
-            };
+            } | null;
             messages: {
                 id: string;
                 createdAt: Date;
@@ -202,7 +202,7 @@ export declare const customPaperService: {
             paperType: import(".prisma/client").$Enums.PaperType;
             keywords: string | null;
             orderId: string | null;
-            userId: string;
+            userId: string | null;
             completedAt: Date | null;
             paymentStatus: import(".prisma/client").$Enums.PaymentStatus;
             approvedAt: Date | null;
@@ -234,7 +234,7 @@ export declare const customPaperService: {
         paperType: import(".prisma/client").$Enums.PaperType;
         keywords: string | null;
         orderId: string | null;
-        userId: string;
+        userId: string | null;
         completedAt: Date | null;
         paymentStatus: import(".prisma/client").$Enums.PaymentStatus;
         approvedAt: Date | null;
@@ -262,7 +262,7 @@ export declare const customPaperService: {
         paperType: import(".prisma/client").$Enums.PaperType;
         keywords: string | null;
         orderId: string | null;
-        userId: string;
+        userId: string | null;
         completedAt: Date | null;
         paymentStatus: import(".prisma/client").$Enums.PaymentStatus;
         approvedAt: Date | null;
@@ -290,7 +290,7 @@ export declare const customPaperService: {
         paperType: import(".prisma/client").$Enums.PaperType;
         keywords: string | null;
         orderId: string | null;
-        userId: string;
+        userId: string | null;
         completedAt: Date | null;
         paymentStatus: import(".prisma/client").$Enums.PaymentStatus;
         approvedAt: Date | null;
@@ -318,7 +318,7 @@ export declare const customPaperService: {
         paperType: import(".prisma/client").$Enums.PaperType;
         keywords: string | null;
         orderId: string | null;
-        userId: string;
+        userId: string | null;
         completedAt: Date | null;
         paymentStatus: import(".prisma/client").$Enums.PaymentStatus;
         approvedAt: Date | null;

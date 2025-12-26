@@ -566,8 +566,8 @@ model DownloadTracking {
 
 model CustomPaper {
   id              String                @id @default(cuid())
-  userId          String
-  user            User                  @relation(fields: [userId], references: [id])
+  userId          String?
+  user            User?                 @relation(fields: [userId], references: [id])
 
   // Request details
   title           String
