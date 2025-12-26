@@ -76,11 +76,6 @@ const AddCustomPaperPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.title || !formData.description || !formData.deadline || !formData.requirements || !formData.userId) {
-      toast.error('Preencha todos os campos obrigatórios');
-      return;
-    }
-
     setLoading(true);
 
     try {
@@ -156,7 +151,7 @@ const AddCustomPaperPage = () => {
                   {/* Título */}
                   <div className="space-y-2">
                     <Label htmlFor="title">
-                      Título <span className="text-destructive">*</span>
+                      Título
                     </Label>
                     <div className="relative">
                       <BookOpen className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -166,7 +161,6 @@ const AddCustomPaperPage = () => {
                         value={formData.title}
                         onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                         className="pl-10"
-                        required
                       />
                     </div>
                   </div>
@@ -175,7 +169,7 @@ const AddCustomPaperPage = () => {
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-2">
                       <Label htmlFor="paperType">
-                        Tipo de Trabalho <span className="text-destructive">*</span>
+                        Tipo de Trabalho
                       </Label>
                       <div className="relative">
                         <FileText className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
@@ -205,7 +199,7 @@ const AddCustomPaperPage = () => {
 
                     <div className="space-y-2">
                       <Label htmlFor="academicArea">
-                        Área Acadêmica <span className="text-destructive">*</span>
+                        Área Acadêmica
                       </Label>
                       <div className="relative">
                         <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
@@ -238,7 +232,7 @@ const AddCustomPaperPage = () => {
                   {/* Descrição */}
                   <div className="space-y-2">
                     <Label htmlFor="description">
-                      Descrição <span className="text-destructive">*</span>
+                      Descrição
                     </Label>
                     <Textarea
                       id="description"
@@ -246,14 +240,13 @@ const AddCustomPaperPage = () => {
                       value={formData.description}
                       onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                       rows={4}
-                      required
                     />
                   </div>
 
                   {/* Requisitos */}
                   <div className="space-y-2">
                     <Label htmlFor="requirements">
-                      Requisitos <span className="text-destructive">*</span>
+                      Requisitos
                     </Label>
                     <Textarea
                       id="requirements"
@@ -261,7 +254,6 @@ const AddCustomPaperPage = () => {
                       value={formData.requirements}
                       onChange={(e) => setFormData({ ...formData, requirements: e.target.value })}
                       rows={4}
-                      required
                     />
                   </div>
 
@@ -269,7 +261,7 @@ const AddCustomPaperPage = () => {
                   <div className="grid gap-4 md:grid-cols-3">
                     <div className="space-y-2">
                       <Label htmlFor="pageCount">
-                        Nº de Páginas <span className="text-destructive">*</span>
+                        Nº de Páginas
                       </Label>
                       <div className="relative">
                         <Hash className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -283,14 +275,13 @@ const AddCustomPaperPage = () => {
                             setFormData({ ...formData, pageCount: Number.parseInt(e.target.value) || 10 })
                           }
                           className="pl-10"
-                          required
                         />
                       </div>
                     </div>
 
                     <div className="space-y-2">
                       <Label htmlFor="deadline">
-                        Prazo <span className="text-destructive">*</span>
+                        Prazo
                       </Label>
                       <div className="relative">
                         <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -300,14 +291,13 @@ const AddCustomPaperPage = () => {
                           value={formData.deadline}
                           onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
                           className="pl-10"
-                          required
                         />
                       </div>
                     </div>
 
                     <div className="space-y-2">
                       <Label htmlFor="urgency">
-                        Urgência <span className="text-destructive">*</span>
+                        Urgência
                       </Label>
                       <div className="relative">
                         <AlertCircle className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />

@@ -11,22 +11,42 @@ const adminCustomPapersRoutes: FastifyPluginAsync = async (app) => {
     async (request, reply) => {
       const data = request.body as any;
 
-      // Validate required fields
-      if (!data.userId) {
-        return reply.status(400).send({ error: 'userId is required' });
-      }
-
-      const paper = await customPaperService.createRequest(data.userId, {
-        title: data.title,
-        description: data.description,
-        paperType: data.paperType,
-        academicArea: data.academicArea,
-        pageCount: data.pageCount,
-        deadline: data.deadline,
+      // Set default values for optional fields
+      const paperData = {
+        title: data.title || 'Sem título',
+        description: data.description || 'Sem descrição',
+        paperType: data.paperType || 'OTHER',
+        academicArea: data.academicArea || 'OTHER',
+        pageCount: data.pageCount || 1,
+        deadline: data.deadline || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 dias
         urgency: data.urgency || 'NORMAL',
-        requirements: data.requirements,
+        requirements: data.requirements || 'Sem requisitos específicos',
         keywords: data.keywords,
         references: data.references,
+      };
+
+      // Create paper (userId is required by database schema)
+      if (!data.userId) {
+        return reply.status(400).send({ error: 'Usuário é obrigatório' });
+      }
+
+      const paper = await prisma.customPaper.create({
+        data: {
+          userId: data.userId,
+          title: paperData.title,
+          description: paperData.description,
+          paperType: paperData.paperType,
+          academicArea: paperData.academicArea,
+          pageCount: paperData.pageCount,
+          deadline: new Date(paperData.deadline),
+          urgency: paperData.urgency,
+          requirements: paperData.requirements,
+          keywords: paperData.keywords,
+          references: paperData.references,
+          requirementFiles: [],
+          status: 'REQUESTED',
+        },
+        include: { user: true },
       });
 
       reply.status(201).send(paper);
