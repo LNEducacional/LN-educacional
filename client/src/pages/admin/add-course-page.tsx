@@ -109,58 +109,12 @@ const AddCoursePageNew = () => {
   }, []);
 
   const validateBasicInfo = (): boolean => {
-    if (!formData.title.trim()) {
-      toast.error('Título do curso é obrigatório');
-      return false;
-    }
-    if (!formData.description.trim()) {
-      toast.error('Descrição do curso é obrigatória');
-      return false;
-    }
-    if (!formData.instructorName.trim()) {
-      toast.error('Nome do instrutor é obrigatório');
-      return false;
-    }
-    if (!formData.academicArea || formData.academicArea.trim() === '') {
-      toast.error('Área acadêmica é obrigatória');
-      return false;
-    }
-    if (!formData.level || formData.level.trim() === '') {
-      toast.error('Nível do curso é obrigatório');
-      return false;
-    }
+    // Sem validações obrigatórias
     return true;
   };
 
   const validateContent = (): boolean => {
-    if (modules.length === 0) {
-      toast.error('Adicione pelo menos um módulo ao curso');
-      return false;
-    }
-
-    for (let i = 0; i < modules.length; i++) {
-      const module = modules[i];
-      if (!module.title.trim()) {
-        toast.error(`Módulo ${i + 1} precisa de um título`);
-        return false;
-      }
-      if (module.lessons.length === 0) {
-        toast.error(`Módulo "${module.title}" precisa ter pelo menos uma aula`);
-        return false;
-      }
-      for (let j = 0; j < module.lessons.length; j++) {
-        const lesson = module.lessons[j];
-        if (!lesson.title.trim()) {
-          toast.error(`Aula ${j + 1} do módulo "${module.title}" precisa de um título`);
-          return false;
-        }
-        if (!lesson.videoUrl.trim()) {
-          toast.error(`Aula "${lesson.title}" precisa de um vídeo do YouTube`);
-          return false;
-        }
-      }
-    }
-
+    // Sem validações obrigatórias para conteúdo
     return true;
   };
 
@@ -186,17 +140,17 @@ const AddCoursePageNew = () => {
         0
       );
 
-      // Prepare course data
+      // Prepare course data com valores padrão
       const courseData = {
-        title: formData.title,
-        description: formData.description,
+        title: formData.title || 'Sem título',
+        description: formData.description || 'Sem descrição',
         academicArea: (formData.academicArea || 'OTHER').toUpperCase(),
-        instructorName: formData.instructorName,
-        instructorBio: formData.instructorBio,
-        price: formData.price,
+        instructorName: formData.instructorName || 'Instrutor',
+        instructorBio: formData.instructorBio || '',
+        price: formData.price || 0,
         duration: totalDuration || 480, // Use calculated duration or default
-        status: formData.status,
-        isFeatured: formData.isFeatured,
+        status: formData.status || 'ACTIVE',
+        isFeatured: formData.isFeatured ?? true,
         level: formData.level || 'BEGINNER',
         thumbnailUrl: formData.thumbnailUrl || '',
       };
@@ -350,7 +304,7 @@ const AddCoursePageNew = () => {
                       <CardContent className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <div className="space-y-2 md:col-span-2">
-                            <Label htmlFor="title">Título do Curso *</Label>
+                            <Label htmlFor="title">Título do Curso</Label>
                             <div className="relative">
                               <BookOpen className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                               <Input
@@ -361,13 +315,12 @@ const AddCoursePageNew = () => {
                                 }
                                 placeholder="Ex: Direito para Iniciantes"
                                 className="pl-10"
-                                required
                               />
                             </div>
                           </div>
 
                           <div className="space-y-2">
-                            <Label htmlFor="academicArea">Área Acadêmica *</Label>
+                            <Label htmlFor="academicArea">Área Acadêmica</Label>
                             <div className="relative">
                               <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
                               <Select
@@ -400,7 +353,7 @@ const AddCoursePageNew = () => {
                           </div>
 
                           <div className="space-y-2">
-                            <Label htmlFor="level">Nível do Curso *</Label>
+                            <Label htmlFor="level">Nível do Curso</Label>
                             <Select
                               key={`level-${formData.level}-${existingCourse?.id || 'new'}`}
                               value={formData.level}
@@ -421,7 +374,7 @@ const AddCoursePageNew = () => {
                           </div>
 
                           <div className="space-y-2 md:col-span-2">
-                            <Label htmlFor="description">Descrição do Curso *</Label>
+                            <Label htmlFor="description">Descrição do Curso</Label>
                             <div className="relative">
                               <FileText className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                               <Textarea
@@ -432,7 +385,6 @@ const AddCoursePageNew = () => {
                                 }
                                 placeholder="Descreva o conteúdo, objetivos e benefícios do curso"
                                 className="min-h-[120px] pl-10"
-                                required
                               />
                             </div>
                           </div>
@@ -448,7 +400,7 @@ const AddCoursePageNew = () => {
                       </CardHeader>
                       <CardContent className="space-y-6">
                         <div className="space-y-2">
-                          <Label htmlFor="instructorName">Nome do Instrutor *</Label>
+                          <Label htmlFor="instructorName">Nome do Instrutor</Label>
                           <div className="relative">
                             <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                             <Input
@@ -459,7 +411,6 @@ const AddCoursePageNew = () => {
                               }
                               placeholder="Nome completo do instrutor"
                               className="pl-10"
-                              required
                             />
                           </div>
                         </div>
@@ -491,7 +442,7 @@ const AddCoursePageNew = () => {
                       <CardContent className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <div className="space-y-2">
-                            <Label htmlFor="price">Preço (R$) *</Label>
+                            <Label htmlFor="price">Preço (R$)</Label>
                             <div className="relative">
                               <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                               <Input
