@@ -1,0 +1,146 @@
+version: "3.8"
+
+services:
+  # ============================================
+  # PostgreSQL - Banco de dados principal
+  # ============================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: ln-educacional-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-ln_educacional}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secret}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-ln_educacional}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ln-network
+
+  # ============================================
+  # Redis - Cache e sessoes
+  # ============================================
+  redis:
+    image: redis:7-alpine
+    container_name: ln-educacional-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ln-network
+
+  # ============================================
+  # Server - API Fastify (Node.js)
+  # ============================================
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile.server
+    container_name: ln-educacional-server
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3333
+      HOST: 0.0.0.0
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-secret}@postgres:5432/${POSTGRES_DB:-ln_educacional}?schema=public
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      COOKIE_SECRET: ${COOKIE_SECRET}
+      CORS_ORIGIN: ${CORS_ORIGIN:-https://lneducacional.com.br}
+      EMAIL_PROVIDER: ${EMAIL_PROVIDER:-console}
+      EMAIL_API_KEY: ${EMAIL_API_KEY:-}
+      EMAIL_FROM: ${EMAIL_FROM:-noreply@lneducacional.com.br}
+      EMAIL_FROM_NAME: ${EMAIL_FROM_NAME:-LN Educacional}
+      EMAIL_REPLY_TO: ${EMAIL_REPLY_TO:-contato@lneducacional.com.br}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@lneducacional.com.br}
+    ports:
+      - "${SERVER_PORT:-3333}:3333"
+    volumes:
+      - uploads_data:/app/server/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - ln-network
+
+  # ============================================
+  # Client - Frontend React (servido por Nginx)
+  # ============================================
+  client:
+    build:
+      context: .
+      dockerfile: Dockerfile.client
+      args:
+        VITE_API_URL: ${VITE_API_URL:-https://api.lneducacional.com.br}
+    container_name: ln-educacional-client
+    restart: unless-stopped
+    ports:
+      - "${CLIENT_PORT:-3000}:80"
+    depends_on:
+      - server
+    networks:
+      - ln-network
+
+  # ============================================
+  # Nginx - Reverse proxy e SSL (producao)
+  # ============================================
+  nginx:
+    image: nginx:alpine
+    container_name: ln-educacional-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./certbot/conf:/etc/letsencrypt:ro
+      - ./certbot/www:/var/www/certbot:ro
+    depends_on:
+      - client
+      - server
+    networks:
+      - ln-network
+
+  # ============================================
+  # Certbot - Certificados SSL Let's Encrypt
+  # ============================================
+  certbot:
+    image: certbot/certbot
+    container_name: ln-educacional-certbot
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    networks:
+      - ln-network
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  uploads_data:
+    driver: local
+
+networks:
+  ln-network:
+    driver: bridge

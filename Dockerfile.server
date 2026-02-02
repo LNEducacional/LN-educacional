@@ -1,0 +1,64 @@
+# ============================================
+# Stage 1: Instalar dependencias
+# ============================================
+FROM node:20-alpine AS deps
+WORKDIR /app
+
+# Copiar package.json do root e workspaces
+COPY package.json package-lock.json* ./
+COPY server/package.json ./server/
+COPY client/package.json ./client/
+
+# Instalar apenas dependencias de producao do server
+RUN npm ci --workspace=server --include-workspace-root
+
+# ============================================
+# Stage 2: Build do servidor
+# ============================================
+FROM node:20-alpine AS builder
+WORKDIR /app
+
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/server/node_modules ./server/node_modules
+COPY package.json ./
+COPY server/ ./server/
+
+# Gerar Prisma Client
+RUN npx prisma generate --schema=./server/prisma/schema.prisma
+
+# Compilar TypeScript
+RUN npm run build:server
+
+# ============================================
+# Stage 3: Imagem final de producao
+# ============================================
+FROM node:20-alpine AS runner
+WORKDIR /app
+
+RUN apk add --no-cache dumb-init
+
+# Criar usuario nao-root
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S fastify -u 1001
+
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/server/node_modules ./server/node_modules
+COPY --from=builder /app/server/dist ./server/dist
+COPY --from=builder /app/server/prisma ./server/prisma
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY server/package.json ./server/
+
+# Criar pasta de uploads com permissoes corretas
+RUN mkdir -p /app/server/uploads && chown -R fastify:nodejs /app/server/uploads
+
+WORKDIR /app/server
+
+USER fastify
+
+EXPOSE 3333
+
+# dumb-init para tratar sinais corretamente no container
+ENTRYPOINT ["dumb-init", "--"]
+
+# Rodar migrations e iniciar servidor
+CMD ["sh", "-c", "npx prisma migrate deploy && node dist/index.js"]
