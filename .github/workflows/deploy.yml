@@ -136,7 +136,7 @@ jobs:
             echo "Aguardando health check..."
             HEALTHY=false
             for i in $(seq 1 30); do
-              if docker compose exec -T server sh -c "wget -qO- http://localhost:3333/health" 2>/dev/null; then
+              if docker compose exec -T server sh -c "wget -qO- http://127.0.0.1:3333/health" 2>/dev/null; then
                 echo ""
                 echo "Deploy concluido com sucesso!"
                 HEALTHY=true
