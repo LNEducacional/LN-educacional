@@ -35,7 +35,7 @@ RUN npm run build:server
 FROM node:20-alpine AS runner
 WORKDIR /app
 
-RUN apk add --no-cache dumb-init
+RUN apk add --no-cache dumb-init openssl
 
 # Criar usuario nao-root
 RUN addgroup -g 1001 -S nodejs && \
@@ -46,10 +46,13 @@ COPY --from=deps /app/server/node_modules ./server/node_modules
 COPY --from=builder /app/server/dist ./server/dist
 COPY --from=builder /app/server/prisma ./server/prisma
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/node_modules/@prisma/engines ./node_modules/@prisma/engines
 COPY server/package.json ./server/
 
-# Criar pasta de uploads com permissoes corretas na raiz do projeto
-RUN mkdir -p /app/uploads && chown -R fastify:nodejs /app/uploads
+# Criar pasta de uploads e ajustar permissoes do Prisma
+RUN mkdir -p /app/uploads && chown -R fastify:nodejs /app/uploads && \
+    chown -R fastify:nodejs /app/node_modules/.prisma && \
+    chown -R fastify:nodejs /app/node_modules/@prisma
 
 WORKDIR /app
 
