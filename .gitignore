@@ -28,3 +28,11 @@ Thumbs.db
 
 # Credentials
 CREDENCIAIS/
+
+# Claude/AI config
+.claude/
+.context/
+AGENTS.md
+CLAUDE.md
+CONVENTIONS.md
+DEPLOY.md
