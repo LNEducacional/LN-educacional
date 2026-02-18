@@ -1,0 +1,130 @@
+# ============================================
+# Headers de seguranca globais
+# ============================================
+(security_headers) {
+	header {
+		X-Frame-Options "SAMEORIGIN"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		-Server
+	}
+}
+
+# ============================================
+# ln-educacional — Producao
+# ============================================
+lneducacional.com.br {
+	import security_headers
+
+	# API: strip /api prefix e encaminhar para o server Fastify
+	handle_path /api/* {
+		reverse_proxy ln-prod-server:3333
+	}
+
+	# Uploads: servir arquivos diretamente pelo server
+	handle /uploads/* {
+		reverse_proxy ln-prod-server:3333
+	}
+
+	# SPA React (fallback)
+	handle {
+		reverse_proxy ln-prod-client:80
+	}
+}
+
+# ============================================
+# ln-educacional — Teste
+# ============================================
+teste.lneducacional.com.br {
+	import security_headers
+
+	handle_path /api/* {
+		reverse_proxy ln-test-server:3333
+	}
+
+	handle /uploads/* {
+		reverse_proxy ln-test-server:3333
+	}
+
+	handle {
+		reverse_proxy ln-test-client:80
+	}
+}
+
+# ============================================
+# sistema-financeiro — Producao
+# ============================================
+financeiro.lneducacional.com.br {
+	import security_headers
+
+	# Health check
+	handle /health {
+		reverse_proxy fin-prod-api:8080
+	}
+
+	# Auth routes (login/register/refresh)
+	handle /auth/* {
+		reverse_proxy fin-prod-api:8080
+	}
+
+	# API routes (ja prefixadas com /api no Go)
+	handle /api/* {
+		reverse_proxy fin-prod-api:8080
+	}
+
+	# Admin routes
+	handle /admin/* {
+		reverse_proxy fin-prod-api:8080
+	}
+
+	# Webhook routes (ASAAS)
+	handle /webhook/* {
+		reverse_proxy fin-prod-api:8080
+	}
+
+	# Protected route
+	handle /protected {
+		reverse_proxy fin-prod-api:8080
+	}
+
+	# SPA React (fallback)
+	handle {
+		reverse_proxy fin-prod-client:80
+	}
+}
+
+# ============================================
+# sistema-financeiro — Teste
+# ============================================
+teste.financeiro.lneducacional.com.br {
+	import security_headers
+
+	handle /health {
+		reverse_proxy fin-test-api:8080
+	}
+
+	handle /auth/* {
+		reverse_proxy fin-test-api:8080
+	}
+
+	handle /api/* {
+		reverse_proxy fin-test-api:8080
+	}
+
+	handle /admin/* {
+		reverse_proxy fin-test-api:8080
+	}
+
+	handle /webhook/* {
+		reverse_proxy fin-test-api:8080
+	}
+
+	handle /protected {
+		reverse_proxy fin-test-api:8080
+	}
+
+	handle {
+		reverse_proxy fin-test-client:80
+	}
+}

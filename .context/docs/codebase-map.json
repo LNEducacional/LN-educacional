@@ -1,0 +1,1819 @@
+{
+  "version": "1.0.0",
+  "generated": "2026-02-02T19:46:28.049Z",
+  "stack": {
+    "primaryLanguage": "typescript",
+    "languages": [
+      "javascript",
+      "typescript"
+    ],
+    "frameworks": [],
+    "buildTools": [
+      "docker-compose"
+    ],
+    "testFrameworks": [],
+    "packageManager": null,
+    "isMonorepo": false,
+    "hasDocker": true,
+    "hasCI": false
+  },
+  "structure": {
+    "totalFiles": 1070,
+    "topDirectories": [
+      {
+        "name": "biome.json",
+        "fileCount": 1
+      },
+      {
+        "name": "build.sh",
+        "fileCount": 1
+      },
+      {
+        "name": "CLAUDE.md",
+        "fileCount": 1
+      },
+      {
+        "name": "client",
+        "fileCount": 770
+      },
+      {
+        "name": "config",
+        "fileCount": 1
+      },
+      {
+        "name": "cookies.txt",
+        "fileCount": 1
+      },
+      {
+        "name": "docker-compose.yaml",
+        "fileCount": 1
+      },
+      {
+        "name": "Dockerfile.client",
+        "fileCount": 1
+      },
+      {
+        "name": "Dockerfile.server",
+        "fileCount": 1
+      },
+      {
+        "name": "ecosystem.config.cjs",
+        "fileCount": 1
+      },
+      {
+        "name": "ecosystem.dev.config.cjs",
+        "fileCount": 1
+      },
+      {
+        "name": "nginx",
+        "fileCount": 2
+      },
+      {
+        "name": "nginx.conf",
+        "fileCount": 1
+      },
+      {
+        "name": "package.json",
+        "fileCount": 1
+      },
+      {
+        "name": "scripts",
+        "fileCount": 3
+      },
+      {
+        "name": "server",
+        "fileCount": 283
+      },
+      {
+        "name": "uploads",
+        "fileCount": 0
+      }
+    ],
+    "languageDistribution": [
+      {
+        "extension": ".tsx",
+        "count": 248
+      },
+      {
+        "extension": ".js",
+        "count": 229
+      },
+      {
+        "extension": ".ts",
+        "count": 218
+      },
+      {
+        "extension": ".gz",
+        "count": 112
+      },
+      {
+        "extension": ".br",
+        "count": 112
+      },
+      {
+        "extension": ".map",
+        "count": 70
+      },
+      {
+        "extension": ".json",
+        "count": 16
+      },
+      {
+        "extension": ".jpg",
+        "count": 10
+      },
+      {
+        "extension": ".md",
+        "count": 8
+      },
+      {
+        "extension": ".txt",
+        "count": 7
+      }
+    ]
+  },
+  "architecture": {
+    "layers": [
+      {
+        "name": "Repositories",
+        "description": "Data access and persistence",
+        "directories": [
+          "server/src",
+          "client/src/data",
+          "client/src/components/seo",
+          "server"
+        ],
+        "symbolCount": 7,
+        "dependsOn": []
+      },
+      {
+        "name": "Controllers",
+        "description": "Request handling and routing",
+        "directories": [
+          "server/src",
+          "server/src/routes",
+          "client/src/hooks",
+          "client/src/api",
+          "server/src/routes/admin",
+          "client/src",
+          "client/src/routes",
+          "client/src/components"
+        ],
+        "symbolCount": 7,
+        "dependsOn": [
+          "Services"
+        ]
+      },
+      {
+        "name": "Utils",
+        "description": "Shared utilities and helpers",
+        "directories": [
+          "server/src/utils",
+          "client/src/utils",
+          "client/src/lib",
+          "client/src/pages/student",
+          "client/src/components/student"
+        ],
+        "symbolCount": 47,
+        "dependsOn": []
+      },
+      {
+        "name": "Services",
+        "description": "Business logic and orchestration",
+        "directories": [
+          "server/src/services",
+          "client/src/services",
+          "client/src/components",
+          "client/src/components/admin"
+        ],
+        "symbolCount": 70,
+        "dependsOn": [
+          "Controllers"
+        ]
+      },
+      {
+        "name": "Components",
+        "description": "UI components and views",
+        "directories": [
+          "client/src/hooks",
+          "client/src/components/ui",
+          "client/src/pages",
+          "client/src/components",
+          "client/src/pages/student",
+          "client/src/pages/admin",
+          "client/src/components/suspense",
+          "client/src/components/student",
+          "client/src/components/skeletons",
+          "client/src/components/seo",
+          "client/src/components/papers",
+          "client/src/components/islands",
+          "client/src/components/ebooks",
+          "client/src/components/collaborator",
+          "client/src/components/checkout",
+          "client/src/components/cart",
+          "client/src/components/blog",
+          "client/src/components/auth",
+          "client/src/components/admin",
+          "client/src/pages/collaborator/portal"
+        ],
+        "symbolCount": 273,
+        "dependsOn": []
+      }
+    ],
+    "patterns": [
+      {
+        "name": "Service Layer",
+        "confidence": 0.85,
+        "description": "Encapsulates business logic in service classes",
+        "occurrences": 7
+      }
+    ],
+    "entryPoints": [
+      "server/src/index.ts",
+      "server/src/app.ts",
+      "client/src/main.tsx",
+      "client/src/app.tsx",
+      "client/src/pages/index.tsx"
+    ]
+  },
+  "symbols": {
+    "classes": [
+      {
+        "name": "AsaasService",
+        "kind": "class",
+        "file": "server/src/services/asaas.service.ts",
+        "line": 87,
+        "exported": true
+      },
+      {
+        "name": "EbookValidationError",
+        "kind": "class",
+        "file": "server/src/validations/ebook.ts",
+        "line": 87,
+        "exported": true
+      },
+      {
+        "name": "PerformanceMonitor",
+        "kind": "class",
+        "file": "client/src/utils/performance.ts",
+        "line": 325,
+        "exported": true
+      },
+      {
+        "name": "WebWorkerPool",
+        "kind": "class",
+        "file": "client/src/utils/performance.ts",
+        "line": 229,
+        "exported": true
+      },
+      {
+        "name": "AntiSpamService",
+        "kind": "class",
+        "file": "server/src/services/anti-spam.service.ts",
+        "line": 42,
+        "exported": false
+      },
+      {
+        "name": "AutoReplyService",
+        "kind": "class",
+        "file": "server/src/services/auto-reply.service.ts",
+        "line": 29,
+        "exported": false
+      },
+      {
+        "name": "BlogService",
+        "kind": "class",
+        "file": "client/src/services/blog.service.ts",
+        "line": 174,
+        "exported": false
+      },
+      {
+        "name": "EbookService",
+        "kind": "class",
+        "file": "client/src/services/ebook.service.ts",
+        "line": 32,
+        "exported": false
+      },
+      {
+        "name": "EmailService",
+        "kind": "class",
+        "file": "server/src/services/email.service.ts",
+        "line": 32,
+        "exported": false
+      },
+      {
+        "name": "MemoryCache",
+        "kind": "class",
+        "file": "client/src/utils/performance.ts",
+        "line": 133,
+        "exported": false,
+        "description": "Memory-based cache for API responses"
+      },
+      {
+        "name": "NotificationService",
+        "kind": "class",
+        "file": "server/src/services/notification.service.ts",
+        "line": 22,
+        "exported": false
+      }
+    ],
+    "interfaces": [
+      {
+        "name": "AdvancedSearchFilters",
+        "kind": "interface",
+        "file": "client/src/services/blog.service.ts",
+        "line": 160,
+        "exported": true
+      },
+      {
+        "name": "BadgeProps",
+        "kind": "interface",
+        "file": "client/src/components/ui/badge.tsx",
+        "line": 25,
+        "exported": true
+      },
+      {
+        "name": "BlogFilters",
+        "kind": "interface",
+        "file": "client/src/services/blog.service.ts",
+        "line": 151,
+        "exported": true
+      },
+      {
+        "name": "BlogPost",
+        "kind": "interface",
+        "file": "client/src/types/blog.ts",
+        "line": 1,
+        "exported": true
+      },
+      {
+        "name": "BlogPost",
+        "kind": "interface",
+        "file": "client/src/services/blog.service.ts",
+        "line": 25,
+        "exported": true
+      },
+      {
+        "name": "ButtonProps",
+        "kind": "interface",
+        "file": "client/src/components/ui/button.tsx",
+        "line": 33,
+        "exported": true
+      },
+      {
+        "name": "CartItem",
+        "kind": "interface",
+        "file": "client/src/hooks/use-cart.ts",
+        "line": 5,
+        "exported": true
+      },
+      {
+        "name": "CartItem",
+        "kind": "interface",
+        "file": "client/src/context/cart-context.tsx",
+        "line": 5,
+        "exported": true
+      },
+      {
+        "name": "Category",
+        "kind": "interface",
+        "file": "client/src/types/blog.ts",
+        "line": 47,
+        "exported": true
+      },
+      {
+        "name": "Category",
+        "kind": "interface",
+        "file": "client/src/services/blog.service.ts",
+        "line": 3,
+        "exported": true
+      },
+      {
+        "name": "ChatMessage",
+        "kind": "interface",
+        "file": "client/src/types/message.ts",
+        "line": 11,
+        "exported": true
+      },
+      {
+        "name": "ChatSupportMessage",
+        "kind": "interface",
+        "file": "client/src/types/message.ts",
+        "line": 19,
+        "exported": true
+      },
+      {
+        "name": "CheckoutData",
+        "kind": "interface",
+        "file": "client/src/hooks/use-checkout.ts",
+        "line": 7,
+        "exported": true
+      },
+      {
+        "name": "CheckoutResponse",
+        "kind": "interface",
+        "file": "client/src/hooks/use-checkout.ts",
+        "line": 39,
+        "exported": true
+      },
+      {
+        "name": "CollaboratorAnalytics",
+        "kind": "interface",
+        "file": "client/src/types/collaborator.ts",
+        "line": 106,
+        "exported": true
+      },
+      {
+        "name": "CollaboratorApplication",
+        "kind": "interface",
+        "file": "client/src/types/collaborator.ts",
+        "line": 1,
+        "exported": true
+      },
+      {
+        "name": "CollaboratorApplication",
+        "kind": "interface",
+        "file": "client/src/services/collaborator.service.ts",
+        "line": 3,
+        "exported": true
+      },
+      {
+        "name": "CollaboratorResponse",
+        "kind": "interface",
+        "file": "client/src/services/collaborator.service.ts",
+        "line": 13,
+        "exported": true
+      },
+      {
+        "name": "CollaboratorsQuery",
+        "kind": "interface",
+        "file": "client/src/services/collaborator.service.ts",
+        "line": 53,
+        "exported": true
+      },
+      {
+        "name": "Comment",
+        "kind": "interface",
+        "file": "client/src/services/blog.service.ts",
+        "line": 98,
+        "exported": true
+      },
+      {
+        "name": "ContactMessage",
+        "kind": "interface",
+        "file": "client/src/types/message.ts",
+        "line": 1,
+        "exported": true
+      },
+      {
+        "name": "ContactMessage",
+        "kind": "interface",
+        "file": "client/src/services/contact.service.ts",
+        "line": 3,
+        "exported": true
+      },
+      {
+        "name": "Course",
+        "kind": "interface",
+        "file": "client/src/types/course.ts",
+        "line": 66,
+        "exported": true
+      },
+      {
+        "name": "CourseEnrollment",
+        "kind": "interface",
+        "file": "client/src/types/course.ts",
+        "line": 54,
+        "exported": true
+      },
+      {
+        "name": "CourseFormData",
+        "kind": "interface",
+        "file": "client/src/types/course.ts",
+        "line": 97,
+        "exported": true
+      },
+      {
+        "name": "CourseLesson",
+        "kind": "interface",
+        "file": "client/src/types/course.ts",
+        "line": 27,
+        "exported": true
+      },
+      {
+        "name": "CourseLesson",
+        "kind": "interface",
+        "file": "client/src/components/admin/lesson-accordion-item.tsx",
+        "line": 21,
+        "exported": true
+      },
+      {
+        "name": "CourseModule",
+        "kind": "interface",
+        "file": "client/src/types/course.ts",
+        "line": 16,
+        "exported": true
+      },
+      {
+        "name": "CourseModule",
+        "kind": "interface",
+        "file": "client/src/components/admin/module-card.tsx",
+        "line": 23,
+        "exported": true
+      },
+      {
+        "name": "CourseProgress",
+        "kind": "interface",
+        "file": "client/src/types/course.ts",
+        "line": 43,
+        "exported": true
+      },
+      {
+        "name": "CourseWithProgress",
+        "kind": "interface",
+        "file": "client/src/types/course.ts",
+        "line": 86,
+        "exported": true
+      },
+      {
+        "name": "CreateBlogPostDto",
+        "kind": "interface",
+        "file": "client/src/services/blog.service.ts",
+        "line": 71,
+        "exported": true
+      },
+      {
+        "name": "CreateCategoryDto",
+        "kind": "interface",
+        "file": "client/src/services/blog.service.ts",
+        "line": 84,
+        "exported": true
+      },
+      {
+        "name": "CreateCommentDto",
+        "kind": "interface",
+        "file": "client/src/services/blog.service.ts",
+        "line": 129,
+        "exported": true
+      },
+      {
+        "name": "CreateEbookDto",
+        "kind": "interface",
+        "file": "client/src/services/ebook.service.ts",
+        "line": 4,
+        "exported": true
+      },
+      {
+        "name": "CreateTagDto",
+        "kind": "interface",
+        "file": "client/src/services/blog.service.ts",
+        "line": 91,
+        "exported": true
+      },
+      {
+        "name": "CustomPaper",
+        "kind": "interface",
+        "file": "client/src/types/custom-paper.ts",
+        "line": 19,
+        "exported": true
+      },
+      {
+        "name": "CustomPaperMessage",
+        "kind": "interface",
+        "file": "client/src/types/custom-paper.ts",
+        "line": 76,
+        "exported": true
+      },
+      {
+        "name": "CustomPaperRequest",
+        "kind": "interface",
+        "file": "client/src/types/custom-paper.ts",
+        "line": 62,
+        "exported": true
+      },
+      {
+        "name": "Ebook",
+        "kind": "interface",
+        "file": "client/src/types/ebook.ts",
+        "line": 31,
+        "exported": true
+      },
+      {
+        "name": "EbookDownloadResponse",
+        "kind": "interface",
+        "file": "client/src/services/ebook.service.ts",
+        "line": 27,
+        "exported": true
+      },
+      {
+        "name": "EbookFile",
+        "kind": "interface",
+        "file": "client/src/types/ebook.ts",
+        "line": 22,
+        "exported": true
+      },
+      {
+        "name": "EbookFilters",
+        "kind": "interface",
+        "file": "client/src/services/ebook.service.ts",
+        "line": 17,
+        "exported": true
+      },
+      {
+        "name": "Evaluation",
+        "kind": "interface",
+        "file": "client/src/types/collaborator.ts",
+        "line": 30,
+        "exported": true
+      },
+      {
+        "name": "Evaluation",
+        "kind": "interface",
+        "file": "client/src/services/collaborator.service.ts",
+        "line": 35,
+        "exported": true
+      },
+      {
+        "name": "IdParams",
+        "kind": "interface",
+        "file": "server/src/types/fastify.ts",
+        "line": 45,
+        "exported": true
+      },
+      {
+        "name": "Interview",
+        "kind": "interface",
+        "file": "client/src/types/collaborator.ts",
+        "line": 68,
+        "exported": true
+      },
+      {
+        "name": "Interview",
+        "kind": "interface",
+        "file": "client/src/services/collaborator.service.ts",
+        "line": 42,
+        "exported": true
+      },
+      {
+        "name": "Like",
+        "kind": "interface",
+        "file": "client/src/services/blog.service.ts",
+        "line": 140,
+        "exported": true
+      },
+      {
+        "name": "Message",
+        "kind": "interface",
+        "file": "client/src/services/contact.service.ts",
+        "line": 14,
+        "exported": true
+      }
+    ],
+    "functions": [
+      {
+        "name": "AboutSection",
+        "kind": "function",
+        "file": "client/src/components/about-section.tsx",
+        "line": 1,
+        "exported": true
+      },
+      {
+        "name": "addEbookToLibrary",
+        "kind": "function",
+        "file": "server/src/prisma.ts",
+        "line": 598,
+        "exported": true
+      },
+      {
+        "name": "addPaperToLibrary",
+        "kind": "function",
+        "file": "server/src/prisma.ts",
+        "line": 163,
+        "exported": true
+      },
+      {
+        "name": "AddReadyPaperPage",
+        "kind": "function",
+        "file": "client/src/pages/admin/add-ready-paper-page.tsx",
+        "line": 37,
+        "exported": true
+      },
+      {
+        "name": "AdminMessages",
+        "kind": "function",
+        "file": "client/src/pages/admin/messages.tsx",
+        "line": 65,
+        "exported": true
+      },
+      {
+        "name": "AdminProfile",
+        "kind": "function",
+        "file": "client/src/components/admin/admin-profile.tsx",
+        "line": 11,
+        "exported": true
+      },
+      {
+        "name": "AdminSettings",
+        "kind": "function",
+        "file": "client/src/components/admin/admin-settings.tsx",
+        "line": 12,
+        "exported": true
+      },
+      {
+        "name": "Analytics",
+        "kind": "function",
+        "file": "client/src/pages/admin/analytics.tsx",
+        "line": 99,
+        "exported": true
+      },
+      {
+        "name": "analyzeBundle",
+        "kind": "function",
+        "file": "client/src/utils/performance.ts",
+        "line": 306,
+        "exported": true
+      },
+      {
+        "name": "App",
+        "kind": "function",
+        "file": "client/src/app.tsx",
+        "line": 21,
+        "exported": true
+      },
+      {
+        "name": "ArticleStructuredData",
+        "kind": "function",
+        "file": "client/src/components/seo/structured-data.tsx",
+        "line": 39,
+        "exported": true
+      },
+      {
+        "name": "AuthModal",
+        "kind": "function",
+        "file": "client/src/components/islands/auth-modal.tsx",
+        "line": 16,
+        "exported": true
+      },
+      {
+        "name": "backupDatabase",
+        "kind": "function",
+        "file": "server/src/utils/backup.ts",
+        "line": 8,
+        "exported": true
+      },
+      {
+        "name": "Blog",
+        "kind": "function",
+        "file": "client/src/pages/blog.tsx",
+        "line": 19,
+        "exported": true
+      },
+      {
+        "name": "BoletoPayment",
+        "kind": "function",
+        "file": "client/src/components/checkout/boleto-payment.tsx",
+        "line": 11,
+        "exported": true
+      },
+      {
+        "name": "BRLToCents",
+        "kind": "function",
+        "file": "client/src/utils/course-formatters.ts",
+        "line": 67,
+        "exported": true
+      },
+      {
+        "name": "build",
+        "kind": "function",
+        "file": "server/src/app.ts",
+        "line": 16,
+        "exported": true
+      },
+      {
+        "name": "centsToBRL",
+        "kind": "function",
+        "file": "client/src/utils/course-formatters.ts",
+        "line": 63,
+        "exported": true
+      },
+      {
+        "name": "checkEnrollment",
+        "kind": "function",
+        "file": "server/src/services/course-content.service.ts",
+        "line": 187,
+        "exported": true
+      },
+      {
+        "name": "closeRedis",
+        "kind": "function",
+        "file": "server/src/redis.ts",
+        "line": 82,
+        "exported": true
+      },
+      {
+        "name": "cn",
+        "kind": "function",
+        "file": "client/src/lib/utils.ts",
+        "line": 4,
+        "exported": true
+      },
+      {
+        "name": "completeCourse",
+        "kind": "function",
+        "file": "server/src/student.ts",
+        "line": 361,
+        "exported": true
+      },
+      {
+        "name": "ContactForm",
+        "kind": "function",
+        "file": "client/src/components/islands/contact-form.tsx",
+        "line": 29,
+        "exported": true
+      },
+      {
+        "name": "CoursesCTA",
+        "kind": "function",
+        "file": "client/src/components/islands/courses-cta.tsx",
+        "line": 10,
+        "exported": true
+      },
+      {
+        "name": "createCourse",
+        "kind": "function",
+        "file": "server/src/prisma.ts",
+        "line": 231,
+        "exported": true
+      },
+      {
+        "name": "createEbook",
+        "kind": "function",
+        "file": "server/src/prisma.ts",
+        "line": 370,
+        "exported": true
+      },
+      {
+        "name": "createLazyComponent",
+        "kind": "function",
+        "file": "client/src/utils/performance.ts",
+        "line": 11,
+        "exported": true
+      },
+      {
+        "name": "createLesson",
+        "kind": "function",
+        "file": "server/src/services/course-content.service.ts",
+        "line": 42,
+        "exported": true
+      },
+      {
+        "name": "createModule",
+        "kind": "function",
+        "file": "server/src/services/course-content.service.ts",
+        "line": 16,
+        "exported": true
+      },
+      {
+        "name": "createOrder",
+        "kind": "function",
+        "file": "server/src/prisma.ts",
+        "line": 672,
+        "exported": true
+      },
+      {
+        "name": "createPaper",
+        "kind": "function",
+        "file": "server/src/prisma.ts",
+        "line": 98,
+        "exported": true
+      },
+      {
+        "name": "createPasswordResetToken",
+        "kind": "function",
+        "file": "server/src/auth.ts",
+        "line": 121,
+        "exported": true
+      },
+      {
+        "name": "CreditCardForm",
+        "kind": "function",
+        "file": "client/src/components/checkout/credit-card-form.tsx",
+        "line": 20,
+        "exported": true
+      },
+      {
+        "name": "DateInput",
+        "kind": "function",
+        "file": "client/src/components/ui/date-input.tsx",
+        "line": 15,
+        "exported": true
+      },
+      {
+        "name": "DatePickerInput",
+        "kind": "function",
+        "file": "client/src/components/ui/date-picker-input.tsx",
+        "line": 20,
+        "exported": true
+      },
+      {
+        "name": "debounce",
+        "kind": "function",
+        "file": "client/src/utils/performance.ts",
+        "line": 29,
+        "exported": true
+      },
+      {
+        "name": "deleteCache",
+        "kind": "function",
+        "file": "server/src/redis.ts",
+        "line": 57,
+        "exported": true
+      },
+      {
+        "name": "deleteCachePattern",
+        "kind": "function",
+        "file": "server/src/redis.ts",
+        "line": 68,
+        "exported": true
+      },
+      {
+        "name": "DeleteConfirmDialog",
+        "kind": "function",
+        "file": "client/src/components/admin/delete-confirm-dialog.tsx",
+        "line": 20,
+        "exported": true
+      },
+      {
+        "name": "deleteCourse",
+        "kind": "function",
+        "file": "server/src/prisma.ts",
+        "line": 287,
+        "exported": true
+      },
+      {
+        "name": "deleteEbook",
+        "kind": "function",
+        "file": "server/src/prisma.ts",
+        "line": 532,
+        "exported": true
+      },
+      {
+        "name": "deleteFile",
+        "kind": "function",
+        "file": "server/src/services/upload.service.ts",
+        "line": 49,
+        "exported": true
+      },
+      {
+        "name": "deleteLesson",
+        "kind": "function",
+        "file": "server/src/services/course-content.service.ts",
+        "line": 63,
+        "exported": true
+      },
+      {
+        "name": "deleteModule",
+        "kind": "function",
+        "file": "server/src/services/course-content.service.ts",
+        "line": 36,
+        "exported": true
+      },
+      {
+        "name": "deletePaper",
+        "kind": "function",
+        "file": "server/src/prisma.ts",
+        "line": 157,
+        "exported": true
+      },
+      {
+        "name": "DocumentCard",
+        "kind": "function",
+        "file": "client/src/components/collaborator/DocumentCard.tsx",
+        "line": 18,
+        "exported": true
+      },
+      {
+        "name": "DocumentList",
+        "kind": "function",
+        "file": "client/src/components/collaborator/DocumentCard.tsx",
+        "line": 158,
+        "exported": true
+      },
+      {
+        "name": "enrollUserInCourse",
+        "kind": "function",
+        "file": "server/src/services/course-content.service.ts",
+        "line": 168,
+        "exported": true
+      },
+      {
+        "name": "EvaluationForm",
+        "kind": "function",
+        "file": "client/src/components/admin/evaluation-form.tsx",
+        "line": 50,
+        "exported": true
+      },
+      {
+        "name": "extractYouTubeVideoId",
+        "kind": "function",
+        "file": "server/src/utils/youtube.ts",
+        "line": 14,
+        "exported": true
+      }
+    ],
+    "types": [
+      {
+        "name": "AcademicArea",
+        "kind": "type",
+        "file": "client/src/types/paper.ts",
+        "line": 13,
+        "exported": true
+      },
+      {
+        "name": "AcademicArea",
+        "kind": "type",
+        "file": "client/src/types/ebook.ts",
+        "line": 1,
+        "exported": true
+      },
+      {
+        "name": "AcademicArea",
+        "kind": "type",
+        "file": "client/src/types/course.ts",
+        "line": 1,
+        "exported": true
+      },
+      {
+        "name": "ApplicationStage",
+        "kind": "type",
+        "file": "client/src/types/collaborator.ts",
+        "line": 21,
+        "exported": true
+      },
+      {
+        "name": "BlogPostInput",
+        "kind": "type",
+        "file": "client/src/lib/validations.ts",
+        "line": 292,
+        "exported": true
+      },
+      {
+        "name": "CalendarProps",
+        "kind": "type",
+        "file": "client/src/components/ui/calendar.tsx",
+        "line": 9,
+        "exported": true
+      },
+      {
+        "name": "ChartConfig",
+        "kind": "type",
+        "file": "client/src/components/ui/chart.tsx",
+        "line": 9,
+        "exported": true
+      },
+      {
+        "name": "CheckoutInput",
+        "kind": "type",
+        "file": "client/src/lib/validations.ts",
+        "line": 287,
+        "exported": true
+      },
+      {
+        "name": "CollaboratorInput",
+        "kind": "type",
+        "file": "client/src/lib/validations.ts",
+        "line": 294,
+        "exported": true
+      },
+      {
+        "name": "ContactInput",
+        "kind": "type",
+        "file": "client/src/lib/validations.ts",
+        "line": 293,
+        "exported": true
+      },
+      {
+        "name": "CourseInput",
+        "kind": "type",
+        "file": "client/src/lib/validations.ts",
+        "line": 290,
+        "exported": true
+      },
+      {
+        "name": "CourseLevel",
+        "kind": "type",
+        "file": "client/src/types/course.ts",
+        "line": 64,
+        "exported": true
+      },
+      {
+        "name": "CourseStatus",
+        "kind": "type",
+        "file": "client/src/types/course.ts",
+        "line": 14,
+        "exported": true
+      },
+      {
+        "name": "CustomPaperStatus",
+        "kind": "type",
+        "file": "client/src/types/custom-paper.ts",
+        "line": 88,
+        "exported": true
+      },
+      {
+        "name": "EbookInput",
+        "kind": "type",
+        "file": "client/src/lib/validations.ts",
+        "line": 291,
+        "exported": true
+      },
+      {
+        "name": "EvaluationRecommendation",
+        "kind": "type",
+        "file": "client/src/types/collaborator.ts",
+        "line": 48,
+        "exported": true
+      },
+      {
+        "name": "FreePaperInput",
+        "kind": "type",
+        "file": "client/src/lib/validations.ts",
+        "line": 289,
+        "exported": true
+      },
+      {
+        "name": "InterviewResult",
+        "kind": "type",
+        "file": "client/src/types/collaborator.ts",
+        "line": 101,
+        "exported": true
+      },
+      {
+        "name": "InterviewStatus",
+        "kind": "type",
+        "file": "client/src/types/collaborator.ts",
+        "line": 94,
+        "exported": true
+      },
+      {
+        "name": "InterviewType",
+        "kind": "type",
+        "file": "client/src/types/collaborator.ts",
+        "line": 88,
+        "exported": true
+      },
+      {
+        "name": "LoginInput",
+        "kind": "type",
+        "file": "client/src/lib/validations.ts",
+        "line": 284,
+        "exported": true
+      },
+      {
+        "name": "PaperInput",
+        "kind": "type",
+        "file": "client/src/lib/validations.ts",
+        "line": 288,
+        "exported": true
+      },
+      {
+        "name": "PaperType",
+        "kind": "type",
+        "file": "client/src/types/paper.ts",
+        "line": 1,
+        "exported": true
+      },
+      {
+        "name": "PaymentStatus",
+        "kind": "type",
+        "file": "client/src/types/custom-paper.ts",
+        "line": 98,
+        "exported": true
+      },
+      {
+        "name": "ProfileInput",
+        "kind": "type",
+        "file": "client/src/lib/validations.ts",
+        "line": 286,
+        "exported": true
+      },
+      {
+        "name": "RegisterInput",
+        "kind": "type",
+        "file": "client/src/lib/validations.ts",
+        "line": 285,
+        "exported": true
+      },
+      {
+        "name": "Action",
+        "kind": "type",
+        "file": "client/src/hooks/use-toast.ts",
+        "line": 32,
+        "exported": false
+      },
+      {
+        "name": "ActionType",
+        "kind": "type",
+        "file": "client/src/hooks/use-toast.ts",
+        "line": 30,
+        "exported": false
+      },
+      {
+        "name": "AdminSection",
+        "kind": "type",
+        "file": "client/src/pages/admin/ready-papers-page.tsx",
+        "line": 7,
+        "exported": false
+      },
+      {
+        "name": "AdminSection",
+        "kind": "type",
+        "file": "client/src/pages/admin/free-papers-page.tsx",
+        "line": 7,
+        "exported": false
+      },
+      {
+        "name": "AdminSection",
+        "kind": "type",
+        "file": "client/src/pages/admin/free-paper-details-page.tsx",
+        "line": 5,
+        "exported": false
+      },
+      {
+        "name": "AdminSection",
+        "kind": "type",
+        "file": "client/src/pages/admin/blog-post-details-page.tsx",
+        "line": 5,
+        "exported": false
+      },
+      {
+        "name": "AdminUsersHook",
+        "kind": "type",
+        "file": "client/src/pages/admin/admin-users-page.tsx",
+        "line": 32,
+        "exported": false
+      },
+      {
+        "name": "AdminUsersHook",
+        "kind": "type",
+        "file": "client/src/components/admin/user-dialogs.tsx",
+        "line": 35,
+        "exported": false
+      },
+      {
+        "name": "CarouselApi",
+        "kind": "type",
+        "file": "client/src/components/ui/carousel.tsx",
+        "line": 8,
+        "exported": false
+      },
+      {
+        "name": "CarouselContextProps",
+        "kind": "type",
+        "file": "client/src/components/ui/carousel.tsx",
+        "line": 20,
+        "exported": false
+      },
+      {
+        "name": "CarouselOptions",
+        "kind": "type",
+        "file": "client/src/components/ui/carousel.tsx",
+        "line": 10,
+        "exported": false
+      },
+      {
+        "name": "CarouselPlugin",
+        "kind": "type",
+        "file": "client/src/components/ui/carousel.tsx",
+        "line": 11,
+        "exported": false
+      },
+      {
+        "name": "CarouselProps",
+        "kind": "type",
+        "file": "client/src/components/ui/carousel.tsx",
+        "line": 13,
+        "exported": false
+      },
+      {
+        "name": "CartAction",
+        "kind": "type",
+        "file": "client/src/context/cart-context.tsx",
+        "line": 20,
+        "exported": false
+      },
+      {
+        "name": "ChartContextProps",
+        "kind": "type",
+        "file": "client/src/components/ui/chart.tsx",
+        "line": 19,
+        "exported": false
+      },
+      {
+        "name": "CheckoutFormData",
+        "kind": "type",
+        "file": "client/src/pages/checkout.tsx",
+        "line": 44,
+        "exported": false
+      },
+      {
+        "name": "ContactFormData",
+        "kind": "type",
+        "file": "client/src/pages/contact.tsx",
+        "line": 53,
+        "exported": false
+      },
+      {
+        "name": "ContactSortField",
+        "kind": "type",
+        "file": "client/src/components/admin/admin-messages.tsx",
+        "line": 53,
+        "exported": false
+      },
+      {
+        "name": "FormData",
+        "kind": "type",
+        "file": "client/src/components/admin/user-dialogs.tsx",
+        "line": 27,
+        "exported": false
+      },
+      {
+        "name": "FormFieldContextValue",
+        "kind": "type",
+        "file": "client/src/components/ui/form.tsx",
+        "line": 18,
+        "exported": false
+      },
+      {
+        "name": "FormItemContextValue",
+        "kind": "type",
+        "file": "client/src/components/ui/form.tsx",
+        "line": 63,
+        "exported": false
+      },
+      {
+        "name": "PaginationLinkProps",
+        "kind": "type",
+        "file": "client/src/components/ui/pagination.tsx",
+        "line": 28,
+        "exported": false
+      },
+      {
+        "name": "RequestFormData",
+        "kind": "type",
+        "file": "client/src/pages/custom-papers.tsx",
+        "line": 102,
+        "exported": false
+      },
+      {
+        "name": "SeedUser",
+        "kind": "type",
+        "file": "server/src/scripts/seed-users.ts",
+        "line": 6,
+        "exported": false
+      }
+    ],
+    "enums": []
+  },
+  "publicAPI": [
+    {
+      "name": "AboutSection",
+      "kind": "function",
+      "file": "client/src/components/about-section.tsx",
+      "line": 1,
+      "exported": true
+    },
+    {
+      "name": "AcademicArea",
+      "kind": "type",
+      "file": "client/src/types/paper.ts",
+      "line": 13,
+      "exported": true
+    },
+    {
+      "name": "AcademicArea",
+      "kind": "type",
+      "file": "client/src/types/ebook.ts",
+      "line": 1,
+      "exported": true
+    },
+    {
+      "name": "AcademicArea",
+      "kind": "type",
+      "file": "client/src/types/course.ts",
+      "line": 1,
+      "exported": true
+    },
+    {
+      "name": "addEbookToLibrary",
+      "kind": "function",
+      "file": "server/src/prisma.ts",
+      "line": 598,
+      "exported": true
+    },
+    {
+      "name": "addPaperToLibrary",
+      "kind": "function",
+      "file": "server/src/prisma.ts",
+      "line": 163,
+      "exported": true
+    },
+    {
+      "name": "AddReadyPaperPage",
+      "kind": "function",
+      "file": "client/src/pages/admin/add-ready-paper-page.tsx",
+      "line": 37,
+      "exported": true
+    },
+    {
+      "name": "AdminMessages",
+      "kind": "function",
+      "file": "client/src/pages/admin/messages.tsx",
+      "line": 65,
+      "exported": true
+    },
+    {
+      "name": "AdminProfile",
+      "kind": "function",
+      "file": "client/src/components/admin/admin-profile.tsx",
+      "line": 11,
+      "exported": true
+    },
+    {
+      "name": "AdminSettings",
+      "kind": "function",
+      "file": "client/src/components/admin/admin-settings.tsx",
+      "line": 12,
+      "exported": true
+    },
+    {
+      "name": "AdvancedSearchFilters",
+      "kind": "interface",
+      "file": "client/src/services/blog.service.ts",
+      "line": 160,
+      "exported": true
+    },
+    {
+      "name": "Analytics",
+      "kind": "function",
+      "file": "client/src/pages/admin/analytics.tsx",
+      "line": 99,
+      "exported": true
+    },
+    {
+      "name": "analyzeBundle",
+      "kind": "function",
+      "file": "client/src/utils/performance.ts",
+      "line": 306,
+      "exported": true
+    },
+    {
+      "name": "App",
+      "kind": "function",
+      "file": "client/src/app.tsx",
+      "line": 21,
+      "exported": true
+    },
+    {
+      "name": "ApplicationStage",
+      "kind": "type",
+      "file": "client/src/types/collaborator.ts",
+      "line": 21,
+      "exported": true
+    },
+    {
+      "name": "ArticleStructuredData",
+      "kind": "function",
+      "file": "client/src/components/seo/structured-data.tsx",
+      "line": 39,
+      "exported": true
+    },
+    {
+      "name": "AsaasService",
+      "kind": "class",
+      "file": "server/src/services/asaas.service.ts",
+      "line": 87,
+      "exported": true
+    },
+    {
+      "name": "AuthModal",
+      "kind": "function",
+      "file": "client/src/components/islands/auth-modal.tsx",
+      "line": 16,
+      "exported": true
+    },
+    {
+      "name": "backupDatabase",
+      "kind": "function",
+      "file": "server/src/utils/backup.ts",
+      "line": 8,
+      "exported": true
+    },
+    {
+      "name": "BadgeProps",
+      "kind": "interface",
+      "file": "client/src/components/ui/badge.tsx",
+      "line": 25,
+      "exported": true
+    },
+    {
+      "name": "Blog",
+      "kind": "function",
+      "file": "client/src/pages/blog.tsx",
+      "line": 19,
+      "exported": true
+    },
+    {
+      "name": "BlogFilters",
+      "kind": "interface",
+      "file": "client/src/services/blog.service.ts",
+      "line": 151,
+      "exported": true
+    },
+    {
+      "name": "BlogPost",
+      "kind": "interface",
+      "file": "client/src/types/blog.ts",
+      "line": 1,
+      "exported": true
+    },
+    {
+      "name": "BlogPost",
+      "kind": "interface",
+      "file": "client/src/services/blog.service.ts",
+      "line": 25,
+      "exported": true
+    },
+    {
+      "name": "BlogPostInput",
+      "kind": "type",
+      "file": "client/src/lib/validations.ts",
+      "line": 292,
+      "exported": true
+    },
+    {
+      "name": "BoletoPayment",
+      "kind": "function",
+      "file": "client/src/components/checkout/boleto-payment.tsx",
+      "line": 11,
+      "exported": true
+    },
+    {
+      "name": "BRLToCents",
+      "kind": "function",
+      "file": "client/src/utils/course-formatters.ts",
+      "line": 67,
+      "exported": true
+    },
+    {
+      "name": "build",
+      "kind": "function",
+      "file": "server/src/app.ts",
+      "line": 16,
+      "exported": true
+    },
+    {
+      "name": "ButtonProps",
+      "kind": "interface",
+      "file": "client/src/components/ui/button.tsx",
+      "line": 33,
+      "exported": true
+    },
+    {
+      "name": "CalendarProps",
+      "kind": "type",
+      "file": "client/src/components/ui/calendar.tsx",
+      "line": 9,
+      "exported": true
+    },
+    {
+      "name": "CartItem",
+      "kind": "interface",
+      "file": "client/src/hooks/use-cart.ts",
+      "line": 5,
+      "exported": true
+    },
+    {
+      "name": "CartItem",
+      "kind": "interface",
+      "file": "client/src/context/cart-context.tsx",
+      "line": 5,
+      "exported": true
+    },
+    {
+      "name": "Category",
+      "kind": "interface",
+      "file": "client/src/types/blog.ts",
+      "line": 47,
+      "exported": true
+    },
+    {
+      "name": "Category",
+      "kind": "interface",
+      "file": "client/src/services/blog.service.ts",
+      "line": 3,
+      "exported": true
+    },
+    {
+      "name": "centsToBRL",
+      "kind": "function",
+      "file": "client/src/utils/course-formatters.ts",
+      "line": 63,
+      "exported": true
+    },
+    {
+      "name": "ChartConfig",
+      "kind": "type",
+      "file": "client/src/components/ui/chart.tsx",
+      "line": 9,
+      "exported": true
+    },
+    {
+      "name": "ChatMessage",
+      "kind": "interface",
+      "file": "client/src/types/message.ts",
+      "line": 11,
+      "exported": true
+    },
+    {
+      "name": "ChatSupportMessage",
+      "kind": "interface",
+      "file": "client/src/types/message.ts",
+      "line": 19,
+      "exported": true
+    },
+    {
+      "name": "checkEnrollment",
+      "kind": "function",
+      "file": "server/src/services/course-content.service.ts",
+      "line": 187,
+      "exported": true
+    },
+    {
+      "name": "CheckoutData",
+      "kind": "interface",
+      "file": "client/src/hooks/use-checkout.ts",
+      "line": 7,
+      "exported": true
+    },
+    {
+      "name": "CheckoutInput",
+      "kind": "type",
+      "file": "client/src/lib/validations.ts",
+      "line": 287,
+      "exported": true
+    },
+    {
+      "name": "CheckoutResponse",
+      "kind": "interface",
+      "file": "client/src/hooks/use-checkout.ts",
+      "line": 39,
+      "exported": true
+    },
+    {
+      "name": "closeRedis",
+      "kind": "function",
+      "file": "server/src/redis.ts",
+      "line": 82,
+      "exported": true
+    },
+    {
+      "name": "cn",
+      "kind": "function",
+      "file": "client/src/lib/utils.ts",
+      "line": 4,
+      "exported": true
+    },
+    {
+      "name": "CollaboratorAnalytics",
+      "kind": "interface",
+      "file": "client/src/types/collaborator.ts",
+      "line": 106,
+      "exported": true
+    },
+    {
+      "name": "CollaboratorApplication",
+      "kind": "interface",
+      "file": "client/src/types/collaborator.ts",
+      "line": 1,
+      "exported": true
+    },
+    {
+      "name": "CollaboratorApplication",
+      "kind": "interface",
+      "file": "client/src/services/collaborator.service.ts",
+      "line": 3,
+      "exported": true
+    },
+    {
+      "name": "CollaboratorInput",
+      "kind": "type",
+      "file": "client/src/lib/validations.ts",
+      "line": 294,
+      "exported": true
+    },
+    {
+      "name": "CollaboratorResponse",
+      "kind": "interface",
+      "file": "client/src/services/collaborator.service.ts",
+      "line": 13,
+      "exported": true
+    },
+    {
+      "name": "CollaboratorsQuery",
+      "kind": "interface",
+      "file": "client/src/services/collaborator.service.ts",
+      "line": 53,
+      "exported": true
+    }
+  ],
+  "dependencies": {
+    "mostImported": [
+      {
+        "file": "/Users/brunovilefort/Desktop/laura/ln-educacional/server/src/prisma.ts",
+        "importedBy": 22
+      },
+      {
+        "file": "/Users/brunovilefort/Desktop/laura/ln-educacional/client/src/services/api.ts",
+        "importedBy": 9
+      },
+      {
+        "file": "/Users/brunovilefort/Desktop/laura/ln-educacional/client/src/lib/error.ts",
+        "importedBy": 4
+      },
+      {
+        "file": "/Users/brunovilefort/Desktop/laura/ln-educacional/server/src/auth.ts",
+        "importedBy": 3
+      },
+      {
+        "file": "/Users/brunovilefort/Desktop/laura/ln-educacional/server/src/services/upload.service.ts",
+        "importedBy": 2
+      },
+      {
+        "file": "/Users/brunovilefort/Desktop/laura/ln-educacional/server/src/services/custom-paper.service.ts",
+        "importedBy": 2
+      },
+      {
+        "file": "/Users/brunovilefort/Desktop/laura/ln-educacional/server/src/types/fastify.ts",
+        "importedBy": 2
+      },
+      {
+        "file": "/Users/brunovilefort/Desktop/laura/ln-educacional/client/src/hooks/use-toast.ts",
+        "importedBy": 2
+      },
+      {
+        "file": "/Users/brunovilefort/Desktop/laura/ln-educacional/client/src/components/ui/loading-spinner.tsx",
+        "importedBy": 2
+      },
+      {
+        "file": "/Users/brunovilefort/Desktop/laura/ln-educacional/client/src/components/checkout/checkout-modal.tsx",
+        "importedBy": 2
+      },
+      {
+        "file": "/Users/brunovilefort/Desktop/laura/ln-educacional/client/src/components/cart/fly-to-cart-animation.tsx",
+        "importedBy": 2
+      },
+      {
+        "file": "/Users/brunovilefort/Desktop/laura/ln-educacional/client/src/components/admin/delete-confirm-dialog.tsx",
+        "importedBy": 2
+      },
+      {
+        "file": "/Users/brunovilefort/Desktop/laura/ln-educacional/client/src/components/admin/lesson-accordion-item.tsx",
+        "importedBy": 2
+      },
+      {
+        "file": "/Users/brunovilefort/Desktop/laura/ln-educacional/server/src/app.ts",
+        "importedBy": 1
+      },
+      {
+        "file": "/Users/brunovilefort/Desktop/laura/ln-educacional/server/src/routes.ts",
+        "importedBy": 1
+      },
+      {
+        "file": "/Users/brunovilefort/Desktop/laura/ln-educacional/server/src/services/asaas.service.ts",
+        "importedBy": 1
+      },
+      {
+        "file": "/Users/brunovilefort/Desktop/laura/ln-educacional/server/src/services/custom-paper-message.service.ts",
+        "importedBy": 1
+      },
+      {
+        "file": "/Users/brunovilefort/Desktop/laura/ln-educacional/server/src/redis.ts",
+        "importedBy": 1
+      },
+      {
+        "file": "/Users/brunovilefort/Desktop/laura/ln-educacional/server/src/services/course-content.service.ts",
+        "importedBy": 1
+      },
+      {
+        "file": "/Users/brunovilefort/Desktop/laura/ln-educacional/server/src/utils/youtube.ts",
+        "importedBy": 1
+      }
+    ]
+  },
+  "stats": {
+    "totalSymbols": 620,
+    "exportedSymbols": 315,
+    "analysisTimeMs": 2358
+  }
+}

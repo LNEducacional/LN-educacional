@@ -48,10 +48,10 @@ COPY --from=builder /app/server/prisma ./server/prisma
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY server/package.json ./server/
 
-# Criar pasta de uploads com permissoes corretas
-RUN mkdir -p /app/server/uploads && chown -R fastify:nodejs /app/server/uploads
+# Criar pasta de uploads com permissoes corretas na raiz do projeto
+RUN mkdir -p /app/uploads && chown -R fastify:nodejs /app/uploads
 
-WORKDIR /app/server
+WORKDIR /app
 
 USER fastify
 
@@ -61,4 +61,4 @@ EXPOSE 3333
 ENTRYPOINT ["dumb-init", "--"]
 
 # Rodar migrations e iniciar servidor
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/index.js"]
+CMD ["sh", "-c", "npx prisma migrate deploy --schema=./server/prisma/schema.prisma && node server/dist/index.js"]

@@ -72,7 +72,7 @@ services:
     ports:
       - "${SERVER_PORT:-3333}:3333"
     volumes:
-      - uploads_data:/app/server/uploads
+      - uploads_data:/app/uploads
     depends_on:
       postgres:
         condition: service_healthy
